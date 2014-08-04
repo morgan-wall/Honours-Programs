@@ -1,4 +1,4 @@
 Honours Programs
 ================
 
-A collection of programs created by Morgan Wall for his mathematics honours thesis.
+A collection of programs created for Morgan Wall's honours thesis on Newton-Krylov continuation methods.
