@@ -9,11 +9,11 @@ x = x0;
 
 while (current_iteration <= max_iterations && norm(result) > rel_error_tol)
     
+    identity = eye(n);
     jacobian = zeros(n);
     h = determine_newton_step_delta(x);
     for j = 1:n
-        A = eye(n);
-        delta_basis = A(:, j);
+        delta_basis = identity(:, j);
         jacobian(:, j) = (F(x(:) + h .* delta_basis(:)) - F(x)) ./ h;
     end
     
