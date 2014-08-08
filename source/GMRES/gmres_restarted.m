@@ -45,7 +45,4 @@ while (residual > error_tol && i < max_iter)
     residual = g(end);
     i = i + 1;
 end
-
-disp(i);
-
 end
