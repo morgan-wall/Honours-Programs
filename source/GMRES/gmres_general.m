@@ -21,8 +21,14 @@ function [xk, H, g] = gmres_general(A, b, x0, max_iter, ...
 %       x: the solution vector.
 %
 
+% convert system parameters to sparse storage
+if (~issparse(A))
+    A = sparse(A); 
+end
+
 % construct matrix preconditioner
 diagonal_index = 0;
+rows = length(b);
 
 switch(type)
     case 'ilu'
@@ -31,13 +37,13 @@ switch(type)
         setup.droptol = 0.1;
         [L,U] = ilu(A, setup);
     case 'jacobi'
-        L = spdiags(diag(A), diagonal_index, speye(length(b)));
+        L = spdiags(diag(A), diagonal_index, speye(rows));
         U = speye(length(b));
     case 'sor'
         L = spdiags(diag(A) / omega, diagonal_index, tril(A));
-        U = speye(length(b));
+        U = speye(rows);
     case 'none'
-        L = speye(length(b));
+        L = speye(rows);
         U = L;
 end
 
