@@ -13,9 +13,14 @@ restart_value = 1;
 gmres_error_tol = 10^-10; 
 precond_type = 'ilu'; 
 omega = 0;
+sigma = 1e-4;
 
-[root, iterations] = newton_gmres(F, 2, x0, max_iterations, ...
+% [root, iterations] = newton_gmres(F, 2, x0, max_iterations, ...
+%     rel_error_tol, gmres_error_tol, gmres_max_iter, ...
+%     restart_value, precond_type, omega);
+
+[root, iterations] = newton_gmres_simple_line_search(F, 2, x0, max_iterations, ...
     rel_error_tol, gmres_error_tol, gmres_max_iter, ...
-    restart_value, precond_type, omega);
+    restart_value, precond_type, omega, sigma);
 
 disp(['Iterations required: ', num2str(iterations), '.']);
