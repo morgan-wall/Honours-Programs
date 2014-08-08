@@ -7,7 +7,7 @@ root = x0;
 result = realmax;
 
 while (current_iteration <= max_iterations && abs(result) > abs_error_tol)
-    root = root - f(root) / fdot(root);
+    root = root - fdot(root) \ f(root);
     
     result = f(root);
     if (result == root_value)
