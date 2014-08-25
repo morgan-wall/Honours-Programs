@@ -5,7 +5,7 @@ clear all;
 F = @(x) [x(1)^3 + x(2) - 1; x(2)^3 - x(1) + 1];
 
 x0 = [0.5; 0.5];
-lambda_delta = 0.2;
+lambda_delta = 0.001;
 
 root = homotopy_simple(F, 2, x0, lambda_delta);
 
