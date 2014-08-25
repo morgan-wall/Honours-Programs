@@ -1,4 +1,4 @@
-function root = homotopy_simple(F, n, x0, lambda_delta)
+function root = homotopy_simple(F, n, x0, lambda_delta, abs_error_tol)
 %% homotopy_simple
 % Attempt to find a root of a nonlinear system of equations using the
 % embedding algorithm, which is a simple homotopy method.
@@ -9,6 +9,8 @@ function root = homotopy_simple(F, n, x0, lambda_delta)
 %       x0: an approximation of the solution (i.e. the zero point).
 %       lambda_delta: the delta applied to the free variable in the
 %           homotopy method.
+%       abs_error_tol: the minimum absolute error imposed on the solution
+%           of the Newton solver.
 %
 %   Output:
 %       root: an approximation of the root for the nonlinear system.
@@ -24,32 +26,19 @@ x = x0;
 % initialise homotopy mapping
 H = @(x, lambda) F(x) + (lambda - 1) * F(x0);
 
-%% Simple Homotopy Method
+% initialise Newton solver parameters
+max_iterations = 20;
+
+%% Embedding Homotopy Method
 
 for i = min_lambda:lambda_delta:max_lambda
     
-    identity = eye(n);
-    jacobian = zeros(n);
-    h = determine_jacobian_approx_delta(x);
-    for j = 1:n
-        delta_basis = identity(:, j);
-        jacobian(:, j) = (H(x(:) + h .* delta_basis(:), i) - H(x, i)) ./ h;
-    end
+    F_temp = @(x) H(x, i);
     
-    delta_x = - jacobian \ H(x, i);
-    x = x + delta_x;
+    [x, iterations] = newton_system_fde(F_temp, n, x, ... 
+        max_iterations, abs_error_tol);
 end
 
 root = x;
 
-end
-
-%% Helper Functions
-
-function [delta] = determine_jacobian_approx_delta(x)
-if (norm(x) == 0)
-    delta = sqrt(eps);
-else
-    delta = sqrt(eps) * norm(x);
-end
 end
