@@ -77,7 +77,7 @@ function [tout, yout] = Solver(tFinal, Dxx, Dyy, Vx, Vy, source, theta, ...
 %
 %   nodesY:
 %       An array containig the unique y-coordinates of nodes in the 2D 
-%       mesh (in ascending order).
+%       mesh (in descending order).
 %
 %   northBC:
 %       A struct specifying the coefficients for the boundary condition
@@ -140,12 +140,16 @@ function [tout, yout] = Solver(tFinal, Dxx, Dyy, Vx, Vy, source, theta, ...
 
 %% Initialise mesh parameters
 
+nodesY = nodesY(:);
+nodesX = nodesX(:);
+
 rows = length(nodesY);
 columns = length(nodesX);
 
 % Absolute distances between adjacent nodes
+
 xNodeDeltas = diff(nodesX);
-yNodeDeltas = diff(nodesY);
+yNodeDeltas = abs(diff(nodesY));
 
 % Absolute distances between nodes and CV faces
 xFaceDeltas = xNodeDeltas ./ 2;
@@ -166,11 +170,11 @@ nodeHeights(end) = yFaceDeltas(end);
 
 % TODO: remove stub code once adaptive time-stepping is implemented.
 tStart = 0;
-dt = 0.00001;
+dt = 0.0001;
 
 tout = tStart:dt:tFinal;
 timeSteps = length(tout);
-yout = zeros(rows, columns, timeSteps);
+yout = zeros(rows, columns, floor(timeSteps / storedTimeSteps) + 1);
 yout(:, :, 1) = initialCondition;
 previousSolution = initialCondition;
 
@@ -200,17 +204,17 @@ for i = 1:timeSteps
         
         for j = 1:rows
             for k = 1:columns
-%                 F_forwardEuler(j, k) = dt * (1 - theta) * GenerateFlux(j, k, ...
-%                     rows, columns, previousSolution, Vx, Vy, Dxx, Dyy, ...
-%                     xFaceDeltas, yFaceDeltas, nodeWidths, nodeHeights);
-%                 F_forwardEuler(j, k) = F_forwardEuler(j, k) ...
-%                     - dt * (1 - theta) * source(previousSolution(j, k));
-%                 F_forwardEuler(j, k) = F_forwardEuler(j, k) - previousSolution(j, k);
-            end 
+                F_forwardEuler(j, k) = dt * (1 - theta) * GenerateFlux(j, k, ...
+                    rows, columns, previousSolution, Vx, Vy, Dxx, Dyy, ...
+                    xFaceDeltas, yFaceDeltas, nodeWidths, nodeHeights);
+                F_forwardEuler(j, k) = F_forwardEuler(j, k) ...
+                    - dt * (1 - theta) * source(previousSolution(j, k));
+                F_forwardEuler(j, k) = F_forwardEuler(j, k) - previousSolution(j, k);
+            end
         end
     end
     
-%     yout(:, :, i) = -1 * F_forwardEuler(:, :);
+    previousSolution = -1 * F_forwardEuler(:, :);
     
     % Iteratively solve F(u) = 0 for phi using an inexact Newton-GMRES solver
     %   N.B. This solver must use the formulates for the forcing term
