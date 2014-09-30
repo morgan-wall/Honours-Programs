@@ -69,39 +69,55 @@ zlabel('Solution');
 
 %% Dirichlet Boundary Conditions
 
-% % Initialise temporal parameters
-% tFinal = 0.1;
-% storedTimeSteps = 100;
-% 
-% % Initialise equation parameters
-% Dxx = @(phi) 0.1;
-% Dyy = @(phi) 0.1;
-% Vx = @(phi) 0;
-% Vy = @(phi) 0;
-% source = @(phi) 0;
-% 
-% % Initialise mesh parameters
-% nodesX = 0:0.05:1;
-% nodesY = 1:-0.05:0;
-% 
-% % Initialise boundary conditions
-% northBC = struct('A', 0, 'B', 1, 'C', 0);
-% eastBC = struct('A', 0, 'B', 1, 'C', 0);
-% southBC = struct('A', 0, 'B', 1, 'C', 0);
-% westBC = struct('A', 1, 'B', 0, 'C', 1);
-% 
-% % Construct initial condition
-% initialCondition = zeros(length(nodesY), length(nodesX));
-% initialCondition(round(length(nodesY) / 2), round(length(nodesY) / 2)) = 5;
-% 
-% % Solve problem
-% [tout, yout] = Solver(tFinal, Dxx, Dyy, Vx, Vy, source, theta, ...
-%     advectionHandling, nodesX, nodesY, northBC, eastBC, southBC, westBC, ...
-%     initialCondition, storedTimeSteps);
-% 
-% % Output plots and metrics
-% figure;
-% surf(nodesX, nodesY, yout(:, :, end));
+% Initialise temporal parameters
+tFinal = 0.1;
+storedTimeSteps = 100;
+
+% Initialise equation parameters
+Dxx = @(phi) 0.1;
+Dyy = @(phi) 0.1;
+Vx = @(phi) 0;
+Vy = @(phi) 0;
+source = @(phi) 0;
+
+% Initialise mesh parameters
+nodesX = 0:0.05:1;
+nodesY = 1:-0.05:0;
+
+% Initialise boundary conditions
+northBC = struct('A', 1, 'B', 0, 'C', 1);
+eastBC = struct('A', 0, 'B', 1, 'C', 0);
+southBC = struct('A', 0, 'B', 1, 'C', 0);
+westBC = struct('A', 0, 'B', 1, 'C', 0);
+
+% Construct initial condition
+initialCondition = zeros(length(nodesY), length(nodesX));
+initialCondition(1, :) = northBC.C / northBC.A;
+
+% Solve problem
+[tout, yout] = Solver(tFinal, Dxx, Dyy, Vx, Vy, source, theta, ...
+    advectionHandling, nodesX, nodesY, northBC, eastBC, southBC, westBC, ...
+    initialCondition, storedTimeSteps);
+
+% Output plots and metrics
+figure;
+
+surf(nodesX, nodesY, yout(:, :, end));
+plotTitle = ['Test Problem (D1.1): Dirichlet Boundary Conditions (t = ' ...
+    num2str(tout(end)) ')'];
+title(plotTitle);
+xlabel('x');
+ylabel('y');
+zlabel('Solution');
+
+figure;
+
+surf(nodesX, nodesY, yout(:, :, 1));
+plotTitle = 'Test Problem (D1.2): Dirichlet Boundary Conditions (t = 0)';
+title(plotTitle);
+xlabel('x');
+ylabel('y');
+zlabel('Solution');
 
 %% Test: Neumann Boundary Conditions (N1) - Input at West face. 
 

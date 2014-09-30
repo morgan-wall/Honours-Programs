@@ -217,6 +217,28 @@ for i = 1:timeSteps
     
     previousSolution = -1 * F_forwardEuler(:, :);
     
+    % Hack: The following code is used for manually setting the Dirichlet
+    % boundary conditions when B_i = 0 in the generalised boundary
+    % condition. This should be removed and replaced by the restriction
+    % that B_i cannot be zero. Instead A and C should be made relatively
+    % large in comparison to B (e.g. instead of A = 1, C = 2, and B = 0,
+    % you can have A = 10000, C = 20000, and B = 1).
+    if (northBC.B == 0 && northBC.A ~= 0)
+        previousSolution(1, :) = northBC.C / northBC.A;
+    end
+    
+    if (eastBC.B == 0 && eastBC.A ~= 0)
+        previousSolution(:, end) = eastBC.C / eastBC.A;
+    end
+    
+    if (southBC.B == 0 && southBC.A ~= 0)
+        previousSolution(end, :) = southBC.C / southBC.A;
+    end
+    
+    if (westBC.B == 0 && westBC.A ~= 0)
+        previousSolution(:, 1) = westBC.C / westBC.A;
+    end
+    
     % Iteratively solve F(u) = 0 for phi using an inexact Newton-GMRES solver
     %   N.B. This solver must use the formulates for the forcing term
     %   prescribed by Walker (see function description). 
