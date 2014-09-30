@@ -17,8 +17,10 @@ advectionHandling = 'averaging';
 %% Test: Gaussian Diffusion (G1) - Single Point Initial Condition
 
 % Initialise temporal parameters
+% tFinal = 0.1;
 tFinal = 0.1;
 storedTimeSteps = 100;
+% storedTimeSteps = 1;
 
 % Initialise equation parameters
 Dxx = @(phi) 0.1;
@@ -57,6 +59,8 @@ xlabel('x');
 ylabel('y');
 zlabel('Solution');
 
+disp(['Total at end time: ' num2str(sum(sum(yout(:, :, end)))) '.']);
+
 figure;
 
 surf(nodesX, nodesY, yout(:, :, 1));
@@ -66,59 +70,7 @@ xlabel('x');
 ylabel('y');
 zlabel('Solution');
 
-%% Dirichlet Boundary Conditions
-
-% Initialise temporal parameters
-tFinal = 0.1;
-storedTimeSteps = 100;
-
-% Initialise equation parameters
-Dxx = @(phi) 0.1;
-Dyy = @(phi) 0.1;
-Vx = @(phi) 0;
-Vy = @(phi) 0;
-source = @(phi) 0;
-
-% Initialise mesh parameters
-nodesX = 0:0.05:1;
-nodesY = 1:-0.05:0;
-
-% Initialise boundary conditions
-northBC = struct('A', 1000, 'B', 1, 'C', 1000);
-eastBC = struct('A', 0, 'B', 1, 'C', 0);
-southBC = struct('A', 0, 'B', 1, 'C', 0);
-westBC = struct('A', 0, 'B', 1, 'C', 0);
-
-% Construct initial condition
-initialCondition = zeros(length(nodesY), length(nodesX));
-initialCondition(1, :) = northBC.C / northBC.A;
-
-% Solve problem
-[tout, yout] = Solver(tFinal, Dxx, Dyy, Vx, Vy, source, theta, ...
-    advectionHandling, nodesX, nodesY, northBC, eastBC, southBC, westBC, ...
-    initialCondition, storedTimeSteps);
-
-% Output plots and metrics
-figure;
-
-surf(nodesX, nodesY, yout(:, :, end));
-plotTitle = ['Test Problem (D1.1): Dirichlet Boundary Conditions (t = ' ...
-    num2str(tout(end)) ')'];
-title(plotTitle);
-xlabel('x');
-ylabel('y');
-zlabel('Solution');
-
-figure;
-
-surf(nodesX, nodesY, yout(:, :, 1));
-plotTitle = 'Test Problem (D1.2): Dirichlet Boundary Conditions (t = 0)';
-title(plotTitle);
-xlabel('x');
-ylabel('y');
-zlabel('Solution');
-
-%% Test: Neumann Boundary Conditions (N1) - Input at West face. 
+%% Test: Dirichlet & Neumann Boundary Conditions (N1) - Input at West face. 
 
 % Initialise temporal parameters
 tFinal = 0.1;
@@ -154,8 +106,8 @@ initialCondition(:, 1) = 1;
 figure;
 
 surf(nodesX, nodesY, yout(:, :, end));
-plotTitle = ['Test Problem (N1.1): Neumann Boundary Conditions (t = ' ...
-    num2str(tout(end)) ')'];
+plotTitle = ['Test Problem (N1.1): Dirichlet & Neumann Boundary ' ...
+    'Conditions (t = ' num2str(tout(end)) ')'];
 title(plotTitle);
 xlabel('x');
 ylabel('y');
@@ -164,13 +116,14 @@ zlabel('Solution');
 figure;
 
 surf(nodesX, nodesY, yout(:, :, 1));
-plotTitle = 'Test Problem (N1.2): Neumann Boundary Conditions (t = 0 )';
+plotTitle = ['Test Problem (N1.2): Dirichlet & Neumann Boundary ' ...
+    'Conditions (t = 0 )'];
 title(plotTitle);
 xlabel('x');
 ylabel('y');
 zlabel('Solution');
 
-%% Test: Neumann Boundary Conditions (N2) - Input at North face. 
+%% Test: Dirichlet & Neumann Boundary Conditions (N2) - Input at North face. 
 
 % Initialise temporal parameters
 tFinal = 0.1;
@@ -206,8 +159,8 @@ initialCondition(1, :) = 1;
 figure;
 
 surf(nodesX, nodesY, yout(:, :, end));
-plotTitle = ['Test Problem (N2.1): Neumann Boundary Conditions (t = ' ...
-    num2str(tout(end)) ')'];
+plotTitle = ['Test Problem (N2.1): Dirichlet & Neumann Boundary ' ...
+    'Conditions (t = ' num2str(tout(end)) ')'];
 title(plotTitle);
 xlabel('x');
 ylabel('y');
@@ -216,13 +169,14 @@ zlabel('Solution');
 figure;
 
 surf(nodesX, nodesY, yout(:, :, 1));
-plotTitle = 'Test Problem (N2.2): Neumann Boundary Conditions (t = 0 )';
+plotTitle = ['Test Problem (N2.2): Dirichlet & Neumann Boundary ' ...
+    'Conditions (t = 0 )'];
 title(plotTitle);
 xlabel('x');
 ylabel('y');
 zlabel('Solution');
 
-%% Test: Neumann Boundary Conditions (N3) - Input at East face. 
+%% Test: Dirichlet & Neumann Boundary Conditions (N3) - Input at East face. 
 
 % Initialise temporal parameters
 tFinal = 0.1;
@@ -258,8 +212,8 @@ initialCondition(:, end) = 1;
 figure;
 
 surf(nodesX, nodesY, yout(:, :, end));
-plotTitle = ['Test Problem (N3.1): Neumann Boundary Conditions (t = ' ...
-    num2str(tout(end)) ')'];
+plotTitle = ['Test Problem (N3.1): Dirichlet & Neumann Boundary ' ...
+    'Conditions (t = ' num2str(tout(end)) ')'];
 title(plotTitle);
 xlabel('x');
 ylabel('y');
@@ -268,13 +222,14 @@ zlabel('Solution');
 figure;
 
 surf(nodesX, nodesY, yout(:, :, 1));
-plotTitle = 'Test Problem (N3.2): Neumann Boundary Conditions (t = 0 )';
+plotTitle = ['Test Problem (N3.2): Dirichlet & Neumann Boundary ' ...
+    'Conditions (t = 0 )'];
 title(plotTitle);
 xlabel('x');
 ylabel('y');
 zlabel('Solution');
 
-%% Test: Neumann Boundary Conditions (N4) - Input at South face. 
+%% Test: Dirichlet & Neumann Boundary Conditions (N4) - Input at South face. 
 
 % Initialise temporal parameters
 tFinal = 0.1;
@@ -310,8 +265,8 @@ initialCondition(end, :) = 1;
 figure;
 
 surf(nodesX, nodesY, yout(:, :, end));
-plotTitle = ['Test Problem (N4.1): Neumann Boundary Conditions (t = ' ...
-    num2str(tout(end)) ')'];
+plotTitle = ['Test Problem (N4.1): Dirichlet & Neumann Boundary '...
+    'Conditions (t = ' num2str(tout(end)) ')'];
 title(plotTitle);
 xlabel('x');
 ylabel('y');
@@ -320,7 +275,8 @@ zlabel('Solution');
 figure;
 
 surf(nodesX, nodesY, yout(:, :, 1));
-plotTitle = 'Test Problem (N4.2): Neumann Boundary Conditions (t = 0 )';
+plotTitle = ['Test Problem (N4.2): Dirichlet & Neumann Boundary ' ...
+    'Conditions (t = 0 )'];
 title(plotTitle);
 xlabel('x');
 ylabel('y');

@@ -210,7 +210,7 @@ for i = 1:timeSteps
             for k = 1:columns
                 F_forwardEuler(j, k) = dt * (1 - theta) * GenerateFlux(j, k, ...
                     rows, columns, previousSolution, Vx, Vy, Dxx, Dyy, ...
-                    xFaceDeltas, yFaceDeltas, nodeWidths, nodeHeights, ...
+                    xNodeDeltas, yNodeDeltas, nodeWidths, nodeHeights, ...
                     northBC, eastBC, southBC, westBC);
                 F_forwardEuler(j, k) = F_forwardEuler(j, k) ...
                     - dt * (1 - theta) * source(previousSolution(j, k));
@@ -262,7 +262,7 @@ end
 %
 
 function flux = GenerateFlux(row, column, rows, columns, ...
-    previousSolution, Vx, Vy, Dxx, Dyy, xFaceDeltas, yFaceDeltas, ...
+    previousSolution, Vx, Vy, Dxx, Dyy, xNodeDeltas, yNodeDeltas, ...
     nodeWidths, nodeHeights, northBC, eastBC, southBC, westBC)
 %% GenerateFlux: ...
 %
@@ -295,9 +295,11 @@ if (row == MIN_INDEX)
     end
 else
     northPrevSolution = previousSolution(row - 1, column);
+%     flux = flux - cv_width ...
+%         * cv_Dyy * (northPrevSolution - cv_prevSolution) / yNodeDeltas(row - 1);
     flux = flux + cv_width ...
         * ( cv_Vy * (northPrevSolution + cv_prevSolution) / 2 ...
-        - cv_Dyy * (northPrevSolution - cv_prevSolution) / yFaceDeltas(row - 1) );
+        - cv_Dyy * (northPrevSolution - cv_prevSolution) / yNodeDeltas(row - 1) );
 end
 
 % East face
@@ -312,9 +314,11 @@ if (column == columns)
     end
 else
     eastPrevSolution = previousSolution(row, column + 1);
+%     flux = flux - cv_height ...
+%         * cv_Dxx * (eastPrevSolution - cv_prevSolution) / xNodeDeltas(column);
     flux = flux + cv_height ...
         * ( cv_Vx * (eastPrevSolution + cv_prevSolution) / 2 ...
-        - cv_Dxx * (eastPrevSolution - cv_prevSolution) / xFaceDeltas(column) );
+        - cv_Dxx * (eastPrevSolution - cv_prevSolution) / xNodeDeltas(column) );
 end
 
 % South face
@@ -329,9 +333,11 @@ if (row == rows)
     end
 else
     southPrevSolution = previousSolution(row + 1, column);
+%     flux = flux + cv_width ...
+%         * cv_Dyy * (cv_prevSolution - southPrevSolution) / yNodeDeltas(row);
     flux = flux - cv_width ...
         * ( cv_Vy * (southPrevSolution + cv_prevSolution) / 2 ...
-        - cv_Dyy * (cv_prevSolution - southPrevSolution) / yFaceDeltas(row) );
+        - cv_Dyy * (cv_prevSolution - southPrevSolution) / yNodeDeltas(row) );
 end
 
 % West face
@@ -346,9 +352,11 @@ if (column == MIN_INDEX)
     end
 else
     westPrevSolution = previousSolution(row, column - 1);
+%     flux = flux + cv_height ...
+%         * cv_Dxx * (cv_prevSolution - westPrevSolution) / xNodeDeltas(column - 1);
     flux = flux - cv_height ...
         * ( cv_Vx * (westPrevSolution + cv_prevSolution) / 2 ...
-        - cv_Dxx * (cv_prevSolution - westPrevSolution) / xFaceDeltas(column - 1) );
+        - cv_Dxx * (cv_prevSolution - westPrevSolution) / xNodeDeltas(column - 1) );
 end
 
 flux = flux / (cv_width * cv_height);
