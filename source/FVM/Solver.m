@@ -176,9 +176,16 @@ nodeHeights(end) = yFaceDeltas(end);
 tStart = 0;
 dt = 0.0001;
 
-tout = tStart:dt:tFinal;
-timeSteps = length(tout);
-yout = zeros(rows, columns, floor(timeSteps / storedTimeSteps) + 1);
+timeSteps = length(tStart:dt:tFinal) - 1;
+numStoredSolutions = floor(timeSteps / storedTimeSteps) + 1;
+manuallyStoreFinalTimeSol = rem(timeSteps, storedTimeSteps) ~= 0;
+if (manuallyStoreFinalTimeSol)
+    numStoredSolutions = numStoredSolutions + 1;
+end
+
+yout = zeros(rows, columns, numStoredSolutions);
+tout = zeros(numStoredSolutions, 1);
+
 yout(:, :, 1) = initialCondition;
 previousSolution = initialCondition;
 
@@ -252,6 +259,10 @@ for i = 1:timeSteps
     if (mod(i, storedTimeSteps) == 0)
         lastStoredSolutionIndex = i / storedTimeSteps + 1;
         yout(:, :, lastStoredSolutionIndex) = previousSolution;
+        tout(lastStoredSolutionIndex) = i * dt;
+    elseif (i == timeSteps && manuallyStoreFinalTimeSol)
+        yout(:, :, end) = previousSolution;
+        tout(end) = i * dt;
     end
 end
 

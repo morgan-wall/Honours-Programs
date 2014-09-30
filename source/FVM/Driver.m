@@ -17,9 +17,9 @@ advectionHandling = 'averaging';
 %% Test: Gaussian Diffusion (G1) - Single Point Initial Condition
 
 % Initialise temporal parameters
-% tFinal = 0.1;
 tFinal = 0.1;
 storedTimeSteps = 100;
+% tFinal = 0.0005;
 % storedTimeSteps = 1;
 
 % Initialise equation parameters
