@@ -206,7 +206,8 @@ for i = 1:timeSteps
             for k = 1:columns
                 F_forwardEuler(j, k) = dt * (1 - theta) * GenerateFlux(j, k, ...
                     rows, columns, previousSolution, Vx, Vy, Dxx, Dyy, ...
-                    xFaceDeltas, yFaceDeltas, nodeWidths, nodeHeights);
+                    xFaceDeltas, yFaceDeltas, nodeWidths, nodeHeights, ...
+                    northBC, eastBC, southBC, westBC);
                 F_forwardEuler(j, k) = F_forwardEuler(j, k) ...
                     - dt * (1 - theta) * source(previousSolution(j, k));
                 F_forwardEuler(j, k) = F_forwardEuler(j, k) - previousSolution(j, k);
@@ -258,7 +259,7 @@ end
 
 function flux = GenerateFlux(row, column, rows, columns, ...
     previousSolution, Vx, Vy, Dxx, Dyy, xFaceDeltas, yFaceDeltas, ...
-    nodeWidths, nodeHeights)
+    nodeWidths, nodeHeights, northBC, eastBC, southBC, westBC)
 %% GenerateFlux: ...
 %
 
@@ -280,7 +281,11 @@ flux = 0;
 
 % North face
 if (row == MIN_INDEX)
-    flux = flux + 0;
+    if (northBC.B ~= 0)
+        flux = flux + cv_width ...
+            * ( (cv_Vy + cv_Dyy * northBC.A / northBC.B) * cv_prevSolution ...
+            - cv_Dyy * northBC.C / northBC.B );
+    end
 else
     northPrevSolution = previousSolution(row - 1, column);
     flux = flux + cv_width ...
@@ -290,7 +295,11 @@ end
 
 % East face
 if (column == columns)
-    flux = flux + 0;
+    if (eastBC.B ~= 0)
+        flux = flux + cv_height ...
+            * ( (cv_Vx + cv_Dxx * eastBC.A / eastBC.B) * cv_prevSolution ...
+            - cv_Dxx * eastBC.C / eastBC.B );
+    end
 else
     eastPrevSolution = previousSolution(row, column + 1);
     flux = flux + cv_height ...
@@ -300,7 +309,11 @@ end
 
 % South face
 if (row == rows)
-    flux = flux + 0;
+    if (southBC.B ~= 0)
+        flux = flux - cv_width ...
+            * ( (cv_Vy - cv_Dyy * southBC.A / southBC.B) * cv_prevSolution ...
+            + cv_Dyy * southBC.C / southBC.B );
+    end
 else
     southPrevSolution = previousSolution(row + 1, column);
     flux = flux - cv_width ...
@@ -310,7 +323,11 @@ end
 
 % West face
 if (column == MIN_INDEX)
-    flux = flux + 0;
+    if (westBC.B ~= 0)
+        flux = flux - cv_height ...
+            * ( (cv_Vx - cv_Dxx * westBC.A / westBC.B) * cv_prevSolution ...
+            + cv_Dxx * westBC.C / westBC.B );
+    end
 else
     westPrevSolution = previousSolution(row, column - 1);
     flux = flux - cv_height ...
