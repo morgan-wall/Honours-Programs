@@ -66,7 +66,6 @@ xlabel('x');
 ylabel('y');
 zlabel('Solution');
 
-
 %% Dirichlet Boundary Conditions
 
 % Initialise temporal parameters
@@ -85,7 +84,7 @@ nodesX = 0:0.05:1;
 nodesY = 1:-0.05:0;
 
 % Initialise boundary conditions
-northBC = struct('A', 1, 'B', 0, 'C', 1);
+northBC = struct('A', 1000, 'B', 1, 'C', 1000);
 eastBC = struct('A', 0, 'B', 1, 'C', 0);
 southBC = struct('A', 0, 'B', 1, 'C', 0);
 westBC = struct('A', 0, 'B', 1, 'C', 0);
@@ -140,7 +139,7 @@ nodesY = 1:-0.05:0;
 northBC = struct('A', 0, 'B', 1, 'C', 0);
 eastBC = struct('A', 0, 'B', 1, 'C', 0);
 southBC = struct('A', 0, 'B', 1, 'C', 0);
-westBC = struct('A', 1, 'B', 0, 'C', 1);
+westBC = struct('A', 1000, 'B', 1, 'C', 1000);
 
 % Construct initial condition
 initialCondition = zeros(length(nodesY), length(nodesX));
@@ -189,7 +188,7 @@ nodesX = 0:0.05:1;
 nodesY = 1:-0.05:0;
 
 % Initialise boundary conditions
-northBC = struct('A', 1, 'B', 0, 'C', 1);
+northBC = struct('A', 1000, 'B', 1, 'C', 1000);
 eastBC = struct('A', 0, 'B', 1, 'C', 0);
 southBC = struct('A', 0, 'B', 1, 'C', 0);
 westBC = struct('A', 0, 'B', 1, 'C', 0);
@@ -242,7 +241,7 @@ nodesY = 1:-0.05:0;
 
 % Initialise boundary conditions
 northBC = struct('A', 0, 'B', 1, 'C', 0);
-eastBC = struct('A', 1, 'B', 0, 'C', 1);
+eastBC = struct('A', 1000, 'B', 1, 'C', 1000);
 southBC = struct('A', 0, 'B', 1, 'C', 0);
 westBC = struct('A', 0, 'B', 1, 'C', 0);
 
@@ -295,7 +294,7 @@ nodesY = 1:-0.05:0;
 % Initialise boundary conditions
 northBC = struct('A', 0, 'B', 1, 'C', 0);
 eastBC = struct('A', 0, 'B', 1, 'C', 0);
-southBC = struct('A', 1, 'B', 0, 'C', 1);
+southBC = struct('A', 1000, 'B', 1, 'C', 1000);
 westBC = struct('A', 0, 'B', 1, 'C', 0);
 
 % Construct initial condition

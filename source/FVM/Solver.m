@@ -83,25 +83,29 @@ function [tout, yout] = Solver(tFinal, Dxx, Dyy, Vx, Vy, source, theta, ...
 %       A struct specifying the coefficients for the boundary condition
 %       defined on the north (i.e. upper) face of the region. The fields
 %       are A, B, and C, which correspond to the coefficients in the
-%       generalised boundary condition (see implementation notes).
+%       generalised boundary condition (see implementation notes). The
+%       value corresponding to B must be positive.
 %
 %   eastBC:
 %       A struct specifying the coefficients for the boundary condition
 %       defined on the east (i.e. right) face of the region. The fields
 %       are A, B, and C, which correspond to the coefficients in the
-%       generalised boundary condition (see implementation notes).
+%       generalised boundary condition (see implementation notes). The
+%       value corresponding to B must be positive.
 %
 %   southBC:
 %       A struct specifying the coefficients for the boundary condition
 %       defined on the south (i.e. lower) face of the region. The fields
 %       are A, B, and C, which correspond to the coefficients in the
-%       generalised boundary condition (see implementation notes).
+%       generalised boundary condition (see implementation notes). The
+%       value corresponding to B must be positive.
 %
 %   westBC:
 %       A struct specifying the coefficients for the boundary condition
 %       defined on the west (i.e. left) face of the region. The fields
 %       are A, B, and C, which correspond to the coefficients in the
-%       generalised boundary condition (see implementation notes).
+%       generalised boundary condition (see implementation notes). The
+%       value corresponding to B must be positive.
 %
 %   initialCondition:
 %       A matrix containing the initial solution value at each node in 
@@ -217,28 +221,6 @@ for i = 1:timeSteps
     
     previousSolution = -1 * F_forwardEuler(:, :);
     
-    % Hack: The following code is used for manually setting the Dirichlet
-    % boundary conditions when B_i = 0 in the generalised boundary
-    % condition. This should be removed and replaced by the restriction
-    % that B_i cannot be zero. Instead A and C should be made relatively
-    % large in comparison to B (e.g. instead of A = 1, C = 2, and B = 0,
-    % you can have A = 10000, C = 20000, and B = 1).
-    if (northBC.B == 0 && northBC.A ~= 0)
-        previousSolution(1, :) = northBC.C / northBC.A;
-    end
-    
-    if (eastBC.B == 0 && eastBC.A ~= 0)
-        previousSolution(:, end) = eastBC.C / eastBC.A;
-    end
-    
-    if (southBC.B == 0 && southBC.A ~= 0)
-        previousSolution(end, :) = southBC.C / southBC.A;
-    end
-    
-    if (westBC.B == 0 && westBC.A ~= 0)
-        previousSolution(:, 1) = westBC.C / westBC.A;
-    end
-    
     % Iteratively solve F(u) = 0 for phi using an inexact Newton-GMRES solver
     %   N.B. This solver must use the formulates for the forcing term
     %   prescribed by Walker (see function description). 
@@ -307,6 +289,9 @@ if (row == MIN_INDEX)
         flux = flux + cv_width ...
             * ( (cv_Vy + cv_Dyy * northBC.A / northBC.B) * cv_prevSolution ...
             - cv_Dyy * northBC.C / northBC.B );
+    else
+        error(['Invalid Boundary Condition (North): The B coefficient ' ...
+            'for a boundary condition cannot be negative.']);
     end
 else
     northPrevSolution = previousSolution(row - 1, column);
@@ -321,6 +306,9 @@ if (column == columns)
         flux = flux + cv_height ...
             * ( (cv_Vx + cv_Dxx * eastBC.A / eastBC.B) * cv_prevSolution ...
             - cv_Dxx * eastBC.C / eastBC.B );
+    else
+        error(['Invalid Boundary Condition (East): The B coefficient ' ...
+            'for a boundary condition cannot be negative.']);
     end
 else
     eastPrevSolution = previousSolution(row, column + 1);
@@ -335,6 +323,9 @@ if (row == rows)
         flux = flux - cv_width ...
             * ( (cv_Vy - cv_Dyy * southBC.A / southBC.B) * cv_prevSolution ...
             + cv_Dyy * southBC.C / southBC.B );
+    else
+        error(['Invalid Boundary Condition (South): The B coefficient ' ...
+            'for a boundary condition cannot be negative.']);
     end
 else
     southPrevSolution = previousSolution(row + 1, column);
@@ -349,6 +340,9 @@ if (column == MIN_INDEX)
         flux = flux - cv_height ...
             * ( (cv_Vx - cv_Dxx * westBC.A / westBC.B) * cv_prevSolution ...
             + cv_Dxx * westBC.C / westBC.B );
+    else
+        error(['Invalid Boundary Condition (West): The B coefficient ' ...
+            'for a boundary condition cannot be negative.']);
     end
 else
     westPrevSolution = previousSolution(row, column - 1);
