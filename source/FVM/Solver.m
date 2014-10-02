@@ -149,6 +149,7 @@ nodesX = nodesX(:);
 
 rows = length(nodesY);
 columns = length(nodesX);
+nodeCount = rows * columns;
 
 % Absolute distances between adjacent nodes
 
@@ -183,11 +184,11 @@ if (manuallyStoreFinalTimeSol)
     numStoredSolutions = numStoredSolutions + 1;
 end
 
-yout = zeros(rows, columns, numStoredSolutions);
+yout = zeros(nodeCount, numStoredSolutions);
 tout = zeros(numStoredSolutions, 1);
 
-yout(:, :, 1) = initialCondition;
-previousSolution = initialCondition;
+yout(:, 1) = initialCondition(:);
+previousSolution = initialCondition(:);
 
 %% Iteratively solve advection-diffusion equation (time marching strategy)
 
@@ -210,23 +211,21 @@ for i = 1:timeSteps
     %
     
     % Formulate the Forward Euler component of F(u) = 0
-    F_forwardEuler = zeros(rows, columns);
+    F_forwardEuler = zeros(nodeCount, 1);
     if (theta == 0 || theta == 1/2)
         
-        for j = 1:rows
-            for k = 1:columns
-                F_forwardEuler(j, k) = dt * (1 - theta) * GenerateFlux(j, k, ...
+        for j = 1:nodeCount
+            F_forwardEuler(j) = dt * (1 - theta) * GenerateFlux(j, ...
                     rows, columns, previousSolution, Vx, Vy, Dxx, Dyy, ...
                     xNodeDeltas, yNodeDeltas, nodeWidths, nodeHeights, ...
                     northBC, eastBC, southBC, westBC);
-                F_forwardEuler(j, k) = F_forwardEuler(j, k) ...
-                    - dt * (1 - theta) * source(previousSolution(j, k));
-                F_forwardEuler(j, k) = F_forwardEuler(j, k) - previousSolution(j, k);
-            end
+            F_forwardEuler(j) = F_forwardEuler(j) ...
+                - dt * (1 - theta) * source(previousSolution(j));
+            F_forwardEuler(j) = F_forwardEuler(j) - previousSolution(j);
         end
     end
     
-    previousSolution = -1 * F_forwardEuler(:, :);
+    previousSolution = -1 * F_forwardEuler;
     
     % Iteratively solve F(u) = 0 for phi using an inexact Newton-GMRES solver
     %   N.B. This solver must use the formulates for the forcing term
@@ -243,7 +242,7 @@ for i = 1:timeSteps
     %   Do we need to "construct" F(u) for each iteration of Newton's
     %   method? Ans: between iterations phi_n does not change, however
     %   phi_{n+1} does. This means that any component involving phi_{n+1}
-    %   need to be updated. This is equivalent to evaluating F(u) for a
+    %   needs to be updated. This is equivalent to evaluating F(u) for a
     %   given value of u. More specifically, we need to construct all the
     %   components solely relying upon phi_{n+1} in this step. This
     %   includes phi_{n+1} itself and the backward Euler component of the
@@ -255,15 +254,119 @@ for i = 1:timeSteps
     %   entirely.
     %   
     
+%     % Initialise Newton stub variables (TODO: make them function parameters).
+%     max_iterations = 15;
+%     rel_error_tol = 1e-10;
+%     n = rows * columns;
+%     
+%     % Initialise variables for Newton-GMRES solver
+%     identity = eye(n);
+%     current_iteration = 0;
+% 
+%     % Initialise GMRES stub variables (TODO: make them function parameters).
+%     gmres_max_iter = 200;
+%     restart_value = 100;
+%     gmres_error_tol = 1e-10;
+%     precond_type = 'ilu';
+%     omega = 0;
+%     
+%     % Evaluate the nonlinear system for previous solution
+%     % N.B. The previous solution is the initial iterate for the
+%     % Newton-GMRES solver.
+%     currentSolution = previousSolution;
+%     F_backwardEuler = zeros(rows, columns);
+%     
+%     for j = 1:rows
+%         for k = 1:columns
+%             F_backwardEuler(j, k) = dt * theta * GenerateFlux(j, k, ...
+%                 rows, columns, currentSolution, Vx, Vy, Dxx, Dyy, ...
+%                 xNodeDeltas, yNodeDeltas, nodeWidths, nodeHeights, ...
+%                 northBC, eastBC, southBC, westBC);
+%             F_backwardEuler(j, k) = F_backwardEuler(j, k) ...
+%                 - dt * theta * source(currentSolution(j, k));
+%             F_backwardEuler(j, k) = F_backwardEuler(j, k) + currentSolution(j, k);
+%         end
+%     end
+%     
+%     Fx = F_backwardEuler + F_forwardEuler;
+%     
+%     % Solve the non-linear system, F(x) = 0, for the next time step
+%     while (current_iteration <= max_iterations && norm(Fx) > rel_error_tol)
+%         
+%         % determine finite difference approx of Jacobian
+%         jacobian = zeros(n);
+%         h = determine_newton_step_delta(currentSolution(:));
+%         for j = 1:n
+%             delta_basis = identity(:, j);
+%             xStepped = currentSolution(:) + h .* delta_basis(:);
+%             
+%             xStepped = reshape(xStepped, rows, columns);
+%             
+%             % Evaluate the nonlinear system for the xStepped
+%             F_backwardEuler_stepped = zeros(rows, columns);
+%             
+%             for row = 1:rows
+%                 for col = 1:columns
+%                     F_backwardEuler_stepped(row, col) = dt * theta * GenerateFlux(row, col, ...
+%                         rows, columns, xStepped, Vx, Vy, Dxx, Dyy, ...
+%                         xNodeDeltas, yNodeDeltas, nodeWidths, nodeHeights, ...
+%                         northBC, eastBC, southBC, westBC);
+%                     F_backwardEuler_stepped(row, col) = F_backwardEuler(row, col) ...
+%                         - dt * theta * source(xStepped(row, col));
+%                     F_backwardEuler_stepped(row, col) = F_backwardEuler(row, col) + xStepped(row, col);
+%                 end
+%             end
+%             
+%             F_stepped = F_backwardEuler_stepped + F_forwardEuler;
+%             
+%             jacobian(:, j) = (F_stepped(:) - Fx(:)) ./ h;
+%         end
+%         
+%         % solve the linear system using GMRES
+%         delta_x = gmres_general(jacobian, Fx(:), currentSolution(:), gmres_max_iter, ...
+%             restart_value, gmres_error_tol, precond_type, omega);
+% 
+%         currentSolution = currentSolution(:) - delta_x(:);
+%         
+%         currentSolution = reshape(currentSolution, rows, columns);
+%         
+%         % Evaluate the nonlinear system for updated iterate
+%         % Fx = F(x);
+%         F_current_backwardEuler = zeros(rows, columns);
+%         
+%         for row = 1:rows
+%             for col = 1:columns
+%                 F_current_backwardEuler(row, col) = dt * theta * GenerateFlux(row, col, ...
+%                     rows, columns, currentSolution, Vx, Vy, Dxx, Dyy, ...
+%                     xNodeDeltas, yNodeDeltas, nodeWidths, nodeHeights, ...
+%                     northBC, eastBC, southBC, westBC);
+%                 F_current_backwardEuler(row, col) = F_current_backwardEuler(row, col) ...
+%                     - dt * theta * source(currentSolution(row, col));
+%                 F_current_backwardEuler(row, col) = F_current_backwardEuler(row, col) + currentSolution(row, col);
+%             end
+%         end
+% 
+%         Fx = F_current_backwardEuler + F_forwardEuler;
+%         
+%         % Update loop counter
+%         current_iteration = current_iteration + 1;
+%     end
+%     
+%     if (current_iteration > max_iterations)
+%         disp('Max Iterations');
+%     end
+    
     % Optionally store the solution
     if (mod(i, storedTimeSteps) == 0)
         lastStoredSolutionIndex = i / storedTimeSteps + 1;
-        yout(:, :, lastStoredSolutionIndex) = previousSolution;
+        yout(:, lastStoredSolutionIndex) = previousSolution;
         tout(lastStoredSolutionIndex) = i * dt;
     elseif (i == timeSteps && manuallyStoreFinalTimeSol)
-        yout(:, :, end) = previousSolution;
+        yout(:, end) = previousSolution;
         tout(end) = i * dt;
     end
+    
+%     previousSolution = currentSolution;
 end
 
 end
@@ -272,7 +375,7 @@ end
 %   Helper Functions
 %
 
-function flux = GenerateFlux(row, column, rows, columns, ...
+function flux = GenerateFlux(nodeCount, rows, columns, ...
     previousSolution, Vx, Vy, Dxx, Dyy, xNodeDeltas, yNodeDeltas, ...
     nodeWidths, nodeHeights, northBC, eastBC, southBC, westBC)
 %% GenerateFlux: ...
@@ -282,7 +385,10 @@ function flux = GenerateFlux(row, column, rows, columns, ...
 
 MIN_INDEX = 1;
 
-cv_prevSolution = previousSolution(row, column); 
+row = mod(nodeCount - 1, rows) + 1;
+column = floor((nodeCount - 1) / rows) + 1;
+
+cv_prevSolution = previousSolution(nodeCount); 
 cv_Dxx = Dxx(cv_prevSolution);
 cv_Dyy = Dyy(cv_prevSolution);
 cv_Vx = Vx(cv_prevSolution);
@@ -305,9 +411,7 @@ if (row == MIN_INDEX)
             'for a boundary condition cannot be negative.']);
     end
 else
-    northPrevSolution = previousSolution(row - 1, column);
-%     flux = flux - cv_width ...
-%         * cv_Dyy * (northPrevSolution - cv_prevSolution) / yNodeDeltas(row - 1);
+    northPrevSolution = previousSolution(nodeCount - 1);
     flux = flux + cv_width ...
         * ( cv_Vy * (northPrevSolution + cv_prevSolution) / 2 ...
         - cv_Dyy * (northPrevSolution - cv_prevSolution) / yNodeDeltas(row - 1) );
@@ -324,9 +428,7 @@ if (column == columns)
             'for a boundary condition cannot be negative.']);
     end
 else
-    eastPrevSolution = previousSolution(row, column + 1);
-%     flux = flux - cv_height ...
-%         * cv_Dxx * (eastPrevSolution - cv_prevSolution) / xNodeDeltas(column);
+    eastPrevSolution = previousSolution(nodeCount + rows);
     flux = flux + cv_height ...
         * ( cv_Vx * (eastPrevSolution + cv_prevSolution) / 2 ...
         - cv_Dxx * (eastPrevSolution - cv_prevSolution) / xNodeDeltas(column) );
@@ -343,9 +445,7 @@ if (row == rows)
             'for a boundary condition cannot be negative.']);
     end
 else
-    southPrevSolution = previousSolution(row + 1, column);
-%     flux = flux + cv_width ...
-%         * cv_Dyy * (cv_prevSolution - southPrevSolution) / yNodeDeltas(row);
+    southPrevSolution = previousSolution(nodeCount + 1);
     flux = flux - cv_width ...
         * ( cv_Vy * (southPrevSolution + cv_prevSolution) / 2 ...
         - cv_Dyy * (cv_prevSolution - southPrevSolution) / yNodeDeltas(row) );
@@ -362,9 +462,7 @@ if (column == MIN_INDEX)
             'for a boundary condition cannot be negative.']);
     end
 else
-    westPrevSolution = previousSolution(row, column - 1);
-%     flux = flux + cv_height ...
-%         * cv_Dxx * (cv_prevSolution - westPrevSolution) / xNodeDeltas(column - 1);
+    westPrevSolution = previousSolution(nodeCount - rows);
     flux = flux - cv_height ...
         * ( cv_Vx * (westPrevSolution + cv_prevSolution) / 2 ...
         - cv_Dxx * (cv_prevSolution - westPrevSolution) / xNodeDeltas(column - 1) );
@@ -373,3 +471,11 @@ end
 flux = flux / (cv_width * cv_height);
 
 end
+
+% function [delta] = determine_newton_step_delta(x)
+% if (norm(x) == 0)
+%     delta = sqrt(eps);
+% else
+%     delta = sqrt(eps) * norm(x);
+% end
+% end

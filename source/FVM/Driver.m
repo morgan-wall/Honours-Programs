@@ -33,6 +33,9 @@ source = @(phi) 0;
 nodesX = 0:0.05:1;
 nodesY = 1:-0.05:0;
 
+rows = length(nodesY);
+columns = length(nodesX);
+
 % Initialise boundary conditions
 northBC = struct('A', 0, 'B', 1, 'C', 0);
 eastBC = struct('A', 0, 'B', 1, 'C', 0);
@@ -51,7 +54,7 @@ initialCondition(round(length(nodesY) / 2), round(length(nodesY) / 2)) = 5;
 % Output plots and metrics
 figure;
 
-surf(nodesX, nodesY, yout(:, :, end));
+surf(nodesX, nodesY, reshape(yout(:, end), rows, columns));
 plotTitle = ['Test Problem (G1.1): Gaussian Diffusion (t = ' ...
     num2str(tout(end)) ')'];
 title(plotTitle);
@@ -59,11 +62,11 @@ xlabel('x');
 ylabel('y');
 zlabel('Solution');
 
-disp(['Total at end time: ' num2str(sum(sum(yout(:, :, end)))) '.']);
+disp(['Total at end time: ' num2str(sum(sum(yout(:, end)))) '.']);
 
 figure;
 
-surf(nodesX, nodesY, yout(:, :, 1));
+surf(nodesX, nodesY, reshape(yout(:, 1), rows, columns));
 plotTitle = 'Test Problem (G1.2): Gaussian Diffusion (t = 0)';
 title(plotTitle);
 xlabel('x');
@@ -87,6 +90,9 @@ source = @(phi) 0;
 nodesX = 0:0.05:1;
 nodesY = 1:-0.05:0;
 
+rows = length(nodesY);
+columns = length(nodesX);
+
 % Initialise boundary conditions
 northBC = struct('A', 0, 'B', 1, 'C', 0);
 eastBC = struct('A', 0, 'B', 1, 'C', 0);
@@ -105,7 +111,7 @@ initialCondition(:, 1) = 1;
 % Output plots and metrics
 figure;
 
-surf(nodesX, nodesY, yout(:, :, end));
+surf(nodesX, nodesY, reshape(yout(:, end), rows, columns));
 plotTitle = ['Test Problem (N1.1): Dirichlet & Neumann Boundary ' ...
     'Conditions (t = ' num2str(tout(end)) ')'];
 title(plotTitle);
@@ -115,7 +121,7 @@ zlabel('Solution');
 
 figure;
 
-surf(nodesX, nodesY, yout(:, :, 1));
+surf(nodesX, nodesY, reshape(yout(:, 1), rows, columns));
 plotTitle = ['Test Problem (N1.2): Dirichlet & Neumann Boundary ' ...
     'Conditions (t = 0 )'];
 title(plotTitle);
@@ -140,6 +146,9 @@ source = @(phi) 0;
 nodesX = 0:0.05:1;
 nodesY = 1:-0.05:0;
 
+rows = length(nodesY);
+columns = length(nodesX);
+
 % Initialise boundary conditions
 northBC = struct('A', 1000, 'B', 1, 'C', 1000);
 eastBC = struct('A', 0, 'B', 1, 'C', 0);
@@ -158,7 +167,7 @@ initialCondition(1, :) = 1;
 % Output plots and metrics
 figure;
 
-surf(nodesX, nodesY, yout(:, :, end));
+surf(nodesX, nodesY, reshape(yout(:, end), rows, columns));
 plotTitle = ['Test Problem (N2.1): Dirichlet & Neumann Boundary ' ...
     'Conditions (t = ' num2str(tout(end)) ')'];
 title(plotTitle);
@@ -168,7 +177,7 @@ zlabel('Solution');
 
 figure;
 
-surf(nodesX, nodesY, yout(:, :, 1));
+surf(nodesX, nodesY, reshape(yout(:, 1), rows, columns));
 plotTitle = ['Test Problem (N2.2): Dirichlet & Neumann Boundary ' ...
     'Conditions (t = 0 )'];
 title(plotTitle);
@@ -193,6 +202,9 @@ source = @(phi) 0;
 nodesX = 0:0.05:1;
 nodesY = 1:-0.05:0;
 
+rows = length(nodesY);
+columns = length(nodesX);
+
 % Initialise boundary conditions
 northBC = struct('A', 0, 'B', 1, 'C', 0);
 eastBC = struct('A', 1000, 'B', 1, 'C', 1000);
@@ -211,7 +223,7 @@ initialCondition(:, end) = 1;
 % Output plots and metrics
 figure;
 
-surf(nodesX, nodesY, yout(:, :, end));
+surf(nodesX, nodesY, reshape(yout(:, end), rows, columns));
 plotTitle = ['Test Problem (N3.1): Dirichlet & Neumann Boundary ' ...
     'Conditions (t = ' num2str(tout(end)) ')'];
 title(plotTitle);
@@ -221,7 +233,7 @@ zlabel('Solution');
 
 figure;
 
-surf(nodesX, nodesY, yout(:, :, 1));
+surf(nodesX, nodesY, reshape(yout(:, 1), rows, columns));
 plotTitle = ['Test Problem (N3.2): Dirichlet & Neumann Boundary ' ...
     'Conditions (t = 0 )'];
 title(plotTitle);
@@ -246,6 +258,9 @@ source = @(phi) 0;
 nodesX = 0:0.05:1;
 nodesY = 1:-0.05:0;
 
+rows = length(nodesY);
+columns = length(nodesX);
+
 % Initialise boundary conditions
 northBC = struct('A', 0, 'B', 1, 'C', 0);
 eastBC = struct('A', 0, 'B', 1, 'C', 0);
@@ -264,7 +279,7 @@ initialCondition(end, :) = 1;
 % Output plots and metrics
 figure;
 
-surf(nodesX, nodesY, yout(:, :, end));
+surf(nodesX, nodesY, reshape(yout(:, end), rows, columns));
 plotTitle = ['Test Problem (N4.1): Dirichlet & Neumann Boundary '...
     'Conditions (t = ' num2str(tout(end)) ')'];
 title(plotTitle);
@@ -274,7 +289,7 @@ zlabel('Solution');
 
 figure;
 
-surf(nodesX, nodesY, yout(:, :, 1));
+surf(nodesX, nodesY, reshape(yout(:, 1), rows, columns));
 plotTitle = ['Test Problem (N4.2): Dirichlet & Neumann Boundary ' ...
     'Conditions (t = 0 )'];
 title(plotTitle);
