@@ -152,7 +152,6 @@ columns = length(nodesX);
 nodeCount = rows * columns;
 
 % Absolute distances between adjacent nodes
-
 xNodeDeltas = diff(nodesX);
 yNodeDeltas = abs(diff(nodesY));
 
@@ -175,7 +174,7 @@ nodeHeights(end) = yFaceDeltas(end);
 
 % TODO: remove stub code once adaptive time-stepping is implemented.
 tStart = 0;
-dt = 0.0001;
+dt = 0.001;
 
 timeSteps = length(tStart:dt:tFinal) - 1;
 numStoredSolutions = floor(timeSteps / storedTimeSteps) + 1;
@@ -212,20 +211,18 @@ for i = 1:timeSteps
     
     % Formulate the Forward Euler component of F(u) = 0
     F_forwardEuler = zeros(nodeCount, 1);
-    if (theta == 0 || theta == 1/2)
-        
-        for j = 1:nodeCount
+    for j = 1:nodeCount
+        if (theta ~= 1)
             F_forwardEuler(j) = dt * (1 - theta) * GenerateFlux(j, ...
                     rows, columns, previousSolution, Vx, Vy, Dxx, Dyy, ...
                     xNodeDeltas, yNodeDeltas, nodeWidths, nodeHeights, ...
                     northBC, eastBC, southBC, westBC);
             F_forwardEuler(j) = F_forwardEuler(j) ...
                 - dt * (1 - theta) * source(previousSolution(j));
-            F_forwardEuler(j) = F_forwardEuler(j) - previousSolution(j);
         end
+        
+        F_forwardEuler(j) = F_forwardEuler(j) - previousSolution(j);
     end
-    
-    previousSolution = -1 * F_forwardEuler;
     
     % Iteratively solve F(u) = 0 for phi using an inexact Newton-GMRES solver
     %   N.B. This solver must use the formulates for the forcing term
@@ -254,119 +251,113 @@ for i = 1:timeSteps
     %   entirely.
     %   
     
-%     % Initialise Newton stub variables (TODO: make them function parameters).
-%     max_iterations = 15;
-%     rel_error_tol = 1e-10;
-%     n = rows * columns;
-%     
-%     % Initialise variables for Newton-GMRES solver
-%     identity = eye(n);
-%     current_iteration = 0;
-% 
-%     % Initialise GMRES stub variables (TODO: make them function parameters).
+    % Initialise Newton stub variables (TODO: make them function parameters).
+    max_iterations = 15;
+    rel_error_tol = 1e-10;
+    n = rows * columns;
+    
+    % Initialise variables for Newton-GMRES solver
+    identity = eye(n);
+    current_iteration = 0;
+
+    % Initialise GMRES stub variables (TODO: make them function parameters).
 %     gmres_max_iter = 200;
 %     restart_value = 100;
 %     gmres_error_tol = 1e-10;
 %     precond_type = 'ilu';
 %     omega = 0;
-%     
-%     % Evaluate the nonlinear system for previous solution
-%     % N.B. The previous solution is the initial iterate for the
-%     % Newton-GMRES solver.
-%     currentSolution = previousSolution;
-%     F_backwardEuler = zeros(rows, columns);
-%     
-%     for j = 1:rows
-%         for k = 1:columns
-%             F_backwardEuler(j, k) = dt * theta * GenerateFlux(j, k, ...
-%                 rows, columns, currentSolution, Vx, Vy, Dxx, Dyy, ...
-%                 xNodeDeltas, yNodeDeltas, nodeWidths, nodeHeights, ...
-%                 northBC, eastBC, southBC, westBC);
-%             F_backwardEuler(j, k) = F_backwardEuler(j, k) ...
-%                 - dt * theta * source(currentSolution(j, k));
-%             F_backwardEuler(j, k) = F_backwardEuler(j, k) + currentSolution(j, k);
-%         end
-%     end
-%     
-%     Fx = F_backwardEuler + F_forwardEuler;
-%     
-%     % Solve the non-linear system, F(x) = 0, for the next time step
-%     while (current_iteration <= max_iterations && norm(Fx) > rel_error_tol)
-%         
-%         % determine finite difference approx of Jacobian
-%         jacobian = zeros(n);
-%         h = determine_newton_step_delta(currentSolution(:));
-%         for j = 1:n
-%             delta_basis = identity(:, j);
-%             xStepped = currentSolution(:) + h .* delta_basis(:);
-%             
-%             xStepped = reshape(xStepped, rows, columns);
-%             
-%             % Evaluate the nonlinear system for the xStepped
-%             F_backwardEuler_stepped = zeros(rows, columns);
-%             
-%             for row = 1:rows
-%                 for col = 1:columns
-%                     F_backwardEuler_stepped(row, col) = dt * theta * GenerateFlux(row, col, ...
-%                         rows, columns, xStepped, Vx, Vy, Dxx, Dyy, ...
-%                         xNodeDeltas, yNodeDeltas, nodeWidths, nodeHeights, ...
-%                         northBC, eastBC, southBC, westBC);
-%                     F_backwardEuler_stepped(row, col) = F_backwardEuler(row, col) ...
-%                         - dt * theta * source(xStepped(row, col));
-%                     F_backwardEuler_stepped(row, col) = F_backwardEuler(row, col) + xStepped(row, col);
-%                 end
-%             end
-%             
-%             F_stepped = F_backwardEuler_stepped + F_forwardEuler;
-%             
-%             jacobian(:, j) = (F_stepped(:) - Fx(:)) ./ h;
-%         end
-%         
-%         % solve the linear system using GMRES
-%         delta_x = gmres_general(jacobian, Fx(:), currentSolution(:), gmres_max_iter, ...
+    
+    % Evaluate the nonlinear system for previous solution
+    % N.B. The previous solution is the initial iterate for the
+    % Newton-GMRES solver.
+    F_backwardEuler = zeros(nodeCount, 1);
+    
+    for j = 1:nodeCount
+        F_backwardEuler(j) = dt * theta * GenerateFlux(j, ...
+            rows, columns, previousSolution, Vx, Vy, Dxx, Dyy, ...
+            xNodeDeltas, yNodeDeltas, nodeWidths, nodeHeights, ...
+            northBC, eastBC, southBC, westBC);
+        F_backwardEuler(j) = F_backwardEuler(j) ...
+            - dt * theta * source(previousSolution(j));
+        F_backwardEuler(j) = F_backwardEuler(j) + previousSolution(j);
+    end
+    
+    Fx = F_backwardEuler + F_forwardEuler;
+    
+    % Solve the non-linear system, F(x) = 0, for the next time step
+    currentSolution = previousSolution;
+    while (current_iteration <= max_iterations && norm(Fx) > rel_error_tol)
+        
+        % determine finite difference approx of Jacobian
+        jacobian = zeros(nodeCount);
+        h = determine_newton_step_delta(currentSolution);
+        for j = 1:nodeCount
+            delta_basis = identity(:, j);
+            xStepped = currentSolution + h .* delta_basis;
+            
+            % Evaluate the nonlinear system for the xStepped            
+            F_backwardEuler_stepped = zeros(nodeCount, 1);
+            
+            for k = 1:nodeCount
+                F_backwardEuler_stepped(k) = dt * theta * GenerateFlux(k, ...
+                        rows, columns, xStepped, Vx, Vy, Dxx, Dyy, ...
+                        xNodeDeltas, yNodeDeltas, nodeWidths, nodeHeights, ...
+                        northBC, eastBC, southBC, westBC);
+                F_backwardEuler_stepped(k) = F_backwardEuler_stepped(k) ...
+                    - dt * theta * source(xStepped(k));
+                F_backwardEuler_stepped(k) = F_backwardEuler_stepped(k) + xStepped(k);
+            end
+            
+            F_stepped = F_backwardEuler_stepped + F_forwardEuler;
+            
+            jacobian(:, j) = (F_stepped - Fx) ./ h;
+        end
+        
+        % solve the linear system using GMRES
+%         delta_x = gmres_general(jacobian, Fx, currentSolution, gmres_max_iter, ...
 %             restart_value, gmres_error_tol, precond_type, omega);
-% 
-%         currentSolution = currentSolution(:) - delta_x(:);
-%         
-%         currentSolution = reshape(currentSolution, rows, columns);
-%         
-%         % Evaluate the nonlinear system for updated iterate
-%         % Fx = F(x);
-%         F_current_backwardEuler = zeros(rows, columns);
-%         
-%         for row = 1:rows
-%             for col = 1:columns
-%                 F_current_backwardEuler(row, col) = dt * theta * GenerateFlux(row, col, ...
-%                     rows, columns, currentSolution, Vx, Vy, Dxx, Dyy, ...
-%                     xNodeDeltas, yNodeDeltas, nodeWidths, nodeHeights, ...
-%                     northBC, eastBC, southBC, westBC);
-%                 F_current_backwardEuler(row, col) = F_current_backwardEuler(row, col) ...
-%                     - dt * theta * source(currentSolution(row, col));
-%                 F_current_backwardEuler(row, col) = F_current_backwardEuler(row, col) + currentSolution(row, col);
-%             end
-%         end
-% 
-%         Fx = F_current_backwardEuler + F_forwardEuler;
-%         
-%         % Update loop counter
-%         current_iteration = current_iteration + 1;
-%     end
-%     
-%     if (current_iteration > max_iterations)
-%         disp('Max Iterations');
-%     end
+
+        delta_x = jacobian \ Fx;
+
+        currentSolution = currentSolution - delta_x;
+        
+        % Evaluate the nonlinear system for updated iterate
+        F_current_backwardEuler = zeros(nodeCount, 1);
+        
+        for k = 1:nodeCount
+            F_current_backwardEuler(k) = dt * theta * GenerateFlux(k, ...
+                    rows, columns, currentSolution, Vx, Vy, Dxx, Dyy, ...
+                    xNodeDeltas, yNodeDeltas, nodeWidths, nodeHeights, ...
+                    northBC, eastBC, southBC, westBC);
+            F_current_backwardEuler(k) = F_current_backwardEuler(k) ...
+                - dt * theta * source(currentSolution(k));
+            F_current_backwardEuler(k) = F_current_backwardEuler(k) + currentSolution(k);
+        end
+
+        Fx = F_current_backwardEuler + F_forwardEuler;
+        
+        current_iteration = current_iteration + 1;
+    end
+    
+    % Ensure a sufficiently accurately 
+    if (current_iteration > max_iterations && norm(Fx) > rel_error_tol)
+        error(['Method Failure: the non-linear system generated at '...
+            't = ' num2str(i * dt) ' was not solved using ' ...
+            num2str(max_iterations) ' iterations of inexact Newton ' ...
+            'method.']);
+    end
     
     % Optionally store the solution
     if (mod(i, storedTimeSteps) == 0)
         lastStoredSolutionIndex = i / storedTimeSteps + 1;
-        yout(:, lastStoredSolutionIndex) = previousSolution;
+        yout(:, lastStoredSolutionIndex) = currentSolution;
         tout(lastStoredSolutionIndex) = i * dt;
     elseif (i == timeSteps && manuallyStoreFinalTimeSol)
-        yout(:, end) = previousSolution;
+        yout(:, end) = currentSolution;
         tout(end) = i * dt;
     end
     
-%     previousSolution = currentSolution;
+    previousSolution = currentSolution;
 end
 
 end
@@ -408,7 +399,7 @@ if (row == MIN_INDEX)
             - cv_Dyy * northBC.C / northBC.B );
     else
         error(['Invalid Boundary Condition (North): The B coefficient ' ...
-            'for a boundary condition cannot be negative.']);
+            'for a boundary condition must be positive.']);
     end
 else
     northPrevSolution = previousSolution(nodeCount - 1);
@@ -425,7 +416,7 @@ if (column == columns)
             - cv_Dxx * eastBC.C / eastBC.B );
     else
         error(['Invalid Boundary Condition (East): The B coefficient ' ...
-            'for a boundary condition cannot be negative.']);
+            'for a boundary condition must be positive.']);
     end
 else
     eastPrevSolution = previousSolution(nodeCount + rows);
@@ -442,7 +433,7 @@ if (row == rows)
             + cv_Dyy * southBC.C / southBC.B );
     else
         error(['Invalid Boundary Condition (South): The B coefficient ' ...
-            'for a boundary condition cannot be negative.']);
+            'for a boundary condition must be positive.']);
     end
 else
     southPrevSolution = previousSolution(nodeCount + 1);
@@ -459,7 +450,7 @@ if (column == MIN_INDEX)
             + cv_Dxx * westBC.C / westBC.B );
     else
         error(['Invalid Boundary Condition (West): The B coefficient ' ...
-            'for a boundary condition cannot be negative.']);
+            'for a boundary condition must be positive.']);
     end
 else
     westPrevSolution = previousSolution(nodeCount - rows);
@@ -472,10 +463,10 @@ flux = flux / (cv_width * cv_height);
 
 end
 
-% function [delta] = determine_newton_step_delta(x)
-% if (norm(x) == 0)
-%     delta = sqrt(eps);
-% else
-%     delta = sqrt(eps) * norm(x);
-% end
-% end
+function [delta] = determine_newton_step_delta(x)
+if (norm(x) == 0)
+    delta = sqrt(eps);
+else
+    delta = sqrt(eps) * norm(x);
+end
+end
