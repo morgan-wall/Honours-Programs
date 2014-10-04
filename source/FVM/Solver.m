@@ -1,6 +1,6 @@
 function [tout, yout] = Solver(tFinal, Dxx, Dyy, Vx, Vy, source, theta, ...
     advectionHandling, nodesX, nodesY, northBC, eastBC, southBC, westBC, ...
-    initialCondition, storedTimeSteps)
+    initialCondition, storedTimeSteps, gmresParameters)
 %% Solver: solve non-linear two-dimesional advection-diffusion equation.
 % Determine a numerical solution for the non-linear, two-dimensional
 % advection-diffusion equation given by:
@@ -114,6 +114,26 @@ function [tout, yout] = Solver(tFinal, Dxx, Dyy, Vx, Vy, source, theta, ...
 %   storedTimeSteps:
 %       Solutions at time steps that are multiples of this (integer) 
 %       parameter are returned from this function.
+%
+%   gmresParameters:
+%       A struct specifying parameters for the GMRES solver used for
+%       solving the linear systems in the Newton step. The fields include:
+%           maxIterations:
+%               The maximum number of iterations to perform of the GMRES
+%               method.
+%           restartValue:
+%               The iteration count at which a restart of the GMRES method
+%               occurs.
+%           errorTol:
+%               The relative error tolerance applied to the GMRES method.
+%           preconditioningType:
+%               A string denoting the type of preconditioning used in the
+%               GMRES method. Only right preconditioning is supported. The
+%               valid inputs include 'jacobi', 'SOR', and 'ilu'.
+%           omega:
+%               The value of the omega parameter used in SOR
+%               preconditioning. This value is only used if SOR
+%               preconditioning is used.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Outputs:
@@ -259,13 +279,6 @@ for i = 1:timeSteps
     % Initialise variables for Newton-GMRES solver
     identity = eye(n);
     current_iteration = 0;
-
-    % Initialise GMRES stub variables (TODO: make them function parameters).
-%     gmres_max_iter = 200;
-%     restart_value = 100;
-%     gmres_error_tol = 1e-10;
-%     precond_type = 'ilu';
-%     omega = 0;
     
     % Evaluate the nonlinear system for previous solution
     % N.B. The previous solution is the initial iterate for the
@@ -314,10 +327,10 @@ for i = 1:timeSteps
         end
         
         % solve the linear system using GMRES
-%         delta_x = gmres_general(jacobian, Fx, currentSolution, gmres_max_iter, ...
-%             restart_value, gmres_error_tol, precond_type, omega);
-
-        delta_x = jacobian \ Fx;
+        delta_x = gmres_general(jacobian, Fx, currentSolution, ...
+            gmresParameters.maxIterations, gmresParameters.restartValue, ...
+            gmresParameters.errorTol, gmresParameters.preconditioningType, ...
+            gmresParameters.omega);
 
         currentSolution = currentSolution - delta_x;
         

@@ -14,6 +14,9 @@ close all;
 theta = 1;
 advectionHandling = 'averaging';
 
+gmresParameters = struct('maxIterations', 200, 'restartValue', 100, ...
+    'errorTol', 1e-10, 'preconditioningType', 'ilu', 'omega', 0);
+ 
 %% Test: Gaussian Diffusion (G1) - Single Point Initial Condition
 
 % Initialise temporal parameters
@@ -47,7 +50,7 @@ initialCondition(round(length(nodesY) / 2), round(length(nodesY) / 2)) = 1;
 % Solve problem
 [tout, yout] = Solver(tFinal, Dxx, Dyy, Vx, Vy, source, theta, ...
     advectionHandling, nodesX, nodesY, northBC, eastBC, southBC, westBC, ...
-    initialCondition, storedTimeSteps);
+    initialCondition, storedTimeSteps, gmresParameters);
 
 % Output plots and metrics
 figure;
@@ -121,7 +124,7 @@ end
 % Solve problem
 [tout, yout] = Solver(tFinal, Dxx, Dyy, Vx, Vy, source, theta, ...
     advectionHandling, nodesX, nodesY, northBC, eastBC, southBC, westBC, ...
-    initialCondition, storedTimeSteps);
+    initialCondition, storedTimeSteps, gmresParameters);
 
 % Output plots and metrics
 figure;
@@ -173,7 +176,7 @@ initialCondition(:, 1) = 1;
 % Solve problem
 [tout, yout] = Solver(tFinal, Dxx, Dyy, Vx, Vy, source, theta, ...
     advectionHandling, nodesX, nodesY, northBC, eastBC, southBC, westBC, ...
-    initialCondition, storedTimeSteps);
+    initialCondition, storedTimeSteps, gmresParameters);
 
 % Output plots and metrics
 figure;
@@ -229,7 +232,7 @@ initialCondition(1, :) = 1;
 % Solve problem
 [tout, yout] = Solver(tFinal, Dxx, Dyy, Vx, Vy, source, theta, ...
     advectionHandling, nodesX, nodesY, northBC, eastBC, southBC, westBC, ...
-    initialCondition, storedTimeSteps);
+    initialCondition, storedTimeSteps, gmresParameters);
 
 % Output plots and metrics
 figure;
@@ -285,7 +288,7 @@ initialCondition(:, end) = 1;
 % Solve problem
 [tout, yout] = Solver(tFinal, Dxx, Dyy, Vx, Vy, source, theta, ...
     advectionHandling, nodesX, nodesY, northBC, eastBC, southBC, westBC, ...
-    initialCondition, storedTimeSteps);
+    initialCondition, storedTimeSteps, gmresParameters);
 
 % Output plots and metrics
 figure;
@@ -341,7 +344,7 @@ initialCondition(end, :) = 1;
 % Solve problem
 [tout, yout] = Solver(tFinal, Dxx, Dyy, Vx, Vy, source, theta, ...
     advectionHandling, nodesX, nodesY, northBC, eastBC, southBC, westBC, ...
-    initialCondition, storedTimeSteps);
+    initialCondition, storedTimeSteps, gmresParameters);
 
 % Output plots and metrics
 figure;
