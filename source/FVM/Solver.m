@@ -176,6 +176,10 @@ function [tout, yout] = Solver(tFinal, Dxx, Dyy, Vx, Vy, source, theta, ...
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%% Initialise constants
+
+FIRST_TIME_STEP_INDEX = 1;
+
 %% Initialise mesh parameters
 
 nodesY = nodesY(:);
@@ -245,20 +249,23 @@ for i = 1:timeSteps
     identity = eye(nodeCount);
     current_iteration = 0;
     
-    % Evaluate the nonlinear system for previous solution
-    F_backwardEuler = zeros(nodeCount, 1);
-    
-    for j = 1:nodeCount
-        F_backwardEuler(j) = dt * theta * GenerateFlux(j, ...
-            rows, columns, previousSolution, Vx, Vy, Dxx, Dyy, ...
-            xNodeDeltas, yNodeDeltas, nodeWidths, nodeHeights, ...
-            northBC, eastBC, southBC, westBC);
-        F_backwardEuler(j) = F_backwardEuler(j) ...
-            - dt * theta * source(previousSolution(j));
-        F_backwardEuler(j) = F_backwardEuler(j) + previousSolution(j);
+    % Formulate the Backward Euler component of F(u) = 0 
+    if (i == FIRST_TIME_STEP_INDEX)
+        F_current_backwardEuler = zeros(nodeCount, 1);
+        
+        for j = 1:nodeCount
+            F_current_backwardEuler(j) = dt * theta * GenerateFlux(j, ...
+                rows, columns, previousSolution, Vx, Vy, Dxx, Dyy, ...
+                xNodeDeltas, yNodeDeltas, nodeWidths, nodeHeights, ...
+                northBC, eastBC, southBC, westBC);
+            F_current_backwardEuler(j) = F_current_backwardEuler(j) ...
+                - dt * theta * source(previousSolution(j));
+            F_current_backwardEuler(j) = ...
+                F_current_backwardEuler(j) + previousSolution(j);
+        end
     end
     
-    Fx = F_backwardEuler + F_forwardEuler;
+    Fx = F_forwardEuler + F_current_backwardEuler;
     
     % Solve the non-linear system, F(x) = 0, for the next time step
     currentSolution = previousSolution;
@@ -300,7 +307,6 @@ for i = 1:timeSteps
         
         % Evaluate the nonlinear system for updated iterate
         F_current_backwardEuler = zeros(nodeCount, 1);
-        
         for k = 1:nodeCount
             F_current_backwardEuler(k) = dt * theta * GenerateFlux(k, ...
                     rows, columns, currentSolution, Vx, Vy, Dxx, Dyy, ...
