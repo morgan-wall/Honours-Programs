@@ -170,6 +170,9 @@ function [tout, yout] = Solver(tFinal, Dxx, Dyy, Vx, Vy, source, theta, ...
 % Unimplemented features:
 %
 %   1. Adaptive time-stepping.
+%   2. Inexact Newton method (incl. forcing terms proposed by Walker).
+%   3. Selective construction of the preconditioner in the GMRES method.
+%   4. Jacobian-free Newton-GMRES solver.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -203,7 +206,6 @@ nodeHeights(end) = yFaceDeltas(end);
 
 %% Initialise solution parameters
 
-% TODO: remove stub code once adaptive time-stepping is implemented.
 tStart = 0;
 dt = 0.001;
 
@@ -224,22 +226,6 @@ previousSolution = initialCondition(:);
 
 for i = 1:timeSteps
     
-    %% Pseudocode:
-    
-    % Formulate the nonlinear system F(u) = 0 for the next time step
-    %   N.B. This formulation must support different temporal weightings 
-    %   (see IMEX method). It must also support generalised boundary
-    %   conditions.
-    %
-    %   Clearly only components of this nonlinear system can be formulated
-    %   by this point. Namely, the components not involving phi_{n+1}. The
-    %   reason for this is that the value of phi_{n+1} is determined during
-    %   the next step of the algorithm (see below). As such, we can
-    %   formulate a constant vector corresponding to all the components
-    %   solely relying upon phi_n. This includes -phi_n and the forward 
-    %   Euler component of the IMEX formulation (see notes).
-    %
-    
     % Formulate the Forward Euler component of F(u) = 0
     F_forwardEuler = zeros(nodeCount, 1);
     for j = 1:nodeCount
@@ -255,45 +241,11 @@ for i = 1:timeSteps
         F_forwardEuler(j) = F_forwardEuler(j) - previousSolution(j);
     end
     
-    % Iteratively solve F(u) = 0 for phi using an inexact Newton-GMRES solver
-    %   N.B. This solver must use the formulates for the forcing term
-    %   prescribed by Walker (see function description). 
-    %   
-    %   Preconditioning must be included. Additional handling should be 
-    %   included to ensure that the preconditioner is not continually 
-    %   rebuilt for each system. The preconditioner should only be 
-    %   constructed for two reasons: (1) there does not exist a 
-    %   preconditioner yet and (2) the current preconditioner does not 
-    %   result in fast convergence within the GMRES-arnoldi iterations 
-    %   (be careful of small restart values).
-    %
-    %   Do we need to "construct" F(u) for each iteration of Newton's
-    %   method? Ans: between iterations phi_n does not change, however
-    %   phi_{n+1} does. This means that any component involving phi_{n+1}
-    %   needs to be updated. This is equivalent to evaluating F(u) for a
-    %   given value of u. More specifically, we need to construct all the
-    %   components solely relying upon phi_{n+1} in this step. This
-    %   includes phi_{n+1} itself and the backward Euler component of the
-    %   IMEX method (see notes). We then add this result onto the existing
-    %   vector of values based directly upon phi_{n} (see previous step).
-    %
-    %   Error handling should be included in the event that a sufficiently
-    %   accurate solution is not found. This should terminate the solver
-    %   entirely.
-    %   
-    
-    % Initialise Newton stub variables (TODO: make them function parameters).
-%     max_iterations = 15;
-%     rel_error_tol = 1e-10;
-    n = rows * columns;
-    
     % Initialise variables for Newton-GMRES solver
     identity = eye(nodeCount);
     current_iteration = 0;
     
     % Evaluate the nonlinear system for previous solution
-    % N.B. The previous solution is the initial iterate for the
-    % Newton-GMRES solver.
     F_backwardEuler = zeros(nodeCount, 1);
     
     for j = 1:nodeCount
@@ -364,7 +316,7 @@ for i = 1:timeSteps
         current_iteration = current_iteration + 1;
     end
     
-    % Ensure a sufficiently accurately 
+    % Ensure an accurate solution to F(u) = 0 was determined
     if (current_iteration > newtonParameters.maxIterations ...
             && norm(Fx) > newtonParameters.relErrorTol)
         error(['Method Failure: the non-linear system generated at '...
