@@ -246,7 +246,6 @@ for i = 1:timeSteps
     end
     
     % Initialise variables for Newton-GMRES solver
-    identity = eye(nodeCount);
     current_iteration = 0;
     
     % Formulate the Backward Euler component of F(u) = 0 
@@ -274,27 +273,115 @@ for i = 1:timeSteps
         
         % determine finite difference approx of Jacobian
         jacobian = zeros(nodeCount);
+        
         h = determine_newton_step_delta(currentSolution);
+        
+        % self-dependent Jacobian components
         for j = 1:nodeCount
-            delta_basis = identity(:, j);
-            xStepped = currentSolution + h .* delta_basis;
+            nodeIndex = j;
             
-            % Evaluate the nonlinear system for the xStepped            
-            F_backwardEuler_stepped = zeros(nodeCount, 1);
+            xStepped = currentSolution;
+            xStepped(nodeIndex) = xStepped(nodeIndex) + h;
             
-            for k = 1:nodeCount
-                F_backwardEuler_stepped(k) = dt * theta * GenerateFlux(k, ...
+            F_backwardEuler_stepped = dt * theta * GenerateFlux(j, ...
+                    rows, columns, xStepped, Vx, Vy, Dxx, Dyy, ...
+                    xNodeDeltas, yNodeDeltas, nodeWidths, nodeHeights, ...
+                    northBC, eastBC, southBC, westBC);
+            F_backwardEuler_stepped = F_backwardEuler_stepped ...
+                - dt * theta * source(xStepped(j));
+            F_backwardEuler_stepped = F_backwardEuler_stepped + xStepped(j);
+            
+            F_stepped = F_backwardEuler_stepped + F_forwardEuler(j);
+            
+            jacobian(j, nodeIndex) = (F_stepped - Fx(j)) / h;
+        end
+        
+        % north-dependent Jacobian components
+        for j = 1:nodeCount
+            nodeIndex = j - 1;
+            
+            if (nodeIndex >= 1 && nodeIndex <= nodeCount)
+                xStepped = currentSolution;
+                xStepped(nodeIndex) = xStepped(nodeIndex) + h;
+
+                F_backwardEuler_stepped = dt * theta * GenerateFlux(j, ...
                         rows, columns, xStepped, Vx, Vy, Dxx, Dyy, ...
                         xNodeDeltas, yNodeDeltas, nodeWidths, nodeHeights, ...
                         northBC, eastBC, southBC, westBC);
-                F_backwardEuler_stepped(k) = F_backwardEuler_stepped(k) ...
-                    - dt * theta * source(xStepped(k));
-                F_backwardEuler_stepped(k) = F_backwardEuler_stepped(k) + xStepped(k);
+                F_backwardEuler_stepped = F_backwardEuler_stepped ...
+                    - dt * theta * source(xStepped(j));
+                F_backwardEuler_stepped = F_backwardEuler_stepped + xStepped(j);
+
+                F_stepped = F_backwardEuler_stepped + F_forwardEuler(j);
+                
+                jacobian(j, nodeIndex) = (F_stepped - Fx(j)) / h;
             end
+        end
+        
+        % south-dependent Jacobian components
+        for j = 1:nodeCount
+            nodeIndex = j + 1;
             
-            F_stepped = F_backwardEuler_stepped + F_forwardEuler;
+            if (nodeIndex >= 1 && nodeIndex <= nodeCount)
+                xStepped = currentSolution;
+                xStepped(nodeIndex) = xStepped(nodeIndex) + h;
+
+                F_backwardEuler_stepped = dt * theta * GenerateFlux(j, ...
+                        rows, columns, xStepped, Vx, Vy, Dxx, Dyy, ...
+                        xNodeDeltas, yNodeDeltas, nodeWidths, nodeHeights, ...
+                        northBC, eastBC, southBC, westBC);
+                F_backwardEuler_stepped = F_backwardEuler_stepped ...
+                    - dt * theta * source(xStepped(j));
+                F_backwardEuler_stepped = F_backwardEuler_stepped + xStepped(j);
+
+                F_stepped = F_backwardEuler_stepped + F_forwardEuler(j);
+                
+                jacobian(j, nodeIndex) = (F_stepped - Fx(j)) / h;
+            end
+        end
+        
+        % east-dependent Jacobian components
+        for j = 1:nodeCount
+            nodeIndex = j + rows;
             
-            jacobian(:, j) = (F_stepped - Fx) ./ h;
+            if (nodeIndex >= 1 && nodeIndex <= nodeCount)
+                xStepped = currentSolution;
+                xStepped(nodeIndex) = xStepped(nodeIndex) + h;
+
+                F_backwardEuler_stepped = dt * theta * GenerateFlux(j, ...
+                        rows, columns, xStepped, Vx, Vy, Dxx, Dyy, ...
+                        xNodeDeltas, yNodeDeltas, nodeWidths, nodeHeights, ...
+                        northBC, eastBC, southBC, westBC);
+                F_backwardEuler_stepped = F_backwardEuler_stepped ...
+                    - dt * theta * source(xStepped(j));
+                F_backwardEuler_stepped = F_backwardEuler_stepped + xStepped(j);
+
+                F_stepped = F_backwardEuler_stepped + F_forwardEuler(j);
+                
+                jacobian(j, nodeIndex) = (F_stepped - Fx(j)) / h;
+            end
+        end
+        
+        % west-dependent Jacobian components
+        for j = 1:nodeCount
+            nodeIndex = j - rows;
+            
+            if (nodeIndex >= 1 && nodeIndex <= nodeCount)
+                xStepped = currentSolution;
+                xStepped(nodeIndex) = xStepped(nodeIndex) + h;
+
+                F_backwardEuler_stepped = dt * theta * GenerateFlux(j, ...
+                        rows, columns, xStepped, Vx, Vy, Dxx, Dyy, ...
+                        xNodeDeltas, yNodeDeltas, nodeWidths, nodeHeights, ...
+                        northBC, eastBC, southBC, westBC);
+                F_backwardEuler_stepped = F_backwardEuler_stepped ...
+                    - dt * theta * source(xStepped(j));
+                F_backwardEuler_stepped = F_backwardEuler_stepped + xStepped(j);
+                
+                F_stepped = F_backwardEuler_stepped + F_forwardEuler(j);
+                
+                jacobian(j, nodeIndex) = (F_stepped - Fx(j)) / h;
+            end
         end
         
         % solve the linear system using GMRES
@@ -314,7 +401,8 @@ for i = 1:timeSteps
                     northBC, eastBC, southBC, westBC);
             F_current_backwardEuler(k) = F_current_backwardEuler(k) ...
                 - dt * theta * source(currentSolution(k));
-            F_current_backwardEuler(k) = F_current_backwardEuler(k) + currentSolution(k);
+            F_current_backwardEuler(k) = ...
+                F_current_backwardEuler(k) + currentSolution(k);
         end
 
         Fx = F_current_backwardEuler + F_forwardEuler;

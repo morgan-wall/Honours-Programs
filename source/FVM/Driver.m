@@ -65,8 +65,8 @@ xlabel('x');
 ylabel('y');
 zlabel('Solution');
 
-totalMass = sum(sum(yout(2:end-1, end))) + (1/2) * yout2(1, end) ...
-    + (1/2) * yout2(end, end);
+totalMass = sum(sum(yout(2:end-1, end))) + (1/2) * yout(1, end) ...
+    + (1/2) * yout(end, end);
 
 disp(['Total at end time: ' num2str(totalMass) '.']);
 
