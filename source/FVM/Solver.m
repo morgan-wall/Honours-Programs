@@ -237,7 +237,7 @@ for i = 1:timeSteps
             F_forwardEuler(j) = dt * (1 - theta) * GenerateFlux(j, ...
                     rows, columns, previousSolution, Vx, Vy, Dxx, Dyy, ...
                     xNodeDeltas, yNodeDeltas, nodeWidths, nodeHeights, ...
-                    northBC, eastBC, southBC, westBC);
+                    northBC, eastBC, southBC, westBC, advectionHandling);
             F_forwardEuler(j) = F_forwardEuler(j) ...
                 - dt * (1 - theta) * source(previousSolution(j));
         end
@@ -256,7 +256,7 @@ for i = 1:timeSteps
             F_current_backwardEuler(j) = dt * theta * GenerateFlux(j, ...
                 rows, columns, previousSolution, Vx, Vy, Dxx, Dyy, ...
                 xNodeDeltas, yNodeDeltas, nodeWidths, nodeHeights, ...
-                northBC, eastBC, southBC, westBC);
+                northBC, eastBC, southBC, westBC, advectionHandling);
             F_current_backwardEuler(j) = F_current_backwardEuler(j) ...
                 - dt * theta * source(previousSolution(j));
             F_current_backwardEuler(j) = ...
@@ -286,7 +286,7 @@ for i = 1:timeSteps
             F_backwardEuler_stepped = dt * theta * GenerateFlux(j, ...
                     rows, columns, xStepped, Vx, Vy, Dxx, Dyy, ...
                     xNodeDeltas, yNodeDeltas, nodeWidths, nodeHeights, ...
-                    northBC, eastBC, southBC, westBC);
+                    northBC, eastBC, southBC, westBC, advectionHandling);
             F_backwardEuler_stepped = F_backwardEuler_stepped ...
                 - dt * theta * source(xStepped(j));
             F_backwardEuler_stepped = F_backwardEuler_stepped + xStepped(j);
@@ -307,7 +307,7 @@ for i = 1:timeSteps
                 F_backwardEuler_stepped = dt * theta * GenerateFlux(j, ...
                         rows, columns, xStepped, Vx, Vy, Dxx, Dyy, ...
                         xNodeDeltas, yNodeDeltas, nodeWidths, nodeHeights, ...
-                        northBC, eastBC, southBC, westBC);
+                        northBC, eastBC, southBC, westBC, advectionHandling);
                 F_backwardEuler_stepped = F_backwardEuler_stepped ...
                     - dt * theta * source(xStepped(j));
                 F_backwardEuler_stepped = F_backwardEuler_stepped + xStepped(j);
@@ -329,7 +329,7 @@ for i = 1:timeSteps
                 F_backwardEuler_stepped = dt * theta * GenerateFlux(j, ...
                         rows, columns, xStepped, Vx, Vy, Dxx, Dyy, ...
                         xNodeDeltas, yNodeDeltas, nodeWidths, nodeHeights, ...
-                        northBC, eastBC, southBC, westBC);
+                        northBC, eastBC, southBC, westBC, advectionHandling);
                 F_backwardEuler_stepped = F_backwardEuler_stepped ...
                     - dt * theta * source(xStepped(j));
                 F_backwardEuler_stepped = F_backwardEuler_stepped + xStepped(j);
@@ -351,7 +351,7 @@ for i = 1:timeSteps
                 F_backwardEuler_stepped = dt * theta * GenerateFlux(j, ...
                         rows, columns, xStepped, Vx, Vy, Dxx, Dyy, ...
                         xNodeDeltas, yNodeDeltas, nodeWidths, nodeHeights, ...
-                        northBC, eastBC, southBC, westBC);
+                        northBC, eastBC, southBC, westBC, advectionHandling);
                 F_backwardEuler_stepped = F_backwardEuler_stepped ...
                     - dt * theta * source(xStepped(j));
                 F_backwardEuler_stepped = F_backwardEuler_stepped + xStepped(j);
@@ -373,7 +373,7 @@ for i = 1:timeSteps
                 F_backwardEuler_stepped = dt * theta * GenerateFlux(j, ...
                         rows, columns, xStepped, Vx, Vy, Dxx, Dyy, ...
                         xNodeDeltas, yNodeDeltas, nodeWidths, nodeHeights, ...
-                        northBC, eastBC, southBC, westBC);
+                        northBC, eastBC, southBC, westBC, advectionHandling);
                 F_backwardEuler_stepped = F_backwardEuler_stepped ...
                     - dt * theta * source(xStepped(j));
                 F_backwardEuler_stepped = F_backwardEuler_stepped + xStepped(j);
@@ -398,7 +398,7 @@ for i = 1:timeSteps
             F_current_backwardEuler(k) = dt * theta * GenerateFlux(k, ...
                     rows, columns, currentSolution, Vx, Vy, Dxx, Dyy, ...
                     xNodeDeltas, yNodeDeltas, nodeWidths, nodeHeights, ...
-                    northBC, eastBC, southBC, westBC);
+                    northBC, eastBC, southBC, westBC, advectionHandling);
             F_current_backwardEuler(k) = F_current_backwardEuler(k) ...
                 - dt * theta * source(currentSolution(k));
             F_current_backwardEuler(k) = ...
@@ -440,7 +440,8 @@ end
 
 function flux = GenerateFlux(nodeCount, rows, columns, ...
     previousSolution, Vx, Vy, Dxx, Dyy, xNodeDeltas, yNodeDeltas, ...
-    nodeWidths, nodeHeights, northBC, eastBC, southBC, westBC)
+    nodeWidths, nodeHeights, northBC, eastBC, southBC, westBC, ...
+    advectionHandling)
 %% GenerateFlux: ...
 %
 
@@ -475,8 +476,20 @@ if (row == MIN_INDEX)
     end
 else
     northPrevSolution = previousSolution(nodeCount - 1);
+    
+    advectionAtFace = 0;
+    if (strcmp(advectionHandling, 'upwinding'))
+        if (cv_Vx > 0)
+            advectionAtFace = cv_prevSolution;
+        else
+            advectionAtFace = northPrevSolution;
+        end
+    elseif (strcmp(advectionHandling, 'averaging'))
+        advectionAtFace = (northPrevSolution + cv_prevSolution) / 2;
+    end
+    
     flux = flux + cv_width ...
-        * ( cv_Vy * (northPrevSolution + cv_prevSolution) / 2 ...
+        * ( cv_Vy * advectionAtFace ...
         - cv_Dyy * (northPrevSolution - cv_prevSolution) / yNodeDeltas(row - 1) );
 end
 
@@ -492,8 +505,20 @@ if (column == columns)
     end
 else
     eastPrevSolution = previousSolution(nodeCount + rows);
+    
+    advectionAtFace = 0;
+    if (strcmp(advectionHandling, 'upwinding'))
+        if (cv_Vx > 0)
+            advectionAtFace = cv_prevSolution;
+        else
+            advectionAtFace = eastPrevSolution;
+        end
+    elseif (strcmp(advectionHandling, 'averaging'))
+        advectionAtFace = (eastPrevSolution + cv_prevSolution) / 2;
+    end
+    
     flux = flux + cv_height ...
-        * ( cv_Vx * (eastPrevSolution + cv_prevSolution) / 2 ...
+        * ( cv_Vx * advectionAtFace ...
         - cv_Dxx * (eastPrevSolution - cv_prevSolution) / xNodeDeltas(column) );
 end
 
@@ -509,8 +534,20 @@ if (row == rows)
     end
 else
     southPrevSolution = previousSolution(nodeCount + 1);
+    
+    advectionAtFace = 0;
+    if (strcmp(advectionHandling, 'upwinding'))
+        if (cv_Vx > 0)
+            advectionAtFace = southPrevSolution;
+        else
+            advectionAtFace = cv_prevSolution;
+        end
+    elseif (strcmp(advectionHandling, 'averaging'))
+        advectionAtFace = (southPrevSolution + cv_prevSolution) / 2;
+    end
+    
     flux = flux - cv_width ...
-        * ( cv_Vy * (southPrevSolution + cv_prevSolution) / 2 ...
+        * ( cv_Vy * advectionAtFace ...
         - cv_Dyy * (cv_prevSolution - southPrevSolution) / yNodeDeltas(row) );
 end
 
@@ -526,8 +563,20 @@ if (column == MIN_INDEX)
     end
 else
     westPrevSolution = previousSolution(nodeCount - rows);
+    
+    advectionAtFace = 0;
+    if (strcmp(advectionHandling, 'upwinding'))
+        if (cv_Vx > 0)
+            advectionAtFace = westPrevSolution;
+        else
+            advectionAtFace = cv_prevSolution;
+        end
+    elseif (strcmp(advectionHandling, 'averaging'))
+        advectionAtFace = (westPrevSolution + cv_prevSolution) / 2;
+    end
+    
     flux = flux - cv_height ...
-        * ( cv_Vx * (westPrevSolution + cv_prevSolution) / 2 ...
+        * ( cv_Vx * advectionAtFace ...
         - cv_Dxx * (cv_prevSolution - westPrevSolution) / xNodeDeltas(column - 1) );
 end
 
