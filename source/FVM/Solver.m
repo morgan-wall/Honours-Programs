@@ -1,6 +1,7 @@
 function [tout, yout] = Solver(tFinal, Dxx, Dyy, Vx, Vy, source, theta, ...
     advectionHandling, nodesX, nodesY, northBC, eastBC, southBC, westBC, ...
-    initialCondition, storedTimeSteps, newtonParameters, gmresParameters)
+    initialCondition, storedTimeSteps, newtonParameters, gmresParameters, ...
+    forcingTermParameters, safeguardParameters)
 %% Solver: solve non-linear two-dimesional advection-diffusion equation.
 % Determine a numerical solution for the non-linear, two-dimensional
 % advection-diffusion equation given by:
@@ -146,6 +147,34 @@ function [tout, yout] = Solver(tFinal, Dxx, Dyy, Vx, Vy, source, theta, ...
 %               preconditioning. This value is only used if SOR
 %               preconditioning is used.
 %
+%   forcingTermParameters:
+%       A struct specifying parameters for the forcing term used in the 
+%       inexact Newton solver. The fields include:
+%           maxForcingTerm:
+%               The upper bound on the value of the forcing term $n_k$.
+%               This parameter must have a value between zero and one,
+%               inclusive.
+%           type:
+%               A string denoting the type of forcing term used. The valid
+%               inputs include 'choice1' and 'choice2', which correspond to
+%               the two forcing terms proposed by Eisenstat & Walker
+%               (1996).
+%           gamma:
+%               A double in [0, 1] used in calculating the forcing term.
+%               This parameter is only required if type is 'choice2'.
+%           alpha:
+%               A double in (1, 2] used in calculating the forcing term.
+%               This parameter is only required if type is 'choice2'.
+%
+%   safeguardParameters:
+%       A struct containing parameters for the safeguards imposed on the 
+%       forcing terms in the inexact Newton method. The fields include:
+%           threshold:
+%               The minimum value of the forcing term to which safeguarding
+%               is applied. If a proposed forcing term is less than or
+%               equal to this value, then safeguarding is not imposed.
+%
+%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Outputs:
 %   
@@ -265,14 +294,17 @@ for i = 1:timeSteps
     end
     
     Fx = F_forwardEuler + F_current_backwardEuler;
+    Fx_previous = Fx;
     
     % Solve the non-linear system, F(x) = 0, for the next time step
+    jacobian = zeros(nodeCount);
     currentSolution = previousSolution;
+    forcingTerm = 1/2;
     while (current_iteration <= newtonParameters.maxIterations ...
             && norm(Fx) > newtonParameters.relErrorTol)
         
         % determine finite difference approx of Jacobian
-        jacobian = zeros(nodeCount);
+        previousJacobian = jacobian;
         
         h = determine_newton_step_delta(currentSolution);
         
@@ -384,10 +416,39 @@ for i = 1:timeSteps
             end
         end
         
+        if (current_iteration == 0)
+            previousJacobian = jacobian;
+        end
+        
+        % Determine the error tolerance based on the forcing term (with safeguarding)
+        switch(forcingTermParameters.type)
+            case 'choice1'
+                safeguardedTerm = forcingTerm^((1 + sqrt(5))/2);
+                forcingTerm = norm(Fx - Fx_previous - previousJacobian * previousSolution) ...
+                    / norm(Fx_previous);
+                if (safeguardedTerm > safeguardParameters.threshold)
+                    forcingTerm = max(forcingTerm, safeguardedTerm);
+                    forcingTerm = min(forcingTerm, forcingTermParameters.maxForcingTerm);
+                end
+                residualError = forcingTerm * norm(Fx);
+            case 'choice2'
+                safeguardedTerm = forcingTermParameters.gamma ...
+                    * forcingTerm^forcingTermParameters.alpha;
+                forcingTerm = forcingTermParameters.gamma ...
+                    * (norm(Fx) / norm(Fx_previous))^forcingTermParameters.alpha;
+                if (safeguardedTerm > safeguardParameters.threshold)
+                    forcingTerm = max(forcingTerm, safeguardedTerm);
+                    forcingTerm = min(forcingTerm, forcingTermParameters.maxForcingTerm);
+                end
+                residualError = forcingTerm * norm(Fx);
+            case 'none'
+                residualError = gmresParameters.errorTol;
+        end
+        
         % solve the linear system using GMRES
         delta_x = gmres_general(jacobian, Fx, currentSolution, ...
             gmresParameters.maxIterations, gmresParameters.restartValue, ...
-            gmresParameters.errorTol, gmresParameters.preconditioningType, ...
+            residualError, gmresParameters.preconditioningType, ...
             gmresParameters.omega);
 
         currentSolution = currentSolution - delta_x;
@@ -405,6 +466,7 @@ for i = 1:timeSteps
                 F_current_backwardEuler(k) + currentSolution(k);
         end
 
+        Fx_previous = Fx;
         Fx = F_current_backwardEuler + F_forwardEuler;
         
         current_iteration = current_iteration + 1;

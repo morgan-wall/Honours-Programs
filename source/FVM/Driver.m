@@ -19,6 +19,11 @@ newtonParameters = struct('maxIterations', 15, 'relErrorTol', 1e-10);
 gmresParameters = struct('maxIterations', 200, 'restartValue', 100, ...
     'errorTol', 1e-10, 'preconditioningType', 'ilu', 'omega', 0);
 
+forcingTermParameters = struct('maxForcingTerm', 0.9, 'type', 'none', ...
+    'gamma', 0.9, 'alpha', 2);
+
+safeguardParameters = struct('threshold', 0.1);
+
 %% Test: Gaussian Diffusion (G1) - Single Point Initial Condition
 
 % Initialise temporal parameters
@@ -52,7 +57,8 @@ initialCondition(round(length(nodesY) / 2), round(length(nodesY) / 2)) = 1;
 % Solve problem
 [tout, yout] = Solver(tFinal, Dxx, Dyy, Vx, Vy, source, theta, ...
     advectionHandling, nodesX, nodesY, northBC, eastBC, southBC, westBC, ...
-    initialCondition, storedTimeSteps, newtonParameters, gmresParameters);
+    initialCondition, storedTimeSteps, newtonParameters, gmresParameters, ...
+    forcingTermParameters, safeguardParameters);
 
 % Output plots and metrics
 figure;
@@ -126,7 +132,8 @@ end
 % Solve problem
 [tout, yout] = Solver(tFinal, Dxx, Dyy, Vx, Vy, source, theta, ...
     advectionHandling, nodesX, nodesY, northBC, eastBC, southBC, westBC, ...
-    initialCondition, storedTimeSteps, newtonParameters, gmresParameters);
+    initialCondition, storedTimeSteps, newtonParameters, gmresParameters, ...
+    forcingTermParameters, safeguardParameters);
 
 % Output plots and metrics
 figure;
@@ -178,7 +185,8 @@ initialCondition(:, 1) = 1;
 % Solve problem
 [tout, yout] = Solver(tFinal, Dxx, Dyy, Vx, Vy, source, theta, ...
     advectionHandling, nodesX, nodesY, northBC, eastBC, southBC, westBC, ...
-    initialCondition, storedTimeSteps, newtonParameters, gmresParameters);
+    initialCondition, storedTimeSteps, newtonParameters, gmresParameters, ...
+    forcingTermParameters, safeguardParameters);
 
 % Output plots and metrics
 figure;
@@ -234,7 +242,8 @@ initialCondition(1, :) = 1;
 % Solve problem
 [tout, yout] = Solver(tFinal, Dxx, Dyy, Vx, Vy, source, theta, ...
     advectionHandling, nodesX, nodesY, northBC, eastBC, southBC, westBC, ...
-    initialCondition, storedTimeSteps, newtonParameters, gmresParameters);
+    initialCondition, storedTimeSteps, newtonParameters, gmresParameters, ...
+    forcingTermParameters, safeguardParameters);
 
 % Output plots and metrics
 figure;
@@ -290,7 +299,8 @@ initialCondition(:, end) = 1;
 % Solve problem
 [tout, yout] = Solver(tFinal, Dxx, Dyy, Vx, Vy, source, theta, ...
     advectionHandling, nodesX, nodesY, northBC, eastBC, southBC, westBC, ...
-    initialCondition, storedTimeSteps, newtonParameters, gmresParameters);
+    initialCondition, storedTimeSteps, newtonParameters, gmresParameters, ...
+    forcingTermParameters, safeguardParameters);
 
 % Output plots and metrics
 figure;
@@ -346,7 +356,8 @@ initialCondition(end, :) = 1;
 % Solve problem
 [tout, yout] = Solver(tFinal, Dxx, Dyy, Vx, Vy, source, theta, ...
     advectionHandling, nodesX, nodesY, northBC, eastBC, southBC, westBC, ...
-    initialCondition, storedTimeSteps, newtonParameters, gmresParameters);
+    initialCondition, storedTimeSteps, newtonParameters, gmresParameters, ...
+    forcingTermParameters, safeguardParameters);
 
 % Output plots and metrics
 figure;
