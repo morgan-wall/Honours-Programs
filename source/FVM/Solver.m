@@ -265,8 +265,8 @@ gmresCalls = 0;
 %% Initialise solver parameters
 
 % TODO: update stub values.
-tau_a = 1;
-tau_r = 1;
+tau_a = 1e-6;
+tau_r = 1e-6;
 
 %% Iteratively solve advection-diffusion equation (time marching strategy)
 
