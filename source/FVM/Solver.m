@@ -123,9 +123,12 @@ function [tout, yout] = Solver(tFinal, Dxx, Dyy, Vx, Vy, source, theta, ...
 %           maxIterations:
 %               The maximum number of iterations of the inexact Newton
 %               method.
-%           relErrorTol:
-%               The relative error tolerance applied to the inexact Newton
-%               method.
+%           tolUpdate:
+%               The tolerance applied to the Newton update to determine
+%               the stopping point of the inexact Newton method.
+%           tolResidual:
+%               The tolerance applied to the nonlinear residual to 
+%               determine the stopping point of the inexact Newton method.
 %
 %   gmresParameters:
 %       A struct specifying parameters for the GMRES solver used for
@@ -255,6 +258,11 @@ tout = zeros(numStoredSolutions, 1);
 yout(:, 1) = initialCondition(:);
 previousSolution = initialCondition(:);
 
+%% Initialise performance metrics
+
+newtonIterations = 0;
+gmresCalls = 0;
+
 %% Iteratively solve advection-diffusion equation (time marching strategy)
 
 for i = 1:timeSteps
@@ -295,13 +303,16 @@ for i = 1:timeSteps
     
     Fx = F_forwardEuler + F_current_backwardEuler;
     Fx_previous = Fx;
+    Fx_initial_norm = norm(Fx);
     
     % Solve the non-linear system, F(x) = 0, for the next time step
     jacobian = zeros(nodeCount);
     currentSolution = previousSolution;
     forcingTerm = 1/2;
+    delta_x = realmax;
     while (current_iteration <= newtonParameters.maxIterations ...
-            && norm(Fx) > newtonParameters.relErrorTol)
+            && norm(delta_x / currentSolution) >= newtonParameters.tolUpdate ...
+            && norm(Fx) >= newtonParameters.tolResidual * Fx_initial_norm)
         
         % determine finite difference approx of Jacobian
         previousJacobian = jacobian;
@@ -446,11 +457,13 @@ for i = 1:timeSteps
         end
         
         % solve the linear system using GMRES
-        delta_x = gmres_general(jacobian, Fx, currentSolution, ...
+        [delta_x, iterations] = gmres_general(jacobian, Fx, currentSolution, ...
             gmresParameters.maxIterations, gmresParameters.restartValue, ...
             residualError, gmresParameters.preconditioningType, ...
             gmresParameters.omega);
-
+        
+        gmresCalls = gmresCalls + iterations;
+        
         currentSolution = currentSolution - delta_x;
         
         % Evaluate the nonlinear system for updated iterate
@@ -471,6 +484,8 @@ for i = 1:timeSteps
         
         current_iteration = current_iteration + 1;
     end
+    
+    newtonIterations = newtonIterations + current_iteration;
     
     % Ensure an accurate solution to F(u) = 0 was determined
     if (current_iteration > newtonParameters.maxIterations ...
@@ -493,6 +508,10 @@ for i = 1:timeSteps
     
     previousSolution = currentSolution;
 end
+
+% Output performance metrics
+disp(['Total Newton Iterations: ' num2str(newtonIterations)]);
+disp(['Total GMRES Calls: ' num2str(gmresCalls)]);
 
 end
 
