@@ -177,7 +177,6 @@ function [tout, yout] = Solver(tFinal, Dxx, Dyy, Vx, Vy, source, theta, ...
 %               is applied. If a proposed forcing term is less than or
 %               equal to this value, then safeguarding is not imposed.
 %
-%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Outputs:
 %   
@@ -263,6 +262,12 @@ previousSolution = initialCondition(:);
 newtonIterations = 0;
 gmresCalls = 0;
 
+%% Initialise solver parameters
+
+% TODO: update stub values.
+tau_a = 1;
+tau_r = 1;
+
 %% Iteratively solve advection-diffusion equation (time marching strategy)
 
 for i = 1:timeSteps
@@ -304,6 +309,7 @@ for i = 1:timeSteps
     Fx = F_forwardEuler + F_current_backwardEuler;
     Fx_previous = Fx;
     Fx_initial_norm = norm(Fx);
+    Fx_initial = Fx;
     
     % Solve the non-linear system, F(x) = 0, for the next time step
     jacobian = zeros(nodeCount);
@@ -452,9 +458,27 @@ for i = 1:timeSteps
                     forcingTerm = min(forcingTerm, forcingTermParameters.maxForcingTerm);
                 end
                 residualError = forcingTerm * norm(Fx);
+            case 'assignment'
+                safeguardedTerm = forcingTermParameters.gamma ...
+                    * forcingTerm^forcingTermParameters.alpha;
+                eta_k_R = forcingTermParameters.gamma ...
+                    * (norm(Fx, Inf) / norm(Fx_previous, Inf))^forcingTermParameters.alpha;
+                if (current_iteration == 0)
+                    eta_k_S = forcingTermParameters.maxForcingTerm;
+                elseif (safeguardedTerm <= safeguardParameters.threshold)
+                    eta_k_S = min(forcingTermParameters.maxForcingTerm, eta_k_R);
+                else
+                    eta_k_S = min(forcingTermParameters.maxForcingTerm, ...
+                        max(forcingTermParameters.maxForcingTerm, eta_k_R));
+                end
+                forcingTerm = min(forcingTermParameters.maxForcingTerm, ...
+                    max(eta_k_S, (0.5 * (tau_a + tau_r * norm(Fx_initial, Inf))/ norm(Fx, Inf))));
+                residualError = forcingTerm * norm(Fx);
             case 'none'
                 residualError = gmresParameters.errorTol;
         end
+        
+%         disp(['Residual error: ' num2str(residualError)]);
         
         % solve the linear system using GMRES
         [delta_x, iterations] = gmres_general(jacobian, Fx, currentSolution, ...
@@ -485,6 +509,8 @@ for i = 1:timeSteps
         current_iteration = current_iteration + 1;
     end
     
+%     disp(['Newton iterations: ' num2str(current_iteration)]);
+    
     newtonIterations = newtonIterations + current_iteration;
     
     % Ensure an accurate solution to F(u) = 0 was determined
@@ -510,8 +536,8 @@ for i = 1:timeSteps
 end
 
 % Output performance metrics
-disp(['Total Newton Iterations: ' num2str(newtonIterations)]);
-disp(['Total GMRES Calls: ' num2str(gmresCalls)]);
+% disp(['Total Newton Iterations: ' num2str(newtonIterations)]);
+% disp(['Total GMRES Calls: ' num2str(gmresCalls)]);
 
 end
 
