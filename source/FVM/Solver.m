@@ -1,4 +1,4 @@
-function [tout, yout] = Solver(tFinal, Dxx, Dyy, Vx, Vy, source, theta, ...
+function [tout, yout] = Solver(dt, tFinal, Dxx, Dyy, Vx, Vy, source, theta, ...
     advectionHandling, nodesX, nodesY, northBC, eastBC, southBC, westBC, ...
     initialCondition, storedTimeSteps, newtonParameters, gmresParameters, ...
     forcingTermParameters, safeguardParameters)
@@ -38,6 +38,9 @@ function [tout, yout] = Solver(tFinal, Dxx, Dyy, Vx, Vy, source, theta, ...
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Inputs:
+%
+%   dt:
+%       The delta between time steps.
 %
 %   tFinal:
 %       The final time for solutions to be determined. The PDE is solved
@@ -200,10 +203,8 @@ function [tout, yout] = Solver(tFinal, Dxx, Dyy, Vx, Vy, source, theta, ...
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Unimplemented features:
 %
-%   1. Adaptive time-stepping.
-%   2. Inexact Newton method (incl. forcing terms proposed by Walker).
-%   3. Selective construction of the preconditioner in the GMRES method.
-%   4. Jacobian-free Newton-GMRES solver.
+%   1. Selective construction of the preconditioner in the GMRES method.
+%   2. Jacobian-free Newton-GMRES solver.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -242,9 +243,8 @@ nodeHeights(end) = yFaceDeltas(end);
 %% Initialise solution parameters
 
 tStart = 0;
-dt = 0.001;
-
 timeSteps = length(tStart:dt:tFinal) - 1;
+
 numStoredSolutions = floor(timeSteps / storedTimeSteps) + 1;
 manuallyStoreFinalTimeSol = rem(timeSteps, storedTimeSteps) ~= 0;
 if (manuallyStoreFinalTimeSol)
