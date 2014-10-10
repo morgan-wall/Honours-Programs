@@ -560,10 +560,10 @@ row = mod(nodeCount - 1, rows) + 1;
 column = floor((nodeCount - 1) / rows) + 1;
 
 cv_prevSolution = previousSolution(nodeCount); 
-cv_Dxx = Dxx(cv_prevSolution);
-cv_Dyy = Dyy(cv_prevSolution);
-cv_Vx = Vx(cv_prevSolution);
-cv_Vy = Vy(cv_prevSolution);
+% cv_Dxx = Dxx(cv_prevSolution);
+% cv_Dyy = Dyy(cv_prevSolution);
+% cv_Vx = Vx(cv_prevSolution);
+% cv_Vy = Vy(cv_prevSolution);
 cv_width = nodeWidths(column);
 cv_height = nodeHeights(row);
 
@@ -575,116 +575,120 @@ flux = 0;
 if (row == MIN_INDEX)
     if (northBC.B ~= 0)
         flux = flux + cv_width ...
-            * ( (cv_Vy + cv_Dyy * northBC.A / northBC.B) * cv_prevSolution ...
-            - cv_Dyy * northBC.C / northBC.B );
+            * ( (Vy(cv_prevSolution) + Dyy(cv_prevSolution) * northBC.A / northBC.B) * cv_prevSolution ...
+            - Dyy(cv_prevSolution) * northBC.C / northBC.B );
     else
         error(['Invalid Boundary Condition (North): The B coefficient ' ...
             'for a boundary condition must be positive.']);
     end
 else
     northPrevSolution = previousSolution(nodeCount - 1);
+    solutionAtFace = (northPrevSolution + cv_prevSolution) / 2;
     
     advectionAtFace = 0;
     if (strcmp(advectionHandling, 'upwinding'))
-        if (cv_Vx > 0)
+        if (Vx(solutionAtFace) > 0)
             advectionAtFace = cv_prevSolution;
         else
             advectionAtFace = northPrevSolution;
         end
     elseif (strcmp(advectionHandling, 'averaging'))
-        advectionAtFace = (northPrevSolution + cv_prevSolution) / 2;
+        advectionAtFace = solutionAtFace;
     end
     
     flux = flux + cv_width ...
-        * ( cv_Vy * advectionAtFace ...
-        - cv_Dyy * (northPrevSolution - cv_prevSolution) / yNodeDeltas(row - 1) );
+        * ( Vy(solutionAtFace) * advectionAtFace ...
+        - Dyy(solutionAtFace) * (northPrevSolution - cv_prevSolution) / yNodeDeltas(row - 1) );
 end
 
 % East face
 if (column == columns)
     if (eastBC.B ~= 0)
         flux = flux + cv_height ...
-            * ( (cv_Vx + cv_Dxx * eastBC.A / eastBC.B) * cv_prevSolution ...
-            - cv_Dxx * eastBC.C / eastBC.B );
+            * ( (Vx(cv_prevSolution) + Dxx(cv_prevSolution) * eastBC.A / eastBC.B) * cv_prevSolution ...
+            - Dxx(cv_prevSolution) * eastBC.C / eastBC.B );
     else
         error(['Invalid Boundary Condition (East): The B coefficient ' ...
             'for a boundary condition must be positive.']);
     end
 else
     eastPrevSolution = previousSolution(nodeCount + rows);
+    solutionAtFace = (eastPrevSolution + cv_prevSolution) / 2;
     
     advectionAtFace = 0;
     if (strcmp(advectionHandling, 'upwinding'))
-        if (cv_Vx > 0)
+        if (Vx(solutionAtFace) > 0)
             advectionAtFace = cv_prevSolution;
         else
             advectionAtFace = eastPrevSolution;
         end
     elseif (strcmp(advectionHandling, 'averaging'))
-        advectionAtFace = (eastPrevSolution + cv_prevSolution) / 2;
+        advectionAtFace = solutionAtFace;
     end
     
     flux = flux + cv_height ...
-        * ( cv_Vx * advectionAtFace ...
-        - cv_Dxx * (eastPrevSolution - cv_prevSolution) / xNodeDeltas(column) );
+        * ( Vx(solutionAtFace) * advectionAtFace ...
+        - Dxx(solutionAtFace) * (eastPrevSolution - cv_prevSolution) / xNodeDeltas(column) );
 end
 
 % South face
 if (row == rows)
     if (southBC.B ~= 0)
         flux = flux - cv_width ...
-            * ( (cv_Vy - cv_Dyy * southBC.A / southBC.B) * cv_prevSolution ...
-            + cv_Dyy * southBC.C / southBC.B );
+            * ( (Vy(cv_prevSolution) - Dyy(cv_prevSolution) * southBC.A / southBC.B) * cv_prevSolution ...
+            + Dyy(cv_prevSolution) * southBC.C / southBC.B );
     else
         error(['Invalid Boundary Condition (South): The B coefficient ' ...
             'for a boundary condition must be positive.']);
     end
 else
     southPrevSolution = previousSolution(nodeCount + 1);
+    solutionAtFace = (southPrevSolution + cv_prevSolution) / 2;
     
     advectionAtFace = 0;
     if (strcmp(advectionHandling, 'upwinding'))
-        if (cv_Vx > 0)
+        if (Vx(solutionAtFace) > 0)
             advectionAtFace = southPrevSolution;
         else
             advectionAtFace = cv_prevSolution;
         end
     elseif (strcmp(advectionHandling, 'averaging'))
-        advectionAtFace = (southPrevSolution + cv_prevSolution) / 2;
+        advectionAtFace = solutionAtFace;
     end
     
     flux = flux - cv_width ...
-        * ( cv_Vy * advectionAtFace ...
-        - cv_Dyy * (cv_prevSolution - southPrevSolution) / yNodeDeltas(row) );
+        * ( Vy(solutionAtFace) * advectionAtFace ...
+        - Dyy(solutionAtFace) * (cv_prevSolution - southPrevSolution) / yNodeDeltas(row) );
 end
 
 % West face
 if (column == MIN_INDEX)
     if (westBC.B ~= 0)
         flux = flux - cv_height ...
-            * ( (cv_Vx - cv_Dxx * westBC.A / westBC.B) * cv_prevSolution ...
-            + cv_Dxx * westBC.C / westBC.B );
+            * ( (Vx(cv_prevSolution) - Dxx(cv_prevSolution) * westBC.A / westBC.B) * cv_prevSolution ...
+            + Dxx(cv_prevSolution) * westBC.C / westBC.B );
     else
         error(['Invalid Boundary Condition (West): The B coefficient ' ...
             'for a boundary condition must be positive.']);
     end
 else
     westPrevSolution = previousSolution(nodeCount - rows);
+    solutionAtFace = (westPrevSolution + cv_prevSolution) / 2;
     
     advectionAtFace = 0;
     if (strcmp(advectionHandling, 'upwinding'))
-        if (cv_Vx > 0)
+        if (Vx(solutionAtFace) > 0)
             advectionAtFace = westPrevSolution;
         else
             advectionAtFace = cv_prevSolution;
         end
     elseif (strcmp(advectionHandling, 'averaging'))
-        advectionAtFace = (westPrevSolution + cv_prevSolution) / 2;
+        advectionAtFace = solutionAtFace;
     end
     
     flux = flux - cv_height ...
-        * ( cv_Vx * advectionAtFace ...
-        - cv_Dxx * (cv_prevSolution - westPrevSolution) / xNodeDeltas(column - 1) );
+        * ( Vx(solutionAtFace) * advectionAtFace ...
+        - Dxx(solutionAtFace) * (cv_prevSolution - westPrevSolution) / xNodeDeltas(column - 1) );
 end
 
 flux = flux / (cv_width * cv_height);
