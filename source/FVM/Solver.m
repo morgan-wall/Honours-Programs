@@ -222,8 +222,12 @@ columns = length(nodesX);
 nodeCount = rows * columns;
 
 % Absolute distances between adjacent nodes
-xNodeDeltas = diff(nodesX);
-yNodeDeltas = abs(diff(nodesY));
+% xNodeDeltas = diff(nodesX);
+xNodeDeltas = nodesX(2:end) - nodesX(1:end-1);
+xNodeDeltas = round(xNodeDeltas .* 1000) ./ 1000;
+% yNodeDeltas = abs(diff(nodesY));
+yNodeDeltas = nodesY(1:end-1) - nodesY(2:end);
+yNodeDeltas = round(yNodeDeltas .* 1000) ./ 1000;
 
 % Absolute distances between nodes and CV faces
 xFaceDeltas = xNodeDeltas ./ 2;
@@ -279,12 +283,13 @@ for i = 1:timeSteps
                     rows, columns, previousSolution, Vx, Vy, Dxx, Dyy, ...
                     xNodeDeltas, yNodeDeltas, nodeWidths, nodeHeights, ...
                     northBC, eastBC, southBC, westBC, advectionHandling);
-            F_forwardEuler(j) = F_forwardEuler(j) ...
-                - dt * (1 - theta) * source(previousSolution(j));
+%             F_forwardEuler(j) = F_forwardEuler(j) ...
+%                 - dt * (1 - theta) * source(previousSolution(j));
         end
         
-        F_forwardEuler(j) = F_forwardEuler(j) - previousSolution(j);
+%         F_forwardEuler(j) = F_forwardEuler(j) - previousSolution(j);
     end
+    F_forwardEuler = F_forwardEuler - previousSolution; 
     
     if (theta ~= 1)
         F_forwardEuler_new = dt * (1 - theta) * b(nodeCount, rows, columns, previousSolution, Vx, Vy, Dxx, Dyy, ...
@@ -292,10 +297,15 @@ for i = 1:timeSteps
             eastBC, southBC, westBC, advectionHandling);
     end
     F_forwardEuler_new = F_forwardEuler_new - previousSolution;
+%     F_forwardEuler = F_forwardEuler_new;
     
     disp(['Iteration: ' num2str(i)]);
     disp(['Error: ' num2str(norm(F_forwardEuler - F_forwardEuler_new))]);
     
+%     disp('****');
+%     F_forwardEuler(find(F_forwardEuler ~= 0))
+%     F_forwardEuler_new(find(F_forwardEuler_new ~= 0))
+
     % Initialise variables for Newton-GMRES solver
     current_iteration = 0;
     
@@ -566,16 +576,31 @@ nodeWidths = repmat(nodeWidths, columns, 1);
 indices = 1:nodeCount;
 c_indices = indices - 1;
 
+%% Formulate F(x) = 0 by considering the flux at each boundary
+p_phi = zeros(nodeCount, 1);
+
+
+
+
 % North nodes
 n_boundary_indices = indices(mod(c_indices, rows) == 0);
 n_indices = setdiff(indices, n_boundary_indices);
 n_phi = zeros(nodeCount, 1);
 % n_phi(n_indices) = (phi(n_indices - 1) ./ nodeHeights(n_indices)) ...
 %     .* (Vy(phi(n_indices)) ./ 2 - Dyy(phi(n_indices)) ./ yNodeDeltas(n_indices));
+n_phi(n_indices) = (phi(n_indices - 1) ./ nodeHeights(n_indices)) ...
+    .* (Vy(phi(n_indices)) ./ 2 - Dyy(phi(n_indices)) ./ 0.05);
 
-% North boundary nodes (constant component in North face flux)
-% n_phi(n_boundary_indices) = -nodeWidths(phi(n_boundary_indices)) ...
+% % North boundary nodes (constant component in North face flux)
+% p_phi(n_boundary_indices) = p_phi(n_boundary_indices) + -nodeWidths(n_boundary_indices) ...
 %     .* Dyy(phi(n_boundary_indices)) .* northBC.C ./ northBC.B;
+% 
+% % Root nodes based on flux through North face
+% p_phi(n_boundary_indices) = p_phi(n_boundary_indices) + nodeWidths(n_boundary_indices) .* phi(n_boundary_indices) ...
+%     .* (Vy(phi(n_boundary_indices)) + Dyy(phi(n_boundary_indices)) .* northBC.A ./ northBC.B);
+
+
+
 
 % East nodes
 e_boundary_indices = indices(end-rows+1:end);
@@ -586,19 +611,45 @@ e_phi = zeros(nodeCount, 1);
 e_phi(e_indices) = (phi(e_indices + rows) ./ nodeWidths(e_indices)) ...
     .* (Vx(phi(e_indices)) ./ 2 - Dxx(phi(e_indices)) ./ 0.05);
 
-% East boundary nodes (constant component in East face flux)
-% e_phi(e_boundary_indices) = -nodeWidths(phi(n_boundary_indices)) ...
-%     .* Dyy(phi(n_boundary_indices)) .* northBC.C ./ northBC.B;
+% % East boundary nodes (constant component in East face flux)
+% p_phi(e_boundary_indices) = p_phi(e_boundary_indices) + -nodeHeights(e_boundary_indices) ...
+%     .* Dxx(phi(e_boundary_indices)) .* eastBC.C ./ eastBC.B;
+% 
+% % Root nodes based on flux through East face
+% p_phi(e_boundary_indices) = p_phi(e_boundary_indices) + nodeHeights(e_boundary_indices) .* phi(e_boundary_indices) ...
+%     .* (Vx(phi(e_boundary_indices)) + Dxx(phi(e_boundary_indices)) .* eastBC.A ./ eastBC.B);
+
+
+
 
 % South nodes
-s_indices = setdiff(indices, indices(mod(indices, rows) == 0));
+s_boundary_indices = indices(mod(indices, rows) == 0);
+s_indices = setdiff(indices, s_boundary_indices);
 s_phi = zeros(nodeCount, 1);
 % s_phi(s_indices) = (-phi(s_indices + 1) ./ nodeHeights(s_indices)) ...
 %     .* (Vy(phi(s_indices)) ./ 2 - Dyy(phi(s_indices)) ./ yNodeDeltas(s_indices + 1));
 s_phi(s_indices) = (-phi(s_indices + 1) ./ nodeHeights(s_indices)) ...
     .* (Vy(phi(s_indices)) ./ 2 + Dyy(phi(s_indices)) ./ 0.05);
 
+% % South boundary nodes (constant component in South face flux)
+% s_phi(s_boundary_indices) = -nodeWidths(s_boundary_indices) ...
+%     .* Dyy(phi(s_boundary_indices)) .* southBC.C ./ southBC.B;
+% 
+% % Root nodes based on flux through South face
+% p_phi(s_boundary_indices) = p_phi(s_boundary_indices) + -nodeWidths(s_boundary_indices) .* phi(s_boundary_indices) ...
+%     .* (Vy(phi(s_boundary_indices)) - Dyy(phi(s_boundary_indices)) .* southBC.A ./ southBC.B);
+
+% % South boundary nodes (constant component in South face flux)
+% p_phi(s_boundary_indices) = p_phi(s_boundary_indices) + -nodeWidths(s_boundary_indices) ...
+%     .* Dyy(phi(s_boundary_indices)) .* southBC.C ./ southBC.B;
+% 
+% % Root nodes based on flux through South face
+% p_phi(s_boundary_indices) = p_phi(s_boundary_indices) + -nodeWidths(s_boundary_indices) .* phi(s_boundary_indices) ...
+%     .* (Vy(phi(s_boundary_indices)) - Dyy(phi(s_boundary_indices)) .* southBC.A ./ southBC.B);
+
+
 % West nodes
+w_boundary_indices = indices(1:rows);
 w_indices = indices(rows+1:end);
 w_phi = zeros(nodeCount, 1);
 % w_phi(w_indices) = (-phi(w_indices - rows) ./ nodeWidths(w_indices)) ...
@@ -606,19 +657,39 @@ w_phi = zeros(nodeCount, 1);
 w_phi(w_indices) = (-phi(w_indices - rows) ./ nodeWidths(w_indices)) ...
     .* (Vx(phi(w_indices)) ./ 2 + Dxx(phi(w_indices)) ./ 0.05);
 
+% % West boundary nodes (constant component in West face flux)
+% w_phi(w_boundary_indices) = -nodeHeights(w_boundary_indices) ...
+%     .* Dxx(phi(w_boundary_indices)) .* westBC.C ./ westBC.B;
+% 
+% % Root nodes based on flux through West face
+% p_phi(w_boundary_indices) = p_phi(w_boundary_indices) + -nodeHeights(w_boundary_indices) .* phi(w_boundary_indices) ...
+%     .* (Vx(phi(w_boundary_indices)) - Dxx(phi(w_boundary_indices)) .* westBC.A ./ westBC.B);
+
+% % West boundary nodes (constant component in West face flux)
+% p_phi(w_boundary_indices) = p_phi(w_boundary_indices) + -nodeHeights(w_boundary_indices) ...
+%     .* Dxx(phi(w_boundary_indices)) .* westBC.C ./ westBC.B;
+% 
+% % Root nodes based on flux through West face
+% p_phi(w_boundary_indices) = p_phi(w_boundary_indices) + -nodeHeights(w_boundary_indices) .* phi(w_boundary_indices) ...
+%     .* (Vx(phi(w_boundary_indices)) - Dxx(phi(w_boundary_indices)) .* westBC.A ./ westBC.B);
+
+
 % Root nodes
 p_indices = intersect(intersect(intersect(n_indices, e_indices), s_indices), w_indices);
-p_phi = zeros(nodeCount, 1);
+% p_phi = zeros(nodeCount, 1);
 % p_phi(p_indices) = phi(p_indices) ...
 %     .* ( (Dyy(phi(p_indices)) ./ nodeHeights(p_indices)) ...
 %     .* (1 / yNodeDeltas(p_indices - 1) + 1 / yNodeDeltas(p_indices))' ...
 %     + (Dxx(phi(p_indices)) ./ nodeWidths(p_indices)) ...
 %     .* (1 / xNodeDeltas(p_indices - 1) + 1 / xNodeDeltas(p_indices))' );
-p_phi(p_indices) = phi(p_indices) ...
+p_phi(p_indices) = p_phi(p_indices) + phi(p_indices) ...
     .* ( (Dyy(phi(p_indices)) ./ nodeHeights(p_indices)) ...
     .* (1 ./ (ones(length(p_indices), 1) .* 0.05) + 1 ./ (ones(length(p_indices), 1) .* 0.05)) ...
     + (Dxx(phi(p_indices)) ./ nodeWidths(p_indices)) ...
     .* (1 ./ (ones(length(p_indices), 1) .* 0.05) + 1 ./ (ones(length(p_indices), 1) .* 0.05)) );
+
+
+
 
 a = p_phi + n_phi + e_phi + s_phi + w_phi;
 
