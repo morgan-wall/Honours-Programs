@@ -264,7 +264,6 @@ gmresCalls = 0;
 
 %% Initialise solver parameters
 
-% TODO: update stub values.
 tau_a = 1e-6;
 tau_r = 1e-6;
 
@@ -286,6 +285,16 @@ for i = 1:timeSteps
         
         F_forwardEuler(j) = F_forwardEuler(j) - previousSolution(j);
     end
+    
+    if (theta ~= 1)
+        F_forwardEuler_new = dt * (1 - theta) * b(nodeCount, rows, columns, previousSolution, Vx, Vy, Dxx, Dyy, ...
+            xNodeDeltas, yNodeDeltas, nodeWidths, nodeHeights, northBC, ...
+            eastBC, southBC, westBC, advectionHandling);
+    end
+    F_forwardEuler_new = F_forwardEuler_new - previousSolution;
+    
+    disp(['Iteration: ' num2str(i)]);
+    disp(['Error: ' num2str(norm(F_forwardEuler - F_forwardEuler_new))]);
     
     % Initialise variables for Newton-GMRES solver
     current_iteration = 0;
@@ -544,6 +553,76 @@ end
 %
 %   Helper Functions
 %
+
+function a = b(nodeCount, rows, columns, phi, Vx, Vy, Dxx, Dyy, ...
+    xNodeDeltas, yNodeDeltas, nodeWidths, nodeHeights, northBC, ...
+    eastBC, southBC, westBC, advectionHandling)
+
+nodeHeights = repmat(nodeHeights, columns, 1);
+nodeWidths = repmat(nodeWidths, columns, 1);
+% xNodeDeltas = repmat([xNodeDeltas; 0], columns, 1);
+% yNodeDeltas = repmat([yNodeDeltas; 0], columns, 1);
+
+indices = 1:nodeCount;
+c_indices = indices - 1;
+
+% North nodes
+n_boundary_indices = indices(mod(c_indices, rows) == 0);
+n_indices = setdiff(indices, n_boundary_indices);
+n_phi = zeros(nodeCount, 1);
+% n_phi(n_indices) = (phi(n_indices - 1) ./ nodeHeights(n_indices)) ...
+%     .* (Vy(phi(n_indices)) ./ 2 - Dyy(phi(n_indices)) ./ yNodeDeltas(n_indices));
+
+% North boundary nodes (constant component in North face flux)
+% n_phi(n_boundary_indices) = -nodeWidths(phi(n_boundary_indices)) ...
+%     .* Dyy(phi(n_boundary_indices)) .* northBC.C ./ northBC.B;
+
+% East nodes
+e_boundary_indices = indices(end-rows+1:end);
+e_indices = indices(1:end-rows);
+e_phi = zeros(nodeCount, 1);
+% e_phi(e_indices) = (phi(e_indices + rows) ./ nodeWidths(e_indices)) ...
+%     .* (Vx(phi(e_indices)) ./ 2 - Dxx(phi(e_indices)) ./ xNodeDeltas(e_indices));
+e_phi(e_indices) = (phi(e_indices + rows) ./ nodeWidths(e_indices)) ...
+    .* (Vx(phi(e_indices)) ./ 2 - Dxx(phi(e_indices)) ./ 0.05);
+
+% East boundary nodes (constant component in East face flux)
+% e_phi(e_boundary_indices) = -nodeWidths(phi(n_boundary_indices)) ...
+%     .* Dyy(phi(n_boundary_indices)) .* northBC.C ./ northBC.B;
+
+% South nodes
+s_indices = setdiff(indices, indices(mod(indices, rows) == 0));
+s_phi = zeros(nodeCount, 1);
+% s_phi(s_indices) = (-phi(s_indices + 1) ./ nodeHeights(s_indices)) ...
+%     .* (Vy(phi(s_indices)) ./ 2 - Dyy(phi(s_indices)) ./ yNodeDeltas(s_indices + 1));
+s_phi(s_indices) = (-phi(s_indices + 1) ./ nodeHeights(s_indices)) ...
+    .* (Vy(phi(s_indices)) ./ 2 + Dyy(phi(s_indices)) ./ 0.05);
+
+% West nodes
+w_indices = indices(rows+1:end);
+w_phi = zeros(nodeCount, 1);
+% w_phi(w_indices) = (-phi(w_indices - rows) ./ nodeWidths(w_indices)) ...
+%     .* (Vx(phi(w_indices)) ./ 2 + Dxx(phi(w_indices)) ./ xNodeDeltas(w_indices - 1));
+w_phi(w_indices) = (-phi(w_indices - rows) ./ nodeWidths(w_indices)) ...
+    .* (Vx(phi(w_indices)) ./ 2 + Dxx(phi(w_indices)) ./ 0.05);
+
+% Root nodes
+p_indices = intersect(intersect(intersect(n_indices, e_indices), s_indices), w_indices);
+p_phi = zeros(nodeCount, 1);
+% p_phi(p_indices) = phi(p_indices) ...
+%     .* ( (Dyy(phi(p_indices)) ./ nodeHeights(p_indices)) ...
+%     .* (1 / yNodeDeltas(p_indices - 1) + 1 / yNodeDeltas(p_indices))' ...
+%     + (Dxx(phi(p_indices)) ./ nodeWidths(p_indices)) ...
+%     .* (1 / xNodeDeltas(p_indices - 1) + 1 / xNodeDeltas(p_indices))' );
+p_phi(p_indices) = phi(p_indices) ...
+    .* ( (Dyy(phi(p_indices)) ./ nodeHeights(p_indices)) ...
+    .* (1 ./ (ones(length(p_indices), 1) .* 0.05) + 1 ./ (ones(length(p_indices), 1) .* 0.05)) ...
+    + (Dxx(phi(p_indices)) ./ nodeWidths(p_indices)) ...
+    .* (1 ./ (ones(length(p_indices), 1) .* 0.05) + 1 ./ (ones(length(p_indices), 1) .* 0.05)) );
+
+a = p_phi + n_phi + e_phi + s_phi + w_phi;
+
+end
 
 function flux = GenerateFlux(nodeCount, rows, columns, ...
     previousSolution, Vx, Vy, Dxx, Dyy, xNodeDeltas, yNodeDeltas, ...
