@@ -208,6 +208,28 @@ function [tout, yout] = Solver(dt, tFinal, Dxx, Dyy, Vx, Vy, source, theta, ...
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+%% Validate input parameters
+
+if (northBC.B == 0)
+    error(['Invalid Boundary Condition (North): The B coefficient ' ...
+            'for a boundary condition must be positive.']);
+end
+
+if (eastBC.B == 0)
+    error(['Invalid Boundary Condition (East): The B coefficient ' ...
+            'for a boundary condition must be positive.']);
+end
+
+if (southBC.B == 0)
+    error(['Invalid Boundary Condition (South): The B coefficient ' ...
+            'for a boundary condition must be positive.']);
+end
+
+if (westBC.B == 0)
+    error(['Invalid Boundary Condition (West): The B coefficient ' ...
+            'for a boundary condition must be positive.']);
+end
+
 %% Initialise constants
 
 FIRST_TIME_STEP_INDEX = 1;
@@ -254,7 +276,7 @@ nBoundaryIndices = indices(mod(indices - 1, rows) == 0);
 nIndices = setdiff(indices, nBoundaryIndices);
 
 eBoundaryIndices = indices(end-rows+1:end);
-eIndicies = indices(1:end-rows);
+eIndices = indices(1:end-rows);
 
 sBoundaryIndices = indices(mod(indices, rows) == 0);
 sIndices = setdiff(indices, sBoundaryIndices);
@@ -296,10 +318,10 @@ for i = 1:timeSteps
     % Formulate the Forward Euler component of F(u) = 0
     F_forwardEuler = zeros(nodeCount, 1);
     if (theta ~= 1)
-        F_forwardEuler = dt * (1 - theta) * b(previousSolution, nodeCount, rows, columns, Vx, Vy, Dxx, Dyy, ...
+        F_forwardEuler = dt * (1 - theta) * GenerateFluxVec(previousSolution, indices, rows, Vx, Vy, Dxx, Dyy, ...
     nodeWidths, nodeHeights, rowForIndex, columnForIndex, ...
     xNodeDeltas, yNodeDeltas, northBC, eastBC, southBC, westBC, ...
-    advectionHandling, nBoundaryIndices, nIndices, eBoundaryIndices, eIndicies, ...
+    advectionHandling, nBoundaryIndices, nIndices, eBoundaryIndices, eIndices, ...
     sBoundaryIndices, sIndices, wBoundaryIndices, wIndices);
     end
     F_forwardEuler = F_forwardEuler ...
@@ -311,10 +333,10 @@ for i = 1:timeSteps
     
     % Formulate the Backward Euler component of F(u) = 0 
     if (i == FIRST_TIME_STEP_INDEX)
-        F_current_backwardEuler = dt * theta * b(previousSolution, nodeCount, rows, columns, Vx, Vy, Dxx, Dyy, ...
+        F_current_backwardEuler = dt * theta * GenerateFluxVec(previousSolution, indices, rows, Vx, Vy, Dxx, Dyy, ...
     nodeWidths, nodeHeights, rowForIndex, columnForIndex, ...
     xNodeDeltas, yNodeDeltas, northBC, eastBC, southBC, westBC, ...
-    advectionHandling, nBoundaryIndices, nIndices, eBoundaryIndices, eIndicies, ...
+    advectionHandling, nBoundaryIndices, nIndices, eBoundaryIndices, eIndices, ...
     sBoundaryIndices, sIndices, wBoundaryIndices, wIndices);
         F_current_backwardEuler = F_current_backwardEuler ...
             - dt .* theta .* source(previousSolution);
@@ -347,10 +369,17 @@ for i = 1:timeSteps
             xStepped = currentSolution;
             xStepped(nodeIndex) = xStepped(nodeIndex) + h;
             
+%             F_backwardEuler_stepped = dt * theta * GenerateFluxVec(xStepped, j, rows, Vx, Vy, Dxx, Dyy, ...
+%                 nodeWidths, nodeHeights, rowForIndex, columnForIndex, ...
+%                 xNodeDeltas, yNodeDeltas, northBC, eastBC, southBC, westBC, ...
+%                 advectionHandling, nBoundaryIndices, nIndices, eBoundaryIndices, eIndices, ...
+%                 sBoundaryIndices, sIndices, wBoundaryIndices, wIndices);
+            
             F_backwardEuler_stepped = dt * theta * GenerateFlux(j, ...
                     rows, columns, xStepped, Vx, Vy, Dxx, Dyy, ...
                     xNodeDeltas, yNodeDeltas, nodeWidths, nodeHeights, ...
                     northBC, eastBC, southBC, westBC, advectionHandling);
+
             F_backwardEuler_stepped = F_backwardEuler_stepped ...
                 - dt * theta * source(xStepped(j));
             F_backwardEuler_stepped = F_backwardEuler_stepped + xStepped(j);
@@ -368,10 +397,17 @@ for i = 1:timeSteps
                 xStepped = currentSolution;
                 xStepped(nodeIndex) = xStepped(nodeIndex) + h;
 
+%                 F_backwardEuler_stepped = dt * theta * GenerateFluxVec(xStepped, j, rows, Vx, Vy, Dxx, Dyy, ...
+%                 nodeWidths, nodeHeights, rowForIndex, columnForIndex, ...
+%                 xNodeDeltas, yNodeDeltas, northBC, eastBC, southBC, westBC, ...
+%                 advectionHandling, nBoundaryIndices, nIndices, eBoundaryIndices, eIndices, ...
+%                 sBoundaryIndices, sIndices, wBoundaryIndices, wIndices);
+                
                 F_backwardEuler_stepped = dt * theta * GenerateFlux(j, ...
                         rows, columns, xStepped, Vx, Vy, Dxx, Dyy, ...
                         xNodeDeltas, yNodeDeltas, nodeWidths, nodeHeights, ...
                         northBC, eastBC, southBC, westBC, advectionHandling);
+
                 F_backwardEuler_stepped = F_backwardEuler_stepped ...
                     - dt * theta * source(xStepped(j));
                 F_backwardEuler_stepped = F_backwardEuler_stepped + xStepped(j);
@@ -390,10 +426,17 @@ for i = 1:timeSteps
                 xStepped = currentSolution;
                 xStepped(nodeIndex) = xStepped(nodeIndex) + h;
 
+%                 F_backwardEuler_stepped = dt * theta * GenerateFluxVec(xStepped, j, rows, Vx, Vy, Dxx, Dyy, ...
+%                 nodeWidths, nodeHeights, rowForIndex, columnForIndex, ...
+%                 xNodeDeltas, yNodeDeltas, northBC, eastBC, southBC, westBC, ...
+%                 advectionHandling, nBoundaryIndices, nIndices, eBoundaryIndices, eIndices, ...
+%                 sBoundaryIndices, sIndices, wBoundaryIndices, wIndices);
+                
                 F_backwardEuler_stepped = dt * theta * GenerateFlux(j, ...
                         rows, columns, xStepped, Vx, Vy, Dxx, Dyy, ...
                         xNodeDeltas, yNodeDeltas, nodeWidths, nodeHeights, ...
                         northBC, eastBC, southBC, westBC, advectionHandling);
+
                 F_backwardEuler_stepped = F_backwardEuler_stepped ...
                     - dt * theta * source(xStepped(j));
                 F_backwardEuler_stepped = F_backwardEuler_stepped + xStepped(j);
@@ -412,10 +455,17 @@ for i = 1:timeSteps
                 xStepped = currentSolution;
                 xStepped(nodeIndex) = xStepped(nodeIndex) + h;
 
+%                 F_backwardEuler_stepped = dt * theta * GenerateFluxVec(xStepped, j, rows, Vx, Vy, Dxx, Dyy, ...
+%                 nodeWidths, nodeHeights, rowForIndex, columnForIndex, ...
+%                 xNodeDeltas, yNodeDeltas, northBC, eastBC, southBC, westBC, ...
+%                 advectionHandling, nBoundaryIndices, nIndices, eBoundaryIndices, eIndices, ...
+%                 sBoundaryIndices, sIndices, wBoundaryIndices, wIndices);
+                
                 F_backwardEuler_stepped = dt * theta * GenerateFlux(j, ...
                         rows, columns, xStepped, Vx, Vy, Dxx, Dyy, ...
                         xNodeDeltas, yNodeDeltas, nodeWidths, nodeHeights, ...
                         northBC, eastBC, southBC, westBC, advectionHandling);
+
                 F_backwardEuler_stepped = F_backwardEuler_stepped ...
                     - dt * theta * source(xStepped(j));
                 F_backwardEuler_stepped = F_backwardEuler_stepped + xStepped(j);
@@ -434,10 +484,17 @@ for i = 1:timeSteps
                 xStepped = currentSolution;
                 xStepped(nodeIndex) = xStepped(nodeIndex) + h;
 
+%                 F_backwardEuler_stepped = dt * theta * GenerateFluxVec(xStepped, j, rows, Vx, Vy, Dxx, Dyy, ...
+%                 nodeWidths, nodeHeights, rowForIndex, columnForIndex, ...
+%                 xNodeDeltas, yNodeDeltas, northBC, eastBC, southBC, westBC, ...
+%                 advectionHandling, nBoundaryIndices, nIndices, eBoundaryIndices, eIndices, ...
+%                 sBoundaryIndices, sIndices, wBoundaryIndices, wIndices);
+                
                 F_backwardEuler_stepped = dt * theta * GenerateFlux(j, ...
                         rows, columns, xStepped, Vx, Vy, Dxx, Dyy, ...
                         xNodeDeltas, yNodeDeltas, nodeWidths, nodeHeights, ...
                         northBC, eastBC, southBC, westBC, advectionHandling);
+                    
                 F_backwardEuler_stepped = F_backwardEuler_stepped ...
                     - dt * theta * source(xStepped(j));
                 F_backwardEuler_stepped = F_backwardEuler_stepped + xStepped(j);
@@ -504,10 +561,10 @@ for i = 1:timeSteps
         currentSolution = currentSolution - delta_x;
         
         % Evaluate the nonlinear system for updated iterate
-        F_current_backwardEuler = dt .* theta .* b(currentSolution, nodeCount, rows, columns, Vx, Vy, Dxx, Dyy, ...
+        F_current_backwardEuler = dt .* theta .* GenerateFluxVec(currentSolution, indices, rows, Vx, Vy, Dxx, Dyy, ...
     nodeWidths, nodeHeights, rowForIndex, columnForIndex, ...
     xNodeDeltas, yNodeDeltas, northBC, eastBC, southBC, westBC, ...
-    advectionHandling, nBoundaryIndices, nIndices, eBoundaryIndices, eIndicies, ...
+    advectionHandling, nBoundaryIndices, nIndices, eBoundaryIndices, eIndices, ...
     sBoundaryIndices, sIndices, wBoundaryIndices, wIndices);
         F_current_backwardEuler = F_current_backwardEuler ...
             - dt .* theta .* source(currentSolution);
@@ -550,61 +607,142 @@ end
 %   Helper Functions
 %
 
-function flux = b(phi, nodeCount, rows, columns, Vx, Vy, Dxx, Dyy, ...
+function flux = GenerateFluxVec(phi, indices, rows, Vx, Vy, Dxx, Dyy, ...
     nodeWidths, nodeHeights, rowForIndex, columnForIndex, ...
     xNodeDeltas, yNodeDeltas, northBC, eastBC, southBC, westBC, ...
-    advectionHandling, nBoundaryIndices, nIndices, eBoundaryIndices, eIndicies, ...
+    advectionHandling, nBoundaryIndices, nIndices, eBoundaryIndices, eIndices, ...
     sBoundaryIndices, sIndices, wBoundaryIndices, wIndices)
+
+%% Initialise solution parameters
+
+flux = zeros(length(phi), 1);
+
+nBoundaryIndices = intersect(indices, nBoundaryIndices);
+nIndices = intersect(indices, nIndices);
+
+eBoundaryIndices = intersect(indices, eBoundaryIndices);
+eIndices = intersect(indices, eIndices);
+
+sBoundaryIndices = intersect(indices, sBoundaryIndices);
+sIndices = intersect(indices, sIndices);
+
+wBoundaryIndices = intersect(indices, wBoundaryIndices);
+wIndices = intersect(indices, wIndices);
+
+isUpwinding = strcmp(advectionHandling, 'upwinding');
 
 %% Formulate F(x) = 0 by considering the flux at each boundary
 
-flux = zeros(nodeCount, 1);
-
 % North nodes
-flux(nIndices) = flux(nIndices) + nodeWidths(columnForIndex(nIndices)) ...
-    .* (Vy(phi(nIndices)) .* (phi(nIndices - 1) + phi(nIndices)) ./ 2 ...
-    - Dyy(phi(nIndices)) .* (phi(nIndices - 1) - phi(nIndices)) ...
-    ./ yNodeDeltas(rowForIndex(nIndices) - 1));
-
-flux(nBoundaryIndices) = flux(nBoundaryIndices) + nodeWidths(columnForIndex(nBoundaryIndices)) ...
-    .* ( (Vy(phi(nBoundaryIndices)) + Dyy(phi(nBoundaryIndices)) .* northBC.A ./ northBC.B) ...
-    .* phi(nBoundaryIndices) ...
-    - Dyy(phi(nBoundaryIndices)) .* northBC.C ./ northBC.B );
+if (~isempty(nIndices))
+    
+    % Determine advection at face
+    advectionAtFace = zeros(length(flux));
+    advectionVelocityY = Vy(phi(nIndices));
+    if (isUpwinding)
+        positiveAdvection = advectionVelocityY > 0;
+        advectionAtFace(positiveAdvection) = phi(nIndices(positiveAdvection));
+        advectionAtFace(~positiveAdvection) = phi(nIndices(~positiveAdvection) - 1);
+    else
+        advectionAtFace = (phi(nIndices - 1) + phi(nIndices)) ./ 2;
+    end
+    
+    flux(nIndices) = flux(nIndices) + nodeWidths(columnForIndex(nIndices)) ...
+        .* (Vy(phi(nIndices)) .* advectionAtFace ...
+        - Dyy(phi(nIndices)) .* (phi(nIndices - 1) - phi(nIndices)) ...
+        ./ yNodeDeltas(rowForIndex(nIndices) - 1));
+end
+    
+if (~isempty(nBoundaryIndices));
+    flux(nBoundaryIndices) = flux(nBoundaryIndices) + nodeWidths(columnForIndex(nBoundaryIndices)) ...
+        .* ( (Vy(phi(nBoundaryIndices)) + Dyy(phi(nBoundaryIndices)) .* northBC.A ./ northBC.B) ...
+        .* phi(nBoundaryIndices) ...
+        - Dyy(phi(nBoundaryIndices)) .* northBC.C ./ northBC.B );
+end
 
 % East nodes
-flux(eIndicies) = flux(eIndicies) + nodeHeights(rowForIndex(eIndicies)) ...
-    .* (Vx(phi(eIndicies)) .* (phi(eIndicies + rows) + phi(eIndicies)) ./ 2 ...
-    - Dxx(phi(eIndicies)) .* (phi(eIndicies + rows) - phi(eIndicies)) ...
-    ./ xNodeDeltas(columnForIndex(eIndicies))); 
+if (~isempty(eIndices))
+    
+    % Determine advection at face
+    advectionAtFace = zeros(length(flux));
+    advectionVelocityX = Vx(phi(eIndices));
+    if (isUpwinding)
+        positiveAdvection = advectionVelocityX > 0;
+        advectionAtFace(positiveAdvection) = phi(eIndices(positiveAdvection));
+        advectionAtFace(~positiveAdvection) = phi(eIndices(~positiveAdvection) + rows);
+    else
+        advectionAtFace = (phi(eIndices + rows) + phi(eIndices)) ./ 2;
+    end
+    
+    flux(eIndices) = flux(eIndices) + nodeHeights(rowForIndex(eIndices)) ...
+        .* (Vx(phi(eIndices)) .* advectionAtFace ...
+        - Dxx(phi(eIndices)) .* (phi(eIndices + rows) - phi(eIndices)) ...
+        ./ xNodeDeltas(columnForIndex(eIndices))); 
+end
 
-flux(eBoundaryIndices) = flux(eBoundaryIndices) + nodeHeights(rowForIndex(eBoundaryIndices)) ...
-    .* ( (Vx(phi(eBoundaryIndices)) + Dxx(phi(eBoundaryIndices)) .* eastBC.A ./ eastBC.B) ...
-    .* phi(eBoundaryIndices) ...
-    - Dxx(phi(eBoundaryIndices)) .* eastBC.C ./ eastBC.B );
-
+if (~isempty(eBoundaryIndices))
+    flux(eBoundaryIndices) = flux(eBoundaryIndices) + nodeHeights(rowForIndex(eBoundaryIndices)) ...
+        .* ( (Vx(phi(eBoundaryIndices)) + Dxx(phi(eBoundaryIndices)) .* eastBC.A ./ eastBC.B) ...
+        .* phi(eBoundaryIndices) ...
+        - Dxx(phi(eBoundaryIndices)) .* eastBC.C ./ eastBC.B );
+end
+    
 % South nodes
-flux(sIndices) = flux(sIndices) - nodeWidths(columnForIndex(sIndices)) ...
-    .* (Vy(phi(sIndices)) .* (phi(sIndices + 1) + phi(sIndices)) ./ 2 ...
-    - Dyy(phi(sIndices)) .* (phi(sIndices) - phi(sIndices + 1)) ...
-    ./ yNodeDeltas(rowForIndex(sIndices)));
-
-flux(sBoundaryIndices) = flux(sBoundaryIndices) - nodeWidths(columnForIndex(sBoundaryIndices)) ...
-    .* ( (Vy(phi(sBoundaryIndices)) - Dyy(phi(sBoundaryIndices)) .* southBC.A ./ southBC.B) ...
-    .* phi(sBoundaryIndices) ...
-    - Dyy(phi(sBoundaryIndices)) .* southBC.C ./ southBC.B );
-
+if (~isempty(sIndices))
+    
+    % Determine advection at face
+    advectionAtFace = zeros(length(flux));
+    advectionVelocityY = Vy(phi(sIndices));
+    if (isUpwinding)
+        positiveAdvection = advectionVelocityY > 0;
+        advectionAtFace(~positiveAdvection) = phi(sIndices(~positiveAdvection));
+        advectionAtFace(positiveAdvection) = phi(sIndices(positiveAdvection) + 1);
+    else
+        advectionAtFace = (phi(sIndices + 1) + phi(sIndices)) ./ 2;
+    end
+    
+    flux(sIndices) = flux(sIndices) - nodeWidths(columnForIndex(sIndices)) ...
+        .* (Vy(phi(sIndices)) .* advectionAtFace ...
+        - Dyy(phi(sIndices)) .* (phi(sIndices) - phi(sIndices + 1)) ...
+        ./ yNodeDeltas(rowForIndex(sIndices)));
+end
+   
+if (~isempty(sBoundaryIndices))
+    flux(sBoundaryIndices) = flux(sBoundaryIndices) - nodeWidths(columnForIndex(sBoundaryIndices)) ...
+        .* ( (Vy(phi(sBoundaryIndices)) - Dyy(phi(sBoundaryIndices)) .* southBC.A ./ southBC.B) ...
+        .* phi(sBoundaryIndices) ...
+        - Dyy(phi(sBoundaryIndices)) .* southBC.C ./ southBC.B );
+end
+    
 % West nodes
-flux(wIndices) = flux(wIndices) - nodeHeights(rowForIndex(wIndices)) ...
-    .* (Vx(phi(wIndices)) .* (phi(wIndices - rows) + phi(wIndices)) ./ 2 ...
-    - Dxx(phi(wIndices)) .* (phi(wIndices) - phi(wIndices - rows)) ...
-    ./ xNodeDeltas(columnForIndex(wIndices) - 1));
+if (~isempty(wIndices))
+    
+    % Determine advection at face
+    advectionAtFace = zeros(length(flux));
+    advectionVelocityX = Vx(phi(wIndices));
+    if (isUpwinding)
+        positiveAdvection = advectionVelocityX > 0;
+        advectionAtFace(~positiveAdvection) = phi(wIndices(~positiveAdvection));
+        advectionAtFace(positiveAdvection) = phi(wIndices(positiveAdvection) - rows);
+    else
+        advectionAtFace = (phi(wIndices - rows) + phi(wIndices)) ./ 2;
+    end
+    
+    flux(wIndices) = flux(wIndices) - nodeHeights(rowForIndex(wIndices)) ...
+        .* (Vx(phi(wIndices)) .* advectionAtFace ...
+        - Dxx(phi(wIndices)) .* (phi(wIndices) - phi(wIndices - rows)) ...
+        ./ xNodeDeltas(columnForIndex(wIndices) - 1));
+end
 
-flux(wBoundaryIndices) = flux(wBoundaryIndices) - nodeHeights(rowForIndex(wBoundaryIndices)) ...
-    .* ( (Vx(phi(wBoundaryIndices)) - Dxx(phi(wBoundaryIndices)) .* westBC.A ./ westBC.B) ...
-    .* phi(wBoundaryIndices) ...
-    + Dxx(phi(wBoundaryIndices)) .* westBC.C ./ westBC.B);
+if (~isempty(wBoundaryIndices))
+    flux(wBoundaryIndices) = flux(wBoundaryIndices) - nodeHeights(rowForIndex(wBoundaryIndices)) ...
+        .* ( (Vx(phi(wBoundaryIndices)) - Dxx(phi(wBoundaryIndices)) .* westBC.A ./ westBC.B) ...
+        .* phi(wBoundaryIndices) ...
+        + Dxx(phi(wBoundaryIndices)) .* westBC.C ./ westBC.B);
+end
 
-flux = flux ./ (nodeWidths(columnForIndex) .* nodeHeights(rowForIndex));
+flux = flux(indices);
+flux = flux ./ (nodeWidths(columnForIndex(indices)) .* nodeHeights(rowForIndex(indices)));
 
 end
 
@@ -632,29 +770,25 @@ cv_height = nodeHeights(row);
 
 flux = 0;
 
+isUpwinding = strcmp(advectionHandling, 'upwinding');
+
 %% Determine flux for control volume
 
 % North face
 if (row == MIN_INDEX)
-    if (northBC.B ~= 0)
-        flux = flux + cv_width ...
-            * ( (cv_Vy + cv_Dyy * northBC.A / northBC.B) * cv_prevSolution ...
-            - cv_Dyy * northBC.C / northBC.B );
-    else
-        error(['Invalid Boundary Condition (North): The B coefficient ' ...
-            'for a boundary condition must be positive.']);
-    end
+    flux = flux + cv_width ...
+        * ( (cv_Vy + cv_Dyy * northBC.A / northBC.B) * cv_prevSolution ...
+        - cv_Dyy * northBC.C / northBC.B );
 else
     northPrevSolution = previousSolution(nodeCount - 1);
     
-    advectionAtFace = 0;
-    if (strcmp(advectionHandling, 'upwinding'))
-        if (cv_Vx > 0)
+    if (isUpwinding)
+        if (cv_Vy > 0)
             advectionAtFace = cv_prevSolution;
         else
             advectionAtFace = northPrevSolution;
         end
-    elseif (strcmp(advectionHandling, 'averaging'))
+    else
         advectionAtFace = (northPrevSolution + cv_prevSolution) / 2;
     end
     
@@ -665,25 +799,19 @@ end
 
 % East face
 if (column == columns)
-    if (eastBC.B ~= 0)
-        flux = flux + cv_height ...
-            * ( (cv_Vx + cv_Dxx * eastBC.A / eastBC.B) * cv_prevSolution ...
-            - cv_Dxx * eastBC.C / eastBC.B );
-    else
-        error(['Invalid Boundary Condition (East): The B coefficient ' ...
-            'for a boundary condition must be positive.']);
-    end
+    flux = flux + cv_height ...
+        * ( (cv_Vx + cv_Dxx * eastBC.A / eastBC.B) * cv_prevSolution ...
+        - cv_Dxx * eastBC.C / eastBC.B );
 else
     eastPrevSolution = previousSolution(nodeCount + rows);
     
-    advectionAtFace = 0;
-    if (strcmp(advectionHandling, 'upwinding'))
+    if (isUpwinding)
         if (cv_Vx > 0)
             advectionAtFace = cv_prevSolution;
         else
             advectionAtFace = eastPrevSolution;
         end
-    elseif (strcmp(advectionHandling, 'averaging'))
+    else
         advectionAtFace = (eastPrevSolution + cv_prevSolution) / 2;
     end
     
@@ -694,25 +822,19 @@ end
 
 % South face
 if (row == rows)
-    if (southBC.B ~= 0)
-        flux = flux - cv_width ...
-            * ( (cv_Vy - cv_Dyy * southBC.A / southBC.B) * cv_prevSolution ...
-            + cv_Dyy * southBC.C / southBC.B );
-    else
-        error(['Invalid Boundary Condition (South): The B coefficient ' ...
-            'for a boundary condition must be positive.']);
-    end
+    flux = flux - cv_width ...
+        * ( (cv_Vy - cv_Dyy * southBC.A / southBC.B) * cv_prevSolution ...
+        + cv_Dyy * southBC.C / southBC.B );
 else
     southPrevSolution = previousSolution(nodeCount + 1);
     
-    advectionAtFace = 0;
-    if (strcmp(advectionHandling, 'upwinding'))
-        if (cv_Vx > 0)
+    if (isUpwinding)
+        if (cv_Vy > 0)
             advectionAtFace = southPrevSolution;
         else
             advectionAtFace = cv_prevSolution;
         end
-    elseif (strcmp(advectionHandling, 'averaging'))
+    else
         advectionAtFace = (southPrevSolution + cv_prevSolution) / 2;
     end
     
@@ -723,25 +845,19 @@ end
 
 % West face
 if (column == MIN_INDEX)
-    if (westBC.B ~= 0)
-        flux = flux - cv_height ...
-            * ( (cv_Vx - cv_Dxx * westBC.A / westBC.B) * cv_prevSolution ...
-            + cv_Dxx * westBC.C / westBC.B );
-    else
-        error(['Invalid Boundary Condition (West): The B coefficient ' ...
-            'for a boundary condition must be positive.']);
-    end
+    flux = flux - cv_height ...
+        * ( (cv_Vx - cv_Dxx * westBC.A / westBC.B) * cv_prevSolution ...
+        + cv_Dxx * westBC.C / westBC.B );
 else
     westPrevSolution = previousSolution(nodeCount - rows);
     
-    advectionAtFace = 0;
-    if (strcmp(advectionHandling, 'upwinding'))
+    if (isUpwinding)
         if (cv_Vx > 0)
             advectionAtFace = westPrevSolution;
         else
             advectionAtFace = cv_prevSolution;
         end
-    elseif (strcmp(advectionHandling, 'averaging'))
+    else
         advectionAtFace = (westPrevSolution + cv_prevSolution) / 2;
     end
     
