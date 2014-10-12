@@ -41,8 +41,22 @@ Vy = @(phi) phi .* 0;
 source = @(phi) phi .* 0;
 
 % Initialise mesh parameters
-nodesX = 0:0.05:1;
-nodesY = 1:-0.05:0;
+
+xLower = 0;
+xUpper = 1;
+xCount = 21;
+xGeoParameters = struct('lowerIsGeometric', false, 'upperIsGeometric', false, ...
+    'commonRatio', 1.1); 
+
+yLower = 0;
+yUpper = 1;
+yCount = 21;
+yGeoParameters = struct('lowerIsGeometric', false, 'upperIsGeometric', false, ...
+    'commonRatio', 1.1);
+
+[nodesX, nodesY] = GenerateStructuredMesh(xLower, xUpper, xCount, ...
+    yLower, yUpper, yCount, xGeoParameters, yGeoParameters);
+nodesY = flipud(nodesY);
 
 rows = length(nodesY);
 columns = length(nodesX);
@@ -92,143 +106,143 @@ xlabel('x');
 ylabel('y');
 zlabel('Solution');
 
-%% Test: 1D Diffusion (H1) - Homogeneous Dirichlet Boundary Conditions
-
-% Initialise temporal parameters
-tFinal = 0.1;
-storedTimeSteps = 100;
-
-% Initialise equation parameters
-Dxx = @(phi) phi .* 0;
-Dyy = @(phi) ones(length(phi), 1) .* 0.1;
-Vx = @(phi) phi .* 0;
-Vy = @(phi) phi .* 0;
-source = @(phi) phi .* 0;
-
-% Initialise mesh parameters
-nodesX = 0:0.05:1;
-nodesY = 1:-0.05:0;
-
-rows = length(nodesY);
-columns = length(nodesX);
-
-% Initialise boundary conditions
-northBC = struct('A', 1000, 'B', 1, 'C', 0);
-eastBC = struct('A', 1000, 'B', 1, 'C', 0);
-southBC = struct('A', 1000, 'B', 1, 'C', 0);
-westBC = struct('A', 1000, 'B', 1, 'C', 0);
-
-% Construct initial condition
-initialCondition = zeros(length(nodesY), length(nodesX));
-initialCondition(:, 1) = 1;
-
-% Generate analytic solution
-% Accountability note: this code was sourced from another student for 
-% testing purposes only and should be rewritten or removed prior to
-% submission.
-D = 0.1;
-xLength = 1;
-analyticFn = @(n) (4 / (n * pi)) * sin(n * pi * nodesX ./ xLength) ...
-    .* exp(-(n * pi / xLength)^2 * D * tFinal);
-analyticSolution = zeros(1, length(nodesX));
-
-for n = 1:2:31
-    analyticSolution = analyticSolution + analyticFn(n);    
-end
-
-% Solve problem
-[tout, yout] = Solver(dt, tFinal, Dxx, Dyy, Vx, Vy, source, theta, ...
-    advectionHandling, nodesX, nodesY, northBC, eastBC, southBC, westBC, ...
-    initialCondition, storedTimeSteps, newtonParameters, gmresParameters, ...
-    forcingTermParameters, safeguardParameters);
-
-% Output plots and metrics
-figure;
-
-nodeCount = length(nodesY);
-error = norm(yout(1:nodeCount, 2) - analyticSolution(:)) / sqrt(nodeCount);
-disp(['H1.1 error: ' num2str(error)]);
-
-plot(nodesX, analyticSolution, 'b');
-hold on;
-plot(nodesX, yout(1:nodeCount, 2), 'r*');
-plotTitle = ['Test Problem (H1.1): 1D Diffusion (t = ' ...
-    num2str(tout(end)) ')'];
-title(plotTitle);
-xlabel('x');
-ylabel('y');
-legend('Analytic Solution', 'Numeric Solution');
-
-%% Test: 1D Diffusion (H2) - Homogeneous Dirichlet Boundary Conditions
-
-% Initialise temporal parameters
-tFinal = 0.1;
-storedTimeSteps = 100;
-
-% Initialise equation parameters
-Dxx = @(phi) ones(length(phi), 1) .* 0.1;
-Dyy = @(phi) phi .* 0;
-Vx = @(phi) phi .* 0;
-Vy = @(phi) phi .* 0;
-source = @(phi) phi .* 0;
-
-% Initialise mesh parameters
-nodesX = 0:0.05:1;
-nodesY = 1:-0.05:0;
-
-rows = length(nodesY);
-columns = length(nodesX);
-
-% Initialise boundary conditions
-northBC = struct('A', 1000, 'B', 1, 'C', 0);
-eastBC = struct('A', 1000, 'B', 1, 'C', 0);
-southBC = struct('A', 1000, 'B', 1, 'C', 0);
-westBC = struct('A', 1000, 'B', 1, 'C', 0);
-
-% Construct initial condition
-initialCondition = zeros(length(nodesY), length(nodesX));
-initialCondition(1, :) = 1;
-
-% Generate analytic solution
-% Accountability note: this code was sourced from another student for 
-% testing purposes only and should be rewritten or removed prior to
-% submission.
-D = 0.1;
-xLength = 1;
-analyticFn = @(n) (4 / (n * pi)) * sin(n * pi * nodesX ./ xLength) ...
-    .* exp(-(n * pi / xLength)^2 * D * tFinal);
-analyticSolution = zeros(1, length(nodesX));
-
-for n = 1:2:31
-    analyticSolution = analyticSolution + analyticFn(n);    
-end
-
-% Solve problem
-[tout, yout] = Solver(dt, tFinal, Dxx, Dyy, Vx, Vy, source, theta, ...
-    advectionHandling, nodesX, nodesY, northBC, eastBC, southBC, westBC, ...
-    initialCondition, storedTimeSteps, newtonParameters, gmresParameters, ...
-    forcingTermParameters, safeguardParameters);
-
-% Output plots and metrics
-figure;
-
-nodeCount = length(nodesX);
-indices = 1:rows*columns;
-cIndices = indices - 1;
-northboundaryIndices = indices(mod(cIndices, rows) == 0);
-
-error = norm(yout(northboundaryIndices, 2) - analyticSolution(:)) / sqrt(nodeCount);
-disp(['H2.1 error: ' num2str(error)]);
-
-plot(nodesX, analyticSolution, 'b');
-hold on;
-plot(nodesX, yout(northboundaryIndices, 2), 'r*');
-plotTitle = ['Test Problem (H2.1): 1D Diffusion (t = ' ...
-    num2str(tout(end)) ')'];
-title(plotTitle);
-xlabel('x');
-ylabel('y');
-legend('Analytic Solution', 'Numeric Solution');
+% %% Test: 1D Diffusion (H1) - Homogeneous Dirichlet Boundary Conditions
+% 
+% % Initialise temporal parameters
+% tFinal = 0.1;
+% storedTimeSteps = 100;
+% 
+% % Initialise equation parameters
+% Dxx = @(phi) phi .* 0;
+% Dyy = @(phi) ones(length(phi), 1) .* 0.1;
+% Vx = @(phi) phi .* 0;
+% Vy = @(phi) phi .* 0;
+% source = @(phi) phi .* 0;
+% 
+% % Initialise mesh parameters
+% nodesX = 0:0.05:1;
+% nodesY = 1:-0.05:0;
+% 
+% rows = length(nodesY);
+% columns = length(nodesX);
+% 
+% % Initialise boundary conditions
+% northBC = struct('A', 1000, 'B', 1, 'C', 0);
+% eastBC = struct('A', 1000, 'B', 1, 'C', 0);
+% southBC = struct('A', 1000, 'B', 1, 'C', 0);
+% westBC = struct('A', 1000, 'B', 1, 'C', 0);
+% 
+% % Construct initial condition
+% initialCondition = zeros(length(nodesY), length(nodesX));
+% initialCondition(:, 1) = 1;
+% 
+% % Generate analytic solution
+% % Accountability note: this code was sourced from another student for 
+% % testing purposes only and should be rewritten or removed prior to
+% % submission.
+% D = 0.1;
+% xLength = 1;
+% analyticFn = @(n) (4 / (n * pi)) * sin(n * pi * nodesX ./ xLength) ...
+%     .* exp(-(n * pi / xLength)^2 * D * tFinal);
+% analyticSolution = zeros(1, length(nodesX));
+% 
+% for n = 1:2:31
+%     analyticSolution = analyticSolution + analyticFn(n);    
+% end
+% 
+% % Solve problem
+% [tout, yout] = Solver(dt, tFinal, Dxx, Dyy, Vx, Vy, source, theta, ...
+%     advectionHandling, nodesX, nodesY, northBC, eastBC, southBC, westBC, ...
+%     initialCondition, storedTimeSteps, newtonParameters, gmresParameters, ...
+%     forcingTermParameters, safeguardParameters);
+% 
+% % Output plots and metrics
+% figure;
+% 
+% nodeCount = length(nodesY);
+% error = norm(yout(1:nodeCount, 2) - analyticSolution(:)) / sqrt(nodeCount);
+% disp(['H1.1 error: ' num2str(error)]);
+% 
+% plot(nodesX, analyticSolution, 'b');
+% hold on;
+% plot(nodesX, yout(1:nodeCount, 2), 'r*');
+% plotTitle = ['Test Problem (H1.1): 1D Diffusion (t = ' ...
+%     num2str(tout(end)) ')'];
+% title(plotTitle);
+% xlabel('x');
+% ylabel('y');
+% legend('Analytic Solution', 'Numeric Solution');
+% 
+% %% Test: 1D Diffusion (H2) - Homogeneous Dirichlet Boundary Conditions
+% 
+% % Initialise temporal parameters
+% tFinal = 0.1;
+% storedTimeSteps = 100;
+% 
+% % Initialise equation parameters
+% Dxx = @(phi) ones(length(phi), 1) .* 0.1;
+% Dyy = @(phi) phi .* 0;
+% Vx = @(phi) phi .* 0;
+% Vy = @(phi) phi .* 0;
+% source = @(phi) phi .* 0;
+% 
+% % Initialise mesh parameters
+% nodesX = 0:0.05:1;
+% nodesY = 1:-0.05:0;
+% 
+% rows = length(nodesY);
+% columns = length(nodesX);
+% 
+% % Initialise boundary conditions
+% northBC = struct('A', 1000, 'B', 1, 'C', 0);
+% eastBC = struct('A', 1000, 'B', 1, 'C', 0);
+% southBC = struct('A', 1000, 'B', 1, 'C', 0);
+% westBC = struct('A', 1000, 'B', 1, 'C', 0);
+% 
+% % Construct initial condition
+% initialCondition = zeros(length(nodesY), length(nodesX));
+% initialCondition(1, :) = 1;
+% 
+% % Generate analytic solution
+% % Accountability note: this code was sourced from another student for 
+% % testing purposes only and should be rewritten or removed prior to
+% % submission.
+% D = 0.1;
+% xLength = 1;
+% analyticFn = @(n) (4 / (n * pi)) * sin(n * pi * nodesX ./ xLength) ...
+%     .* exp(-(n * pi / xLength)^2 * D * tFinal);
+% analyticSolution = zeros(1, length(nodesX));
+% 
+% for n = 1:2:31
+%     analyticSolution = analyticSolution + analyticFn(n);    
+% end
+% 
+% % Solve problem
+% [tout, yout] = Solver(dt, tFinal, Dxx, Dyy, Vx, Vy, source, theta, ...
+%     advectionHandling, nodesX, nodesY, northBC, eastBC, southBC, westBC, ...
+%     initialCondition, storedTimeSteps, newtonParameters, gmresParameters, ...
+%     forcingTermParameters, safeguardParameters);
+% 
+% % Output plots and metrics
+% figure;
+% 
+% nodeCount = length(nodesX);
+% indices = 1:rows*columns;
+% cIndices = indices - 1;
+% northboundaryIndices = indices(mod(cIndices, rows) == 0);
+% 
+% error = norm(yout(northboundaryIndices, 2) - analyticSolution(:)) / sqrt(nodeCount);
+% disp(['H2.1 error: ' num2str(error)]);
+% 
+% plot(nodesX, analyticSolution, 'b');
+% hold on;
+% plot(nodesX, yout(northboundaryIndices, 2), 'r*');
+% plotTitle = ['Test Problem (H2.1): 1D Diffusion (t = ' ...
+%     num2str(tout(end)) ')'];
+% title(plotTitle);
+% xlabel('x');
+% ylabel('y');
+% legend('Analytic Solution', 'Numeric Solution');
 
 % %% Test: Dirichlet & Neumann Boundary Conditions (N1) - Input at West face. 
 % 
