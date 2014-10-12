@@ -301,6 +301,8 @@ gmresCalls = 0;
 
 %% Initialise solver parameters
 
+jacobian = zeros(nodeCount);
+
 isUpwinding = strcmp(advectionHandling, 'upwinding');
 
 tauA = 1e-6;
@@ -335,7 +337,6 @@ for i = 1:timeSteps
             xNodeDeltas, yNodeDeltas, northBC, eastBC, southBC, westBC, ...
             isUpwinding, isNBoundaryIndex, isEBoundaryIndex, ...
             isSBoundaryIndex, isWBoundaryIndex);
-
         F_current_backwardEuler = F_current_backwardEuler ...
             - dt .* theta .* source(previousSolution);
         F_current_backwardEuler = F_current_backwardEuler + previousSolution;
@@ -346,136 +347,23 @@ for i = 1:timeSteps
     Fx_initial_norm = norm(Fx);
     Fx_initial = Fx;
     
+    % Pre-emptively generate the Jacobian
+    if (i == FIRST_TIME_STEP_INDEX)
+        jacobian = GenerateJacobian(nodeCount, previousSolution, dt, ...
+            theta, rows, columns, Vx, Vy, Dxx, Dyy, xNodeDeltas, ...
+            yNodeDeltas, nodeWidths, nodeHeights, northBC, eastBC, ...
+            southBC, westBC, advectionHandling, source, F_forwardEuler, Fx);
+        previousJacobian = jacobian;
+    end
+    
     % Solve the non-linear system, F(x) = 0, for the next time step
-    jacobian = zeros(nodeCount);
     currentSolution = previousSolution;
     forcingTerm = 1/2;
     delta_x = realmax;
+    jacobianReset = false;
     while (current_iteration <= newtonParameters.maxIterations ...
             && norm(delta_x / currentSolution) >= newtonParameters.tolUpdate ...
             && norm(Fx) >= newtonParameters.tolResidual * Fx_initial_norm)
-        
-        % determine finite difference approx of Jacobian
-        previousJacobian = jacobian;
-        
-        h = determine_newton_step_delta(currentSolution);
-        
-        % self-dependent Jacobian components
-        for j = 1:nodeCount
-            nodeIndex = j;
-            
-            xStepped = currentSolution;
-            xStepped(nodeIndex) = xStepped(nodeIndex) + h;
-            
-            F_backwardEuler_stepped = dt * theta * GenerateFlux(j, ...
-                    rows, columns, xStepped, Vx, Vy, Dxx, Dyy, ...
-                    xNodeDeltas, yNodeDeltas, nodeWidths, nodeHeights, ...
-                    northBC, eastBC, southBC, westBC, advectionHandling);
-                
-            F_backwardEuler_stepped = F_backwardEuler_stepped ...
-                - dt * theta * source(xStepped(j));
-            F_backwardEuler_stepped = F_backwardEuler_stepped + xStepped(j);
-            
-            F_stepped = F_backwardEuler_stepped + F_forwardEuler(j);
-            
-            jacobian(j, nodeIndex) = (F_stepped - Fx(j)) / h;
-        end
-        
-        % north-dependent Jacobian components
-        for j = 1:nodeCount
-            nodeIndex = j - 1;
-            
-            if (nodeIndex >= 1 && nodeIndex <= nodeCount)
-                xStepped = currentSolution;
-                xStepped(nodeIndex) = xStepped(nodeIndex) + h;
-                
-                F_backwardEuler_stepped = dt * theta * GenerateFlux(j, ...
-                        rows, columns, xStepped, Vx, Vy, Dxx, Dyy, ...
-                        xNodeDeltas, yNodeDeltas, nodeWidths, nodeHeights, ...
-                        northBC, eastBC, southBC, westBC, advectionHandling);
-
-                F_backwardEuler_stepped = F_backwardEuler_stepped ...
-                    - dt * theta * source(xStepped(j));
-                F_backwardEuler_stepped = F_backwardEuler_stepped + xStepped(j);
-
-                F_stepped = F_backwardEuler_stepped + F_forwardEuler(j);
-                
-                jacobian(j, nodeIndex) = (F_stepped - Fx(j)) / h;
-            end
-        end
-        
-        % south-dependent Jacobian components
-        for j = 1:nodeCount
-            nodeIndex = j + 1;
-            
-            if (nodeIndex >= 1 && nodeIndex <= nodeCount)
-                xStepped = currentSolution;
-                xStepped(nodeIndex) = xStepped(nodeIndex) + h;
-                
-                F_backwardEuler_stepped = dt * theta * GenerateFlux(j, ...
-                        rows, columns, xStepped, Vx, Vy, Dxx, Dyy, ...
-                        xNodeDeltas, yNodeDeltas, nodeWidths, nodeHeights, ...
-                        northBC, eastBC, southBC, westBC, advectionHandling);
-
-                F_backwardEuler_stepped = F_backwardEuler_stepped ...
-                    - dt * theta * source(xStepped(j));
-                F_backwardEuler_stepped = F_backwardEuler_stepped + xStepped(j);
-
-                F_stepped = F_backwardEuler_stepped + F_forwardEuler(j);
-                
-                jacobian(j, nodeIndex) = (F_stepped - Fx(j)) / h;
-            end
-        end
-        
-        % east-dependent Jacobian components
-        for j = 1:nodeCount
-            nodeIndex = j + rows;
-            
-            if (nodeIndex >= 1 && nodeIndex <= nodeCount)
-                xStepped = currentSolution;
-                xStepped(nodeIndex) = xStepped(nodeIndex) + h;
-                
-                F_backwardEuler_stepped = dt * theta * GenerateFlux(j, ...
-                        rows, columns, xStepped, Vx, Vy, Dxx, Dyy, ...
-                        xNodeDeltas, yNodeDeltas, nodeWidths, nodeHeights, ...
-                        northBC, eastBC, southBC, westBC, advectionHandling);
-
-                F_backwardEuler_stepped = F_backwardEuler_stepped ...
-                    - dt * theta * source(xStepped(j));
-                F_backwardEuler_stepped = F_backwardEuler_stepped + xStepped(j);
-
-                F_stepped = F_backwardEuler_stepped + F_forwardEuler(j);
-                
-                jacobian(j, nodeIndex) = (F_stepped - Fx(j)) / h;
-            end
-        end
-        
-        % west-dependent Jacobian components
-        for j = 1:nodeCount
-            nodeIndex = j - rows;
-            
-            if (nodeIndex >= 1 && nodeIndex <= nodeCount)
-                xStepped = currentSolution;
-                xStepped(nodeIndex) = xStepped(nodeIndex) + h;
-                
-                F_backwardEuler_stepped = dt * theta * GenerateFlux(j, ...
-                        rows, columns, xStepped, Vx, Vy, Dxx, Dyy, ...
-                        xNodeDeltas, yNodeDeltas, nodeWidths, nodeHeights, ...
-                        northBC, eastBC, southBC, westBC, advectionHandling);
-                    
-                F_backwardEuler_stepped = F_backwardEuler_stepped ...
-                    - dt * theta * source(xStepped(j));
-                F_backwardEuler_stepped = F_backwardEuler_stepped + xStepped(j);
-                
-                F_stepped = F_backwardEuler_stepped + F_forwardEuler(j);
-                
-                jacobian(j, nodeIndex) = (F_stepped - Fx(j)) / h;
-            end
-        end
-        
-        if (current_iteration == 0)
-            previousJacobian = jacobian;
-        end
         
         % Determine the error tolerance based on the forcing term
         if (strcmp(forcingTermParameters.type, 'none'))
@@ -514,19 +402,28 @@ for i = 1:timeSteps
         Fx = F_current_backwardEuler + F_forwardEuler;
         
         current_iteration = current_iteration + 1;
+        
+        % Ensure an accurate solution to F(u) = 0 was determined
+        if (current_iteration > newtonParameters.maxIterations ...
+                && norm(delta_x / currentSolution) < newtonParameters.tolUpdate ...
+                && norm(Fx) < newtonParameters.tolResidual * Fx_initial_norm)
+            if (~jacobianReset)
+                jacobianReset = true;
+                previousJacobian = jacobian;
+                jacobian = GenerateJacobian(nodeCount, currentSolution, dt, ...
+                    theta, rows, columns, Vx, Vy, Dxx, Dyy, xNodeDeltas, ...
+                    yNodeDeltas, nodeWidths, nodeHeights, northBC, eastBC, ...
+                    southBC, westBC, advectionHandling, source, F_forwardEuler, Fx);
+            else
+                error(['Method Failure: the non-linear system generated at '...
+                    't = ' num2str(i * dt) ' was not solved using ' ...
+                    num2str(max_iterations) ' iterations of inexact Newton ' ...
+                    'method.']);
+            end
+        end
     end
     
     newtonIterations = newtonIterations + current_iteration;
-    
-    % Ensure an accurate solution to F(u) = 0 was determined
-    if (current_iteration > newtonParameters.maxIterations ...
-            && norm(delta_x / currentSolution) < newtonParameters.tolUpdate ...
-            && norm(Fx) < newtonParameters.tolResidual * Fx_initial_norm)
-        error(['Method Failure: the non-linear system generated at '...
-            't = ' num2str(i * dt) ' was not solved using ' ...
-            num2str(max_iterations) ' iterations of inexact Newton ' ...
-            'method.']);
-    end
     
     % Optionally store the solution
     if (mod(i, storedTimeSteps) == 0)
@@ -540,60 +437,181 @@ for i = 1:timeSteps
     
     previousSolution = currentSolution;
 end
-
 end
 
 %
 %   Helper Functions
 %
 
+function jacobian = GenerateJacobian(nodeCount, currentSolution, dt, theta, ...
+    rows, columns, Vx, Vy, Dxx, Dyy, xNodeDeltas, yNodeDeltas, ...
+    nodeWidths, nodeHeights, northBC, eastBC, southBC, westBC, ...
+    advectionHandling, source, forwardEulerComponent, Fx)
+
+jacobian = zeros(nodeCount);
+h = determine_newton_step_delta(currentSolution);
+        
+%% Generate self-dependent Jacobian components
+for j = 1:nodeCount
+    nodeIndex = j;
+
+    xStepped = currentSolution;
+    xStepped(nodeIndex) = xStepped(nodeIndex) + h;
+
+    F_backwardEuler_stepped = dt * theta * GenerateFlux(j, ...
+            rows, columns, xStepped, Vx, Vy, Dxx, Dyy, ...
+            xNodeDeltas, yNodeDeltas, nodeWidths, nodeHeights, ...
+            northBC, eastBC, southBC, westBC, advectionHandling);
+
+    F_backwardEuler_stepped = F_backwardEuler_stepped ...
+        - dt * theta * source(xStepped(j));
+    F_backwardEuler_stepped = F_backwardEuler_stepped + xStepped(j);
+
+    F_stepped = F_backwardEuler_stepped + forwardEulerComponent(j);
+
+    jacobian(j, nodeIndex) = (F_stepped - Fx(j)) / h;
+end
+
+%% Generate North-dependent Jacobian components
+for j = 1:nodeCount
+    nodeIndex = j - 1;
+
+    if (nodeIndex >= 1 && nodeIndex <= nodeCount)
+        xStepped = currentSolution;
+        xStepped(nodeIndex) = xStepped(nodeIndex) + h;
+
+        F_backwardEuler_stepped = dt * theta * GenerateFlux(j, ...
+                rows, columns, xStepped, Vx, Vy, Dxx, Dyy, ...
+                xNodeDeltas, yNodeDeltas, nodeWidths, nodeHeights, ...
+                northBC, eastBC, southBC, westBC, advectionHandling);
+
+        F_backwardEuler_stepped = F_backwardEuler_stepped ...
+            - dt * theta * source(xStepped(j));
+        F_backwardEuler_stepped = F_backwardEuler_stepped + xStepped(j);
+
+        F_stepped = F_backwardEuler_stepped + forwardEulerComponent(j);
+
+        jacobian(j, nodeIndex) = (F_stepped - Fx(j)) / h;
+    end
+end
+
+%% Generate South-dependent Jacobian components
+for j = 1:nodeCount
+    nodeIndex = j + 1;
+
+    if (nodeIndex >= 1 && nodeIndex <= nodeCount)
+        xStepped = currentSolution;
+        xStepped(nodeIndex) = xStepped(nodeIndex) + h;
+
+        F_backwardEuler_stepped = dt * theta * GenerateFlux(j, ...
+                rows, columns, xStepped, Vx, Vy, Dxx, Dyy, ...
+                xNodeDeltas, yNodeDeltas, nodeWidths, nodeHeights, ...
+                northBC, eastBC, southBC, westBC, advectionHandling);
+
+        F_backwardEuler_stepped = F_backwardEuler_stepped ...
+            - dt * theta * source(xStepped(j));
+        F_backwardEuler_stepped = F_backwardEuler_stepped + xStepped(j);
+
+        F_stepped = F_backwardEuler_stepped + forwardEulerComponent(j);
+
+        jacobian(j, nodeIndex) = (F_stepped - Fx(j)) / h;
+    end
+end
+
+%% Generate East-dependent Jacobian components
+for j = 1:nodeCount
+    nodeIndex = j + rows;
+
+    if (nodeIndex >= 1 && nodeIndex <= nodeCount)
+        xStepped = currentSolution;
+        xStepped(nodeIndex) = xStepped(nodeIndex) + h;
+
+        F_backwardEuler_stepped = dt * theta * GenerateFlux(j, ...
+                rows, columns, xStepped, Vx, Vy, Dxx, Dyy, ...
+                xNodeDeltas, yNodeDeltas, nodeWidths, nodeHeights, ...
+                northBC, eastBC, southBC, westBC, advectionHandling);
+
+        F_backwardEuler_stepped = F_backwardEuler_stepped ...
+            - dt * theta * source(xStepped(j));
+        F_backwardEuler_stepped = F_backwardEuler_stepped + xStepped(j);
+
+        F_stepped = F_backwardEuler_stepped + forwardEulerComponent(j);
+
+        jacobian(j, nodeIndex) = (F_stepped - Fx(j)) / h;
+    end
+end
+
+%% Generate West-dependent Jacobian components
+for j = 1:nodeCount
+    nodeIndex = j - rows;
+
+    if (nodeIndex >= 1 && nodeIndex <= nodeCount)
+        xStepped = currentSolution;
+        xStepped(nodeIndex) = xStepped(nodeIndex) + h;
+
+        F_backwardEuler_stepped = dt * theta * GenerateFlux(j, ...
+                rows, columns, xStepped, Vx, Vy, Dxx, Dyy, ...
+                xNodeDeltas, yNodeDeltas, nodeWidths, nodeHeights, ...
+                northBC, eastBC, southBC, westBC, advectionHandling);
+
+        F_backwardEuler_stepped = F_backwardEuler_stepped ...
+            - dt * theta * source(xStepped(j));
+        F_backwardEuler_stepped = F_backwardEuler_stepped + xStepped(j);
+
+        F_stepped = F_backwardEuler_stepped + forwardEulerComponent(j);
+
+        jacobian(j, nodeIndex) = (F_stepped - Fx(j)) / h;
+    end
+end
+end
+
 function residualError = DetermineErrorToleranceFromForcingTerm( ...
     forcingTerm, forcingTermParameters, safeguardParameters, Fx, ...
     Fx_previous, Fx_initial, previousJacobian, previousSolution, ...
     tauA, tauR, isInitialIteration)
 
-    switch(forcingTermParameters.type)
-        case 'choice1'
-            safeguardedTerm = forcingTerm^((1 + sqrt(5))/2);
+switch(forcingTermParameters.type)
+    case 'choice1'
+        safeguardedTerm = forcingTerm^((1 + sqrt(5))/2);
+        forcingTerm = ...
+            norm(Fx - Fx_previous - previousJacobian * previousSolution) ...
+            / norm(Fx_previous);
+        if (safeguardedTerm > safeguardParameters.threshold)
+            forcingTerm = max(forcingTerm, safeguardedTerm);
             forcingTerm = ...
-                norm(Fx - Fx_previous - previousJacobian * previousSolution) ...
-                / norm(Fx_previous);
-            if (safeguardedTerm > safeguardParameters.threshold)
-                forcingTerm = max(forcingTerm, safeguardedTerm);
-                forcingTerm = ...
-                    min(forcingTerm, forcingTermParameters.maxForcingTerm);
-            end
-            residualError = forcingTerm * norm(Fx);
-        case 'choice2'
-            safeguardedTerm = forcingTermParameters.gamma ...
-                * forcingTerm^forcingTermParameters.alpha;
-            forcingTerm = forcingTermParameters.gamma ...
-                * (norm(Fx) / norm(Fx_previous))^forcingTermParameters.alpha;
-            if (safeguardedTerm > safeguardParameters.threshold)
-                forcingTerm = max(forcingTerm, safeguardedTerm);
-                forcingTerm = ...
-                    min(forcingTerm, forcingTermParameters.maxForcingTerm);
-            end
-            residualError = forcingTerm * norm(Fx);
-        case 'assignment'
-            safeguardedTerm = forcingTermParameters.gamma ...
-                * forcingTerm^forcingTermParameters.alpha;
-            eta_k_R = forcingTermParameters.gamma ...
-                * (norm(Fx, Inf) / norm(Fx_previous, Inf))...
-                ^forcingTermParameters.alpha;
-            if (isInitialIteration)
-                eta_k_S = forcingTermParameters.maxForcingTerm;
-            elseif (safeguardedTerm <= safeguardParameters.threshold)
-                eta_k_S = min(forcingTermParameters.maxForcingTerm, eta_k_R);
-            else
-                eta_k_S = min(forcingTermParameters.maxForcingTerm, ...
-                    max(forcingTermParameters.maxForcingTerm, eta_k_R));
-            end
-            forcingTerm = min(forcingTermParameters.maxForcingTerm, ...
-                max(eta_k_S, (0.5 * (tauA + tauR * norm(Fx_initial, Inf)) ...
-                / norm(Fx, Inf))));
-            residualError = forcingTerm * norm(Fx);
-    end
+                min(forcingTerm, forcingTermParameters.maxForcingTerm);
+        end
+        residualError = forcingTerm * norm(Fx);
+    case 'choice2'
+        safeguardedTerm = forcingTermParameters.gamma ...
+            * forcingTerm^forcingTermParameters.alpha;
+        forcingTerm = forcingTermParameters.gamma ...
+            * (norm(Fx) / norm(Fx_previous))^forcingTermParameters.alpha;
+        if (safeguardedTerm > safeguardParameters.threshold)
+            forcingTerm = max(forcingTerm, safeguardedTerm);
+            forcingTerm = ...
+                min(forcingTerm, forcingTermParameters.maxForcingTerm);
+        end
+        residualError = forcingTerm * norm(Fx);
+    case 'assignment'
+        safeguardedTerm = forcingTermParameters.gamma ...
+            * forcingTerm^forcingTermParameters.alpha;
+        eta_k_R = forcingTermParameters.gamma ...
+            * (norm(Fx, Inf) / norm(Fx_previous, Inf))...
+            ^forcingTermParameters.alpha;
+        if (isInitialIteration)
+            eta_k_S = forcingTermParameters.maxForcingTerm;
+        elseif (safeguardedTerm <= safeguardParameters.threshold)
+            eta_k_S = min(forcingTermParameters.maxForcingTerm, eta_k_R);
+        else
+            eta_k_S = min(forcingTermParameters.maxForcingTerm, ...
+                max(forcingTermParameters.maxForcingTerm, eta_k_R));
+        end
+        forcingTerm = min(forcingTermParameters.maxForcingTerm, ...
+            max(eta_k_S, (0.5 * (tauA + tauR * norm(Fx_initial, Inf)) ...
+            / norm(Fx, Inf))));
+        residualError = forcingTerm * norm(Fx);
+end
 end
 
 function flux = GenerateFluxVec(phi, indices, rows, Vx, Vy, Dxx, Dyy, ...
