@@ -11,7 +11,7 @@ clear all;
 close all;
 
 % Initialise solver parameters
-theta = 1/2;
+theta = 1;
 advectionHandling = 'averaging';
 
 dt = 0.001;
@@ -45,13 +45,13 @@ source = @(phi) phi .* 0;
 xLower = 0;
 xUpper = 1;
 xCount = 21;
-xGeoParameters = struct('lowerIsGeometric', false, 'upperIsGeometric', false, ...
+xGeoParameters = struct('lowerIsGeometric', true, 'upperIsGeometric', true, ...
     'commonRatio', 1.1); 
 
 yLower = 0;
 yUpper = 1;
 yCount = 21;
-yGeoParameters = struct('lowerIsGeometric', false, 'upperIsGeometric', false, ...
+yGeoParameters = struct('lowerIsGeometric', true, 'upperIsGeometric', true, ...
     'commonRatio', 1.1);
 
 [nodesX, nodesY] = GenerateStructuredMesh(xLower, xUpper, xCount, ...
@@ -92,11 +92,6 @@ xlabel('x');
 ylabel('y');
 zlabel('Solution');
 
-totalMass = sum(sum(yout(2:end-1, end))) + (1/2) * yout(1, end) ...
-    + (1/2) * yout(end, end);
-
-disp(['Total at end time: ' num2str(totalMass) '.']);
-
 figure;
 
 surf(nodesX, nodesY, reshape(yout(:, 1), rows, columns));
@@ -120,8 +115,27 @@ zlabel('Solution');
 % source = @(phi) phi .* 0;
 % 
 % % Initialise mesh parameters
-% nodesX = 0:0.05:1;
-% nodesY = 1:-0.05:0;
+% % nodesX = 0:0.05:1;
+% % nodesY = 1:-0.05:0;
+% 
+% xLower = 0;
+% xUpper = 1;
+% xCount = 31;
+% xGeoParameters = struct('lowerIsGeometric', true, 'upperIsGeometric', true, ...
+%     'commonRatio', 1.1); 
+% 
+% yLower = 0;
+% yUpper = 1;
+% yCount = 31;
+% yGeoParameters = struct('lowerIsGeometric', true, 'upperIsGeometric', true, ...
+%     'commonRatio', 1.1);
+% 
+% [nodesX, nodesY] = GenerateStructuredMesh(xLower, xUpper, xCount, ...
+%     yLower, yUpper, yCount, xGeoParameters, yGeoParameters);
+% nodesY = flipud(nodesY);
+% 
+% nodesX = nodesX';
+% nodesY = nodesY';
 % 
 % rows = length(nodesY);
 % columns = length(nodesX);
@@ -151,7 +165,7 @@ zlabel('Solution');
 % end
 % 
 % % Solve problem
-% [tout, yout] = Solver(dt, tFinal, Dxx, Dyy, Vx, Vy, source, theta, ...
+% [tout, yout2] = Solver(dt, tFinal, Dxx, Dyy, Vx, Vy, source, theta, ...
 %     advectionHandling, nodesX, nodesY, northBC, eastBC, southBC, westBC, ...
 %     initialCondition, storedTimeSteps, newtonParameters, gmresParameters, ...
 %     forcingTermParameters, safeguardParameters);
@@ -160,19 +174,19 @@ zlabel('Solution');
 % figure;
 % 
 % nodeCount = length(nodesY);
-% error = norm(yout(1:nodeCount, 2) - analyticSolution(:)) / sqrt(nodeCount);
+% error = norm(yout2(1:nodeCount, 2) - analyticSolution(:)) / sqrt(nodeCount);
 % disp(['H1.1 error: ' num2str(error)]);
 % 
 % plot(nodesX, analyticSolution, 'b');
 % hold on;
-% plot(nodesX, yout(1:nodeCount, 2), 'r*');
+% plot(nodesX, yout2(1:nodeCount, 2), 'r*');
 % plotTitle = ['Test Problem (H1.1): 1D Diffusion (t = ' ...
 %     num2str(tout(end)) ')'];
 % title(plotTitle);
 % xlabel('x');
 % ylabel('y');
 % legend('Analytic Solution', 'Numeric Solution');
-% 
+
 % %% Test: 1D Diffusion (H2) - Homogeneous Dirichlet Boundary Conditions
 % 
 % % Initialise temporal parameters
@@ -187,8 +201,27 @@ zlabel('Solution');
 % source = @(phi) phi .* 0;
 % 
 % % Initialise mesh parameters
-% nodesX = 0:0.05:1;
-% nodesY = 1:-0.05:0;
+% % nodesX = 0:0.05:1;
+% % nodesY = 1:-0.05:0;
+% 
+% xLower = 0;
+% xUpper = 1;
+% xCount = 21;
+% xGeoParameters = struct('lowerIsGeometric', true, 'upperIsGeometric', true, ...
+%     'commonRatio', 1.1); 
+% 
+% yLower = 0;
+% yUpper = 1;
+% yCount = 21;
+% yGeoParameters = struct('lowerIsGeometric', true, 'upperIsGeometric', true, ...
+%     'commonRatio', 1.1);
+% 
+% [nodesX, nodesY] = GenerateStructuredMesh(xLower, xUpper, xCount, ...
+%     yLower, yUpper, yCount, xGeoParameters, yGeoParameters);
+% nodesY = flipud(nodesY);
+% 
+% nodesX = nodesX';
+% nodesY = nodesY';
 % 
 % rows = length(nodesY);
 % columns = length(nodesX);

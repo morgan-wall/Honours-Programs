@@ -299,6 +299,11 @@ previousSolution = initialCondition(:);
 newtonIterations = 0;
 gmresCalls = 0;
 
+%% Output conservation metrics
+
+total = sum(yout(:, 1) .* (nodeHeights(rowForIndex(indices)) .* nodeWidths(columnForIndex(indices))));
+disp(['Begin "mass": ' num2str(total)]);
+
 %% Initialise solver parameters
 
 jacobian = zeros(nodeCount);
@@ -447,6 +452,12 @@ for i = 1:timeSteps
     
     previousSolution = currentSolution;
 end
+
+%% Output conservation metrics 
+
+total = sum(yout(:, end) .* (nodeHeights(rowForIndex(indices)) .* nodeWidths(columnForIndex(indices))));
+disp(['End "mass": ' num2str(total)]);
+
 end
 
 %
@@ -684,7 +695,7 @@ if (~isempty(nIndices))
     nPhi = phi(nIndices);
     
     % Determine advection at face
-    advectionAtFace = zeros(length(flux));
+    advectionAtFace = zeros(length(flux), 1);
     advectionVelocityY = Vy(phi(nIndices));
     if (isUpwinding)
         positiveAdvection = advectionVelocityY > 0;
@@ -717,7 +728,7 @@ if (~isempty(eIndices))
     ePhi = phi(eIndices);
     
     % Determine advection at face
-    advectionAtFace = zeros(length(flux));
+    advectionAtFace = zeros(length(flux), 1);
     advectionVelocityX = Vx(phi(eIndices));
     if (isUpwinding)
         positiveAdvection = advectionVelocityX > 0;
@@ -750,7 +761,7 @@ if (~isempty(sIndices))
     sPhi = phi(sIndices);
     
     % Determine advection at face
-    advectionAtFace = zeros(length(flux));
+    advectionAtFace = zeros(length(flux), 1);
     advectionVelocityY = Vy(phi(sIndices));
     if (isUpwinding)
         positiveAdvection = advectionVelocityY > 0;
@@ -783,7 +794,7 @@ if (~isempty(wIndices))
     wPhi = phi(wIndices);
     
     % Determine advection at face
-    advectionAtFace = zeros(length(flux));
+    advectionAtFace = zeros(length(flux), 1);
     advectionVelocityX = Vx(phi(wIndices));
     if (isUpwinding)
         positiveAdvection = advectionVelocityX > 0;
