@@ -58,15 +58,19 @@ initialCondition = zeros(length(nodesY), length(nodesX));
 initialCondition(round(length(nodesY) / 2), round(length(nodesY) / 2)) = 1;
 
 % Solve problem
-[tout, yout2] = Solver(dt, tFinal, Dxx, Dyy, Vx, Vy, source, theta, ...
+tic;
+
+[tout, yout] = Solver(dt, tFinal, Dxx, Dyy, Vx, Vy, source, theta, ...
     advectionHandling, nodesX, nodesY, northBC, eastBC, southBC, westBC, ...
     initialCondition, storedTimeSteps, newtonParameters, gmresParameters, ...
     forcingTermParameters, safeguardParameters);
 
+toc;
+
 % Output plots and metrics
 figure;
 
-surf(nodesX, nodesY, reshape(yout2(:, end), rows, columns));
+surf(nodesX, nodesY, reshape(yout(:, end), rows, columns));
 plotTitle = ['Test Problem (G1.1): Gaussian Diffusion (t = ' ...
     num2str(tout(end)) ')'];
 title(plotTitle);
@@ -74,14 +78,14 @@ xlabel('x');
 ylabel('y');
 zlabel('Solution');
 
-totalMass = sum(sum(yout2(2:end-1, end))) + (1/2) * yout2(1, end) ...
-    + (1/2) * yout2(end, end);
+totalMass = sum(sum(yout(2:end-1, end))) + (1/2) * yout(1, end) ...
+    + (1/2) * yout(end, end);
 
 disp(['Total at end time: ' num2str(totalMass) '.']);
 
 figure;
 
-surf(nodesX, nodesY, reshape(yout2(:, 1), rows, columns));
+surf(nodesX, nodesY, reshape(yout(:, 1), rows, columns));
 plotTitle = 'Test Problem (G1.2): Gaussian Diffusion (t = 0)';
 title(plotTitle);
 xlabel('x');

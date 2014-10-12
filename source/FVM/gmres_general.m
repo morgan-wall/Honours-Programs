@@ -1,5 +1,5 @@
-function [xk, i] = gmres_general(A, b, x0, max_iter, ...
-    restart_value, error_tol, type, omega)
+function [xk, i] = gmres_general(A, b, x0, L, U, max_iter, ...
+    restart_value, error_tol)
 %% Approximate the solution to the linear system Ax = b using GMRES
 % Approximate the solution to the linear system Ax = b using C iterations
 % of the restarted Generalised Minimum Residual Method (GMRES) which 
@@ -20,32 +20,6 @@ function [xk, i] = gmres_general(A, b, x0, max_iter, ...
 %   Output:
 %       x: the solution vector.
 %
-
-% convert system parameters to sparse storage
-if (~issparse(A))
-    A = sparse(A); 
-end
-
-% construct matrix preconditioner
-diagonal_index = 0;
-rows = length(b);
-
-switch(type)
-    case 'ilu'
-        setup.type = 'nofill';
-        setup.milu = 'row';
-        setup.droptol = 0.1;
-        [L,U] = ilu(A, setup);
-    case 'jacobi'
-        L = spdiags(diag(A), diagonal_index, speye(rows));
-        U = speye(length(b));
-    case 'sor'
-        L = spdiags(diag(A) / omega, diagonal_index, tril(A));
-        U = speye(rows);
-    case 'none'
-        L = speye(rows);
-        U = L;
-end
 
 % initialise the current approximation of the solution
 xk = x0;

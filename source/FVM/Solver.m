@@ -198,13 +198,13 @@ function [tout, yout] = Solver(dt, tFinal, Dxx, Dyy, Vx, Vy, source, theta, ...
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Errors:
 %   
-%   There are no errors thrown by this function.
+%   1. Errors are thrown if the B field in any boundary condition struct 
+%      is zero.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Unimplemented features:
 %
-%   1. Selective construction of the preconditioner in the GMRES method.
-%   2. Jacobian-free Newton-GMRES solver.
+%   1. Jacobian-free Newton-GMRES solver.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -354,6 +354,9 @@ for i = 1:timeSteps
             yNodeDeltas, nodeWidths, nodeHeights, northBC, eastBC, ...
             southBC, westBC, advectionHandling, source, F_forwardEuler, Fx);
         previousJacobian = jacobian;
+        
+        [LPrecond, UPrecond] = GenerateMatrixPreconditioner(jacobian, ...
+            gmresParameters.preconditioningType, gmresParameters.omega);
     end
     
     % Solve the non-linear system, F(x) = 0, for the next time step
@@ -378,9 +381,8 @@ for i = 1:timeSteps
         
         % solve the linear system using GMRES
         [delta_x, iterations] = gmres_general(jacobian, Fx, currentSolution, ...
-            gmresParameters.maxIterations, gmresParameters.restartValue, ...
-            residualError, gmresParameters.preconditioningType, ...
-            gmresParameters.omega);
+            LPrecond, UPrecond, gmresParameters.maxIterations, ...
+            gmresParameters.restartValue, residualError);
         
         gmresCalls = gmresCalls + iterations;
         
@@ -407,6 +409,8 @@ for i = 1:timeSteps
         if (current_iteration > newtonParameters.maxIterations ...
                 && norm(delta_x / currentSolution) < newtonParameters.tolUpdate ...
                 && norm(Fx) < newtonParameters.tolResidual * Fx_initial_norm)
+            
+            % Update the Jacobian
             if (~jacobianReset)
                 jacobianReset = true;
                 previousJacobian = jacobian;
@@ -414,12 +418,18 @@ for i = 1:timeSteps
                     theta, rows, columns, Vx, Vy, Dxx, Dyy, xNodeDeltas, ...
                     yNodeDeltas, nodeWidths, nodeHeights, northBC, eastBC, ...
                     southBC, westBC, advectionHandling, source, F_forwardEuler, Fx);
+                
+                % Update preconditioner for Jacobian
+                [LPrecond, UPrecond] = GenerateMatrixPreconditioner(jacobian, ...
+                    gmresParameters.preconditioningType, gmresParameters.omega);
             else
                 error(['Method Failure: the non-linear system generated at '...
                     't = ' num2str(i * dt) ' was not solved using ' ...
                     num2str(max_iterations) ' iterations of inexact Newton ' ...
                     'method.']);
             end
+        else
+            jacobianReset = false;
         end
     end
     
@@ -562,6 +572,36 @@ for j = 1:nodeCount
 
         jacobian(j, nodeIndex) = (F_stepped - Fx(j)) / h;
     end
+end
+end
+
+function [L, U] = GenerateMatrixPreconditioner(A, type, omega)
+
+% convert system parameters to sparse storage
+if (~issparse(A))
+    A = sparse(A); 
+end
+
+% construct matrix preconditioner
+diagonal_index = 0;
+matrixSize = size(A);
+rows = matrixSize(1);
+
+switch(type)
+    case 'ilu'
+        setup.type = 'nofill';
+        setup.milu = 'row';
+        setup.droptol = 0.1;
+        [L,U] = ilu(A, setup);
+    case 'jacobi'
+        L = spdiags(diag(A), diagonal_index, speye(rows));
+        U = speye(rows);
+    case 'sor'
+        L = spdiags(diag(A) / omega, diagonal_index, tril(A));
+        U = speye(rows);
+    case 'none'
+        L = speye(rows);
+        U = L;
 end
 end
 
