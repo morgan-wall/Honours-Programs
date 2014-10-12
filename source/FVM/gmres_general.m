@@ -60,6 +60,7 @@ while (residual > error_tol && i < max_iter)
     
     % generate the orthonormal basis
     [Q, H, g] = arnoldi_general(A, L, U, r0, restart_value, error_tol);
+    i = i + length(g);
     
     % compute the minimiser (least squares problem)
     y = H(1:end-1, :) \ g(1:end-1);
@@ -70,6 +71,6 @@ while (residual > error_tol && i < max_iter)
     
     % update loop parameters
     residual = g(end);
-    i = i + 1;
+%     i = i + 1;
 end
 end
