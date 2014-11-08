@@ -11,32 +11,34 @@ close all;
 
 % Initialise problem parameters
 tFinal = 1.25;
-Dxx = @(phi) ones(length(phi), 1) * 0.01;
-Dyy = @(phi) ones(length(phi), 1) * 0.01;
-Vx = @(phi) ones(length(phi), 1) .* 0.8;
-Vy = @(phi) ones(length(phi), 1) .* 0.8;
+
+xC = 0.5;
+yC = 0.5;
+
+DXX = 0.01;
+Dxx = @(phi) phi .* 0 + DXX;
+
+DYY = 0.01;
+Dyy = @(phi) phi .* 0 + DYY;
+
+VX = 0.8;
+Vx = @(phi) phi .* 0 + VX;
+
+VY = 0.8;
+Vy = @(phi) phi .* 0 + VY;
+
 source = @(phi) phi .* 0;
-
-% Initialise boundary conditions
-northBC = struct('A', 0, 'B', 1, 'C', 0);
-eastBC = struct('A', 0, 'B', 1, 'C', 0);
-southBC = struct('A', 0, 'B', 1, 'C', 0);
-westBC = struct('A', 0, 'B', 1, 'C', 0);
-
-% Construct initial condition
-initialCondition = zeros(length(nodesY), length(nodesX));
-initialCondition(round(length(nodesY) / 2), round(length(nodesY) / 2)) = 1;
 
 % Construct mesh
 xLower = 0;
 xUpper = 2;
-xCount = 30;
+xCount = 50;
 xGeoParameters = struct('lowerIsGeometric', false, ...
     'upperIsGeometric', false, 'commonRatio', 1); 
 
 yLower = 0;
 yUpper = 2;
-yCount = 30;
+yCount = 50;
 yGeoParameters = struct('lowerIsGeometric', false, ...
     'upperIsGeometric', false, 'commonRatio', 1);
 
@@ -47,13 +49,27 @@ nodesY = flipud(nodesY);
 rows = length(nodesY);
 columns = length(nodesX);
 
+% Initialise analytic solution
+phiAnalytic = @(x, y, t) exp( -(x - VX * t - xC).^2 ./ (DXX * (4 * t + 1)) ...
+    - (y - VY * t - yC).^2 ./ (DYY * (4 * t + 1)) ) ./(4 * t + 1);
+
+% Initialise boundary conditions
+northBC = @(x, y, t) phiAnalytic(xUpper, y, t);
+eastBC = @(x, y, t) phiAnalytic(x, yUpper, t);
+southBC = @(x, y, t) phiAnalytic(x, yLower, t);
+westBC = @(x, y, t) phiAnalytic(xLower, y, t);
+
+% Construct initial condition
+[X, Y] = meshgrid(nodesX(:), nodesY(:));
+initialCondition = phiAnalytic(X(:), Y(:), 0);
+analyticSolution = phiAnalytic(X(:), Y(:), tFinal);
+
 % Initialise solver parameters
 theta = 1;
 advectionHandling = 'averaging';
 
 dt = 0.001;
 storedTimeSteps = 100;
-
 
 newtonParameters = struct('maxIterations', 5, 'tolUpdate', 1e-6, ...
     'tolResidual', 1e-6);
@@ -73,6 +89,24 @@ safeguardParameters = struct('threshold', 0.1);
     forcingTermParameters, safeguardParameters);
 
 % Output plots and metrics
+figure;
+
+surf(nodesX, nodesY, reshape(initialCondition, rows, columns));
+plotTitle = 'Analytic Solution (Problem 1) where t = 0';
+title(plotTitle);
+xlabel('x');
+ylabel('y');
+zlabel('Solution');
+
+figure;
+
+surf(nodesX, nodesY, reshape(analyticSolution, rows, columns));
+plotTitle = ['Analytic Solution (Problem 1) where t = ' num2str(tFinal)];
+title(plotTitle);
+xlabel('x');
+ylabel('y');
+zlabel('Solution');
+
 figure;
 
 surf(nodesX, nodesY, reshape(yout(:, end), rows, columns));
