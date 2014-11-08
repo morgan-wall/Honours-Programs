@@ -277,230 +277,230 @@ xlabel('x');
 ylabel('y');
 legend('Analytic Solution', 'Numeric Solution');
 
-% %% Test: Dirichlet & Neumann Boundary Conditions (N1) - Input at West face. 
-% 
-% % Initialise temporal parameters
-% tFinal = 0.1;
-% storedTimeSteps = 100;
-% 
-% % Initialise equation parameters
-% Dxx = @(phi) 0.1;
-% Dyy = @(phi) 0.1;
-% Vx = @(phi) 0;
-% Vy = @(phi) 0;
-% source = @(phi) 0;
-% 
-% % Initialise mesh parameters
-% nodesX = 0:0.05:1;
-% nodesY = 1:-0.05:0;
-% 
-% rows = length(nodesY);
-% columns = length(nodesX);
-% 
-% % Initialise boundary conditions
-% northBC = struct('A', 0, 'B', 1, 'C', 0);
-% eastBC = struct('A', 0, 'B', 1, 'C', 0);
-% southBC = struct('A', 0, 'B', 1, 'C', 0);
-% westBC = struct('A', 1000, 'B', 1, 'C', 1000);
-% 
-% % Construct initial condition
-% initialCondition = zeros(length(nodesY), length(nodesX));
-% initialCondition(:, 1) = 1;
-% 
-% % Solve problem
-% [tout, yout] = Solver(dt, tFinal, Dxx, Dyy, Vx, Vy, source, theta, ...
-%     advectionHandling, nodesX, nodesY, northBC, eastBC, southBC, westBC, ...
-%     initialCondition, storedTimeSteps, newtonParameters, gmresParameters, ...
-%     forcingTermParameters, safeguardParameters);
-% 
-% % Output plots and metrics
-% figure;
-% 
-% surf(nodesX, nodesY, reshape(yout(:, end), rows, columns));
-% plotTitle = ['Test Problem (N1.1): Dirichlet & Neumann Boundary ' ...
-%     'Conditions (t = ' num2str(tout(end)) ')'];
-% title(plotTitle);
-% xlabel('x');
-% ylabel('y');
-% zlabel('Solution');
-% 
-% figure;
-% 
-% surf(nodesX, nodesY, reshape(yout(:, 1), rows, columns));
-% plotTitle = ['Test Problem (N1.2): Dirichlet & Neumann Boundary ' ...
-%     'Conditions (t = 0 )'];
-% title(plotTitle);
-% xlabel('x');
-% ylabel('y');
-% zlabel('Solution');
-% 
-% %% Test: Dirichlet & Neumann Boundary Conditions (N2) - Input at North face. 
-% 
-% % Initialise temporal parameters
-% tFinal = 0.1;
-% storedTimeSteps = 100;
-% 
-% % Initialise equation parameters
-% Dxx = @(phi) 0.1;
-% Dyy = @(phi) 0.1;
-% Vx = @(phi) 0;
-% Vy = @(phi) 0;
-% source = @(phi) 0;
-% 
-% % Initialise mesh parameters
-% nodesX = 0:0.05:1;
-% nodesY = 1:-0.05:0;
-% 
-% rows = length(nodesY);
-% columns = length(nodesX);
-% 
-% % Initialise boundary conditions
-% northBC = struct('A', 1000, 'B', 1, 'C', 1000);
-% eastBC = struct('A', 0, 'B', 1, 'C', 0);
-% southBC = struct('A', 0, 'B', 1, 'C', 0);
-% westBC = struct('A', 0, 'B', 1, 'C', 0);
-% 
-% % Construct initial condition
-% initialCondition = zeros(length(nodesY), length(nodesX));
-% initialCondition(1, :) = 1;
-% 
-% % Solve problem
-% [tout, yout] = Solver(dt, tFinal, Dxx, Dyy, Vx, Vy, source, theta, ...
-%     advectionHandling, nodesX, nodesY, northBC, eastBC, southBC, westBC, ...
-%     initialCondition, storedTimeSteps, newtonParameters, gmresParameters, ...
-%     forcingTermParameters, safeguardParameters);
-% 
-% % Output plots and metrics
-% figure;
-% 
-% surf(nodesX, nodesY, reshape(yout(:, end), rows, columns));
-% plotTitle = ['Test Problem (N2.1): Dirichlet & Neumann Boundary ' ...
-%     'Conditions (t = ' num2str(tout(end)) ')'];
-% title(plotTitle);
-% xlabel('x');
-% ylabel('y');
-% zlabel('Solution');
-% 
-% figure;
-% 
-% surf(nodesX, nodesY, reshape(yout(:, 1), rows, columns));
-% plotTitle = ['Test Problem (N2.2): Dirichlet & Neumann Boundary ' ...
-%     'Conditions (t = 0 )'];
-% title(plotTitle);
-% xlabel('x');
-% ylabel('y');
-% zlabel('Solution');
-% 
-% %% Test: Dirichlet & Neumann Boundary Conditions (N3) - Input at East face. 
-% 
-% % Initialise temporal parameters
-% tFinal = 0.1;
-% storedTimeSteps = 100;
-% 
-% % Initialise equation parameters
-% Dxx = @(phi) 0.1;
-% Dyy = @(phi) 0.1;
-% Vx = @(phi) 0;
-% Vy = @(phi) 0;
-% source = @(phi) 0;
-% 
-% % Initialise mesh parameters
-% nodesX = 0:0.05:1;
-% nodesY = 1:-0.05:0;
-% 
-% rows = length(nodesY);
-% columns = length(nodesX);
-% 
-% % Initialise boundary conditions
-% northBC = struct('A', 0, 'B', 1, 'C', 0);
-% eastBC = struct('A', 1000, 'B', 1, 'C', 1000);
-% southBC = struct('A', 0, 'B', 1, 'C', 0);
-% westBC = struct('A', 0, 'B', 1, 'C', 0);
-% 
-% % Construct initial condition
-% initialCondition = zeros(length(nodesY), length(nodesX));
-% initialCondition(:, end) = 1;
-% 
-% % Solve problem
-% [tout, yout] = Solver(dt, tFinal, Dxx, Dyy, Vx, Vy, source, theta, ...
-%     advectionHandling, nodesX, nodesY, northBC, eastBC, southBC, westBC, ...
-%     initialCondition, storedTimeSteps, newtonParameters, gmresParameters, ...
-%     forcingTermParameters, safeguardParameters);
-% 
-% % Output plots and metrics
-% figure;
-% 
-% surf(nodesX, nodesY, reshape(yout(:, end), rows, columns));
-% plotTitle = ['Test Problem (N3.1): Dirichlet & Neumann Boundary ' ...
-%     'Conditions (t = ' num2str(tout(end)) ')'];
-% title(plotTitle);
-% xlabel('x');
-% ylabel('y');
-% zlabel('Solution');
-% 
-% figure;
-% 
-% surf(nodesX, nodesY, reshape(yout(:, 1), rows, columns));
-% plotTitle = ['Test Problem (N3.2): Dirichlet & Neumann Boundary ' ...
-%     'Conditions (t = 0 )'];
-% title(plotTitle);
-% xlabel('x');
-% ylabel('y');
-% zlabel('Solution');
-% 
-% %% Test: Dirichlet & Neumann Boundary Conditions (N4) - Input at South face. 
-% 
-% % Initialise temporal parameters
-% tFinal = 0.1;
-% storedTimeSteps = 100;
-% 
-% % Initialise equation parameters
-% Dxx = @(phi) 0.1;
-% Dyy = @(phi) 0.1;
-% Vx = @(phi) 0;
-% Vy = @(phi) 0;
-% source = @(phi) 0;
-% 
-% % Initialise mesh parameters
-% nodesX = 0:0.05:1;
-% nodesY = 1:-0.05:0;
-% 
-% rows = length(nodesY);
-% columns = length(nodesX);
-% 
-% % Initialise boundary conditions
-% northBC = struct('A', 0, 'B', 1, 'C', 0);
-% eastBC = struct('A', 0, 'B', 1, 'C', 0);
-% southBC = struct('A', 1000, 'B', 1, 'C', 1000);
-% westBC = struct('A', 0, 'B', 1, 'C', 0);
-% 
-% % Construct initial condition
-% initialCondition = zeros(length(nodesY), length(nodesX));
-% initialCondition(end, :) = 1;
-% 
-% % Solve problem
-% [tout, yout] = Solver(dt, tFinal, Dxx, Dyy, Vx, Vy, source, theta, ...
-%     advectionHandling, nodesX, nodesY, northBC, eastBC, southBC, westBC, ...
-%     initialCondition, storedTimeSteps, newtonParameters, gmresParameters, ...
-%     forcingTermParameters, safeguardParameters);
-% 
-% % Output plots and metrics
-% figure;
-% 
-% surf(nodesX, nodesY, reshape(yout(:, end), rows, columns));
-% plotTitle = ['Test Problem (N4.1): Dirichlet & Neumann Boundary '...
-%     'Conditions (t = ' num2str(tout(end)) ')'];
-% title(plotTitle);
-% xlabel('x');
-% ylabel('y');
-% zlabel('Solution');
-% 
-% figure;
-% 
-% surf(nodesX, nodesY, reshape(yout(:, 1), rows, columns));
-% plotTitle = ['Test Problem (N4.2): Dirichlet & Neumann Boundary ' ...
-%     'Conditions (t = 0 )'];
-% title(plotTitle);
-% xlabel('x');
-% ylabel('y');
-% zlabel('Solution');
+%% Test: Dirichlet & Neumann Boundary Conditions (N1) - Input at West face. 
+
+% Initialise temporal parameters
+tFinal = 0.1;
+storedTimeSteps = 100;
+
+% Initialise equation parameters
+Dxx = @(phi) 0.1;
+Dyy = @(phi) 0.1;
+Vx = @(phi) 0;
+Vy = @(phi) 0;
+source = @(phi) 0;
+
+% Initialise mesh parameters
+nodesX = 0:0.05:1;
+nodesY = 1:-0.05:0;
+
+rows = length(nodesY);
+columns = length(nodesX);
+
+% Initialise boundary conditions
+northBC = struct('A', 0, 'B', 1, 'C', 0);
+eastBC = struct('A', 0, 'B', 1, 'C', 0);
+southBC = struct('A', 0, 'B', 1, 'C', 0);
+westBC = struct('A', 1000, 'B', 1, 'C', 1000);
+
+% Construct initial condition
+initialCondition = zeros(length(nodesY), length(nodesX));
+initialCondition(:, 1) = 1;
+
+% Solve problem
+[tout, yout] = Solver(dt, tFinal, Dxx, Dyy, Vx, Vy, source, theta, ...
+    advectionHandling, nodesX, nodesY, northBC, eastBC, southBC, westBC, ...
+    initialCondition, storedTimeSteps, newtonParameters, gmresParameters, ...
+    forcingTermParameters, safeguardParameters);
+
+% Output plots and metrics
+figure;
+
+surf(nodesX, nodesY, reshape(yout(:, end), rows, columns));
+plotTitle = ['Test Problem (N1.1): Dirichlet & Neumann Boundary ' ...
+    'Conditions (t = ' num2str(tout(end)) ')'];
+title(plotTitle);
+xlabel('x');
+ylabel('y');
+zlabel('Solution');
+
+figure;
+
+surf(nodesX, nodesY, reshape(yout(:, 1), rows, columns));
+plotTitle = ['Test Problem (N1.2): Dirichlet & Neumann Boundary ' ...
+    'Conditions (t = 0 )'];
+title(plotTitle);
+xlabel('x');
+ylabel('y');
+zlabel('Solution');
+
+%% Test: Dirichlet & Neumann Boundary Conditions (N2) - Input at North face. 
+
+% Initialise temporal parameters
+tFinal = 0.1;
+storedTimeSteps = 100;
+
+% Initialise equation parameters
+Dxx = @(phi) 0.1;
+Dyy = @(phi) 0.1;
+Vx = @(phi) 0;
+Vy = @(phi) 0;
+source = @(phi) 0;
+
+% Initialise mesh parameters
+nodesX = 0:0.05:1;
+nodesY = 1:-0.05:0;
+
+rows = length(nodesY);
+columns = length(nodesX);
+
+% Initialise boundary conditions
+northBC = struct('A', 1000, 'B', 1, 'C', 1000);
+eastBC = struct('A', 0, 'B', 1, 'C', 0);
+southBC = struct('A', 0, 'B', 1, 'C', 0);
+westBC = struct('A', 0, 'B', 1, 'C', 0);
+
+% Construct initial condition
+initialCondition = zeros(length(nodesY), length(nodesX));
+initialCondition(1, :) = 1;
+
+% Solve problem
+[tout, yout] = Solver(dt, tFinal, Dxx, Dyy, Vx, Vy, source, theta, ...
+    advectionHandling, nodesX, nodesY, northBC, eastBC, southBC, westBC, ...
+    initialCondition, storedTimeSteps, newtonParameters, gmresParameters, ...
+    forcingTermParameters, safeguardParameters);
+
+% Output plots and metrics
+figure;
+
+surf(nodesX, nodesY, reshape(yout(:, end), rows, columns));
+plotTitle = ['Test Problem (N2.1): Dirichlet & Neumann Boundary ' ...
+    'Conditions (t = ' num2str(tout(end)) ')'];
+title(plotTitle);
+xlabel('x');
+ylabel('y');
+zlabel('Solution');
+
+figure;
+
+surf(nodesX, nodesY, reshape(yout(:, 1), rows, columns));
+plotTitle = ['Test Problem (N2.2): Dirichlet & Neumann Boundary ' ...
+    'Conditions (t = 0 )'];
+title(plotTitle);
+xlabel('x');
+ylabel('y');
+zlabel('Solution');
+
+%% Test: Dirichlet & Neumann Boundary Conditions (N3) - Input at East face. 
+
+% Initialise temporal parameters
+tFinal = 0.1;
+storedTimeSteps = 100;
+
+% Initialise equation parameters
+Dxx = @(phi) 0.1;
+Dyy = @(phi) 0.1;
+Vx = @(phi) 0;
+Vy = @(phi) 0;
+source = @(phi) 0;
+
+% Initialise mesh parameters
+nodesX = 0:0.05:1;
+nodesY = 1:-0.05:0;
+
+rows = length(nodesY);
+columns = length(nodesX);
+
+% Initialise boundary conditions
+northBC = struct('A', 0, 'B', 1, 'C', 0);
+eastBC = struct('A', 1000, 'B', 1, 'C', 1000);
+southBC = struct('A', 0, 'B', 1, 'C', 0);
+westBC = struct('A', 0, 'B', 1, 'C', 0);
+
+% Construct initial condition
+initialCondition = zeros(length(nodesY), length(nodesX));
+initialCondition(:, end) = 1;
+
+% Solve problem
+[tout, yout] = Solver(dt, tFinal, Dxx, Dyy, Vx, Vy, source, theta, ...
+    advectionHandling, nodesX, nodesY, northBC, eastBC, southBC, westBC, ...
+    initialCondition, storedTimeSteps, newtonParameters, gmresParameters, ...
+    forcingTermParameters, safeguardParameters);
+
+% Output plots and metrics
+figure;
+
+surf(nodesX, nodesY, reshape(yout(:, end), rows, columns));
+plotTitle = ['Test Problem (N3.1): Dirichlet & Neumann Boundary ' ...
+    'Conditions (t = ' num2str(tout(end)) ')'];
+title(plotTitle);
+xlabel('x');
+ylabel('y');
+zlabel('Solution');
+
+figure;
+
+surf(nodesX, nodesY, reshape(yout(:, 1), rows, columns));
+plotTitle = ['Test Problem (N3.2): Dirichlet & Neumann Boundary ' ...
+    'Conditions (t = 0 )'];
+title(plotTitle);
+xlabel('x');
+ylabel('y');
+zlabel('Solution');
+
+%% Test: Dirichlet & Neumann Boundary Conditions (N4) - Input at South face. 
+
+% Initialise temporal parameters
+tFinal = 0.1;
+storedTimeSteps = 100;
+
+% Initialise equation parameters
+Dxx = @(phi) 0.1;
+Dyy = @(phi) 0.1;
+Vx = @(phi) 0;
+Vy = @(phi) 0;
+source = @(phi) 0;
+
+% Initialise mesh parameters
+nodesX = 0:0.05:1;
+nodesY = 1:-0.05:0;
+
+rows = length(nodesY);
+columns = length(nodesX);
+
+% Initialise boundary conditions
+northBC = struct('A', 0, 'B', 1, 'C', 0);
+eastBC = struct('A', 0, 'B', 1, 'C', 0);
+southBC = struct('A', 1000, 'B', 1, 'C', 1000);
+westBC = struct('A', 0, 'B', 1, 'C', 0);
+
+% Construct initial condition
+initialCondition = zeros(length(nodesY), length(nodesX));
+initialCondition(end, :) = 1;
+
+% Solve problem
+[tout, yout] = Solver(dt, tFinal, Dxx, Dyy, Vx, Vy, source, theta, ...
+    advectionHandling, nodesX, nodesY, northBC, eastBC, southBC, westBC, ...
+    initialCondition, storedTimeSteps, newtonParameters, gmresParameters, ...
+    forcingTermParameters, safeguardParameters);
+
+% Output plots and metrics
+figure;
+
+surf(nodesX, nodesY, reshape(yout(:, end), rows, columns));
+plotTitle = ['Test Problem (N4.1): Dirichlet & Neumann Boundary '...
+    'Conditions (t = ' num2str(tout(end)) ')'];
+title(plotTitle);
+xlabel('x');
+ylabel('y');
+zlabel('Solution');
+
+figure;
+
+surf(nodesX, nodesY, reshape(yout(:, 1), rows, columns));
+plotTitle = ['Test Problem (N4.2): Dirichlet & Neumann Boundary ' ...
+    'Conditions (t = 0 )'];
+title(plotTitle);
+xlabel('x');
+ylabel('y');
+zlabel('Solution');
