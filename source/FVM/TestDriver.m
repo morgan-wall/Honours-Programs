@@ -41,7 +41,6 @@ Vy = @(phi) phi .* 0;
 source = @(phi) phi .* 0;
 
 % Initialise mesh parameters
-
 xLower = 0;
 xUpper = 1;
 xCount = 21;
@@ -62,10 +61,17 @@ rows = length(nodesY);
 columns = length(nodesX);
 
 % Initialise boundary conditions
-northBC = struct('A', 0, 'B', 1, 'C', 0);
-eastBC = struct('A', 0, 'B', 1, 'C', 0);
-southBC = struct('A', 0, 'B', 1, 'C', 0);
-westBC = struct('A', 0, 'B', 1, 'C', 0);
+northPhi = @(previousPhi, x, t) previousPhi;
+northBC = struct('A', 0, 'B', 1, 'C', 0, 'phi', northPhi);
+
+eastPhi = @(previousPhi, y, t) previousPhi;
+eastBC = struct('A', 0, 'B', 1, 'C', 0, 'phi', eastPhi);
+
+southPhi = @(previousPhi, x, t) previousPhi;
+southBC = struct('A', 0, 'B', 1, 'C', 0, 'phi', southPhi);
+
+westPhi = @(previousPhi, x, t) previousPhi;
+westBC = struct('A', 0, 'B', 1, 'C', 0, 'phi', westPhi);
 
 % Construct initial condition
 initialCondition = zeros(length(nodesY), length(nodesX));
@@ -115,9 +121,6 @@ Vy = @(phi) phi .* 0;
 source = @(phi) phi .* 0;
 
 % Initialise mesh parameters
-% nodesX = 0:0.05:1;
-% nodesY = 1:-0.05:0;
-
 xLower = 0;
 xUpper = 1;
 xCount = 21;
@@ -137,14 +140,18 @@ nodesY = flipud(nodesY);
 nodesX = nodesX';
 nodesY = nodesY';
 
-rows = length(nodesY);
-columns = length(nodesX);
-
 % Initialise boundary conditions
-northBC = struct('A', 1000, 'B', 1, 'C', 0);
-eastBC = struct('A', 1000, 'B', 1, 'C', 0);
-southBC = struct('A', 1000, 'B', 1, 'C', 0);
-westBC = struct('A', 1000, 'B', 1, 'C', 0);
+northPhi = @(previousPhi, x, t) previousPhi;
+northBC = struct('A', 1000, 'B', 1, 'C', 0, 'phi', northPhi);
+
+eastPhi = @(previousPhi, y, t) previousPhi;
+eastBC = struct('A', 1000, 'B', 1, 'C', 0, 'phi', eastPhi);
+
+southPhi = @(previousPhi, x, t) previousPhi;
+southBC = struct('A', 1000, 'B', 1, 'C', 0, 'phi', southPhi);
+
+westPhi = @(previousPhi, x, t) previousPhi;
+westBC = struct('A', 1000, 'B', 1, 'C', 0, 'phi', westPhi);
 
 % Construct initial condition
 initialCondition = zeros(length(nodesY), length(nodesX));
@@ -201,9 +208,6 @@ Vy = @(phi) phi .* 0;
 source = @(phi) phi .* 0;
 
 % Initialise mesh parameters
-% nodesX = 0:0.05:1;
-% nodesY = 1:-0.05:0;
-
 xLower = 0;
 xUpper = 1;
 xCount = 21;
@@ -227,10 +231,17 @@ rows = length(nodesY);
 columns = length(nodesX);
 
 % Initialise boundary conditions
-northBC = struct('A', 1000, 'B', 1, 'C', 0);
-eastBC = struct('A', 1000, 'B', 1, 'C', 0);
-southBC = struct('A', 1000, 'B', 1, 'C', 0);
-westBC = struct('A', 1000, 'B', 1, 'C', 0);
+northPhi = @(previousPhi, x, t) previousPhi;
+northBC = struct('A', 1000, 'B', 1, 'C', 0, 'phi', northPhi);
+
+eastPhi = @(previousPhi, y, t) previousPhi;
+eastBC = struct('A', 1000, 'B', 1, 'C', 0, 'phi', eastPhi);
+
+southPhi = @(previousPhi, x, t) previousPhi;
+southBC = struct('A', 1000, 'B', 1, 'C', 0, 'phi', southPhi);
+
+westPhi = @(previousPhi, x, t) previousPhi;
+westBC = struct('A', 1000, 'B', 1, 'C', 0, 'phi', westPhi);
 
 % Construct initial condition
 initialCondition = zeros(length(nodesY), length(nodesX));
@@ -298,10 +309,17 @@ rows = length(nodesY);
 columns = length(nodesX);
 
 % Initialise boundary conditions
-northBC = struct('A', 0, 'B', 1, 'C', 0);
-eastBC = struct('A', 0, 'B', 1, 'C', 0);
-southBC = struct('A', 0, 'B', 1, 'C', 0);
-westBC = struct('A', 1000, 'B', 1, 'C', 1000);
+northPhi = @(previousPhi, x, t) previousPhi;
+northBC = struct('A', 0, 'B', 1, 'C', 0, 'phi', northPhi);
+
+eastPhi = @(previousPhi, y, t) previousPhi;
+eastBC = struct('A', 0, 'B', 1, 'C', 0, 'phi', eastPhi);
+
+southPhi = @(previousPhi, x, t) previousPhi;
+southBC = struct('A', 0, 'B', 1, 'C', 0, 'phi', southPhi);
+
+westPhi = @(previousPhi, x, t) previousPhi;
+westBC = struct('A', 1000, 'B', 1, 'C', 1000, 'phi', westPhi);
 
 % Construct initial condition
 initialCondition = zeros(length(nodesY), length(nodesX));
@@ -355,10 +373,17 @@ rows = length(nodesY);
 columns = length(nodesX);
 
 % Initialise boundary conditions
-northBC = struct('A', 1000, 'B', 1, 'C', 1000);
-eastBC = struct('A', 0, 'B', 1, 'C', 0);
-southBC = struct('A', 0, 'B', 1, 'C', 0);
-westBC = struct('A', 0, 'B', 1, 'C', 0);
+northPhi = @(previousPhi, x, t) previousPhi;
+northBC = struct('A', 1000, 'B', 1, 'C', 1000, 'phi', northPhi);
+
+eastPhi = @(previousPhi, y, t) previousPhi;
+eastBC = struct('A', 0, 'B', 1, 'C', 0, 'phi', eastPhi);
+
+southPhi = @(previousPhi, x, t) previousPhi;
+southBC = struct('A', 0, 'B', 1, 'C', 0, 'phi', southPhi);
+
+westPhi = @(previousPhi, x, t) previousPhi;
+westBC = struct('A', 0, 'B', 1, 'C', 0, 'phi', westPhi);
 
 % Construct initial condition
 initialCondition = zeros(length(nodesY), length(nodesX));
@@ -412,10 +437,17 @@ rows = length(nodesY);
 columns = length(nodesX);
 
 % Initialise boundary conditions
-northBC = struct('A', 0, 'B', 1, 'C', 0);
-eastBC = struct('A', 1000, 'B', 1, 'C', 1000);
-southBC = struct('A', 0, 'B', 1, 'C', 0);
-westBC = struct('A', 0, 'B', 1, 'C', 0);
+northPhi = @(previousPhi, x, t) previousPhi;
+northBC = struct('A', 0, 'B', 1, 'C', 0, 'phi', northPhi);
+
+eastPhi = @(previousPhi, y, t) previousPhi;
+eastBC = struct('A', 1000, 'B', 1, 'C', 1000, 'phi', eastPhi);
+
+southPhi = @(previousPhi, x, t) previousPhi;
+southBC = struct('A', 0, 'B', 1, 'C', 0, 'phi', southPhi);
+
+westPhi = @(previousPhi, x, t) previousPhi;
+westBC = struct('A', 0, 'B', 1, 'C', 0, 'phi', westPhi);
 
 % Construct initial condition
 initialCondition = zeros(length(nodesY), length(nodesX));
@@ -469,10 +501,17 @@ rows = length(nodesY);
 columns = length(nodesX);
 
 % Initialise boundary conditions
-northBC = struct('A', 0, 'B', 1, 'C', 0);
-eastBC = struct('A', 0, 'B', 1, 'C', 0);
-southBC = struct('A', 1000, 'B', 1, 'C', 1000);
-westBC = struct('A', 0, 'B', 1, 'C', 0);
+northPhi = @(previousPhi, x, t) previousPhi;
+northBC = struct('A', 0, 'B', 1, 'C', 0, 'phi', northPhi);
+
+eastPhi = @(previousPhi, y, t) previousPhi;
+eastBC = struct('A', 0, 'B', 1, 'C', 0, 'phi', eastPhi);
+
+southPhi = @(previousPhi, x, t) previousPhi;
+southBC = struct('A', 1000, 'B', 1, 'C', 1000, 'phi', southPhi);
+
+westPhi = @(previousPhi, x, t) previousPhi;
+westBC = struct('A', 0, 'B', 1, 'C', 0, 'phi', westPhi);
 
 % Construct initial condition
 initialCondition = zeros(length(nodesY), length(nodesX));

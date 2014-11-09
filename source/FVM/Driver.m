@@ -54,7 +54,6 @@ advectionHandling = 'averaging';
 dt = 0.001;
 storedTimeSteps = 100;
 
-
 newtonParameters = struct('maxIterations', 5, 'tolUpdate', 1e-6, ...
     'tolResidual', 1e-6);
 
