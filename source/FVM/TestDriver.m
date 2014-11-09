@@ -243,19 +243,6 @@ southBC = struct('A', 1000, 'B', 1, 'C', southC);
 westC = @(y, t) y .* 0;
 westBC = struct('A', 1000, 'B', 1, 'C', westC);
 
-
-% northC = @(previousPhi, x, t) previousPhi;
-% northBC = struct('A', 1000, 'B', 1, 'C', 0, 'phi', northC);
-% 
-% eastC = @(previousPhi, y, t) previousPhi;
-% eastBC = struct('A', 1000, 'B', 1, 'C', 0, 'phi', eastC);
-% 
-% southC = @(previousPhi, x, t) previousPhi;
-% southBC = struct('A', 1000, 'B', 1, 'C', 0, 'phi', southC);
-% 
-% westC = @(previousPhi, y, t) previousPhi;
-% westBC = struct('A', 1000, 'B', 1, 'C', 0, 'phi', westC);
-
 % Construct initial condition
 initialCondition = zeros(length(nodesY), length(nodesX));
 initialCondition(1, :) = 1;
@@ -334,18 +321,6 @@ southBC = struct('A', 0, 'B', 1, 'C', southC);
 westC = @(y, t) y .* 0 + 1000;
 westBC = struct('A', 1000, 'B', 1, 'C', westC);
 
-% northC = @(previousPhi, x, t) previousPhi;
-% northBC = struct('A', 0, 'B', 1, 'C', 0, 'phi', northC);
-% 
-% eastC = @(previousPhi, y, t) previousPhi;
-% eastBC = struct('A', 0, 'B', 1, 'C', 0, 'phi', eastC);
-% 
-% southC = @(previousPhi, x, t) previousPhi;
-% southBC = struct('A', 0, 'B', 1, 'C', 0, 'phi', southC);
-% 
-% westC = @(previousPhi, y, t) previousPhi;
-% westBC = struct('A', 1000, 'B', 1, 'C', 1000, 'phi', westC);
-
 % Construct initial condition
 initialCondition = zeros(length(nodesY), length(nodesX));
 initialCondition(:, 1) = 1;
@@ -409,18 +384,6 @@ southBC = struct('A', 0, 'B', 1, 'C', southC);
 
 westC = @(y, t) y .* 0;
 westBC = struct('A', 0, 'B', 1, 'C', westC);
-
-% northC = @(previousPhi, x, t) previousPhi;
-% northBC = struct('A', 1000, 'B', 1, 'C', 1000, 'phi', northC);
-% 
-% eastC = @(previousPhi, y, t) previousPhi;
-% eastBC = struct('A', 0, 'B', 1, 'C', 0, 'phi', eastC);
-% 
-% southC = @(previousPhi, x, t) previousPhi;
-% southBC = struct('A', 0, 'B', 1, 'C', 0, 'phi', southC);
-% 
-% westC = @(previousPhi, y, t) previousPhi;
-% westBC = struct('A', 0, 'B', 1, 'C', 0, 'phi', westC);
 
 % Construct initial condition
 initialCondition = zeros(length(nodesY), length(nodesX));
@@ -486,18 +449,6 @@ southBC = struct('A', 0, 'B', 1, 'C', southC);
 westC = @(y, t) y .* 0;
 westBC = struct('A', 0, 'B', 1, 'C', westC);
 
-% northC = @(previousPhi, x, t) previousPhi;
-% northBC = struct('A', 0, 'B', 1, 'C', 0, 'phi', northC);
-% 
-% eastC = @(previousPhi, y, t) previousPhi;
-% eastBC = struct('A', 1000, 'B', 1, 'C', 1000, 'phi', eastC);
-% 
-% southC = @(previousPhi, x, t) previousPhi;
-% southBC = struct('A', 0, 'B', 1, 'C', 0, 'phi', southC);
-% 
-% westC = @(previousPhi, y, t) previousPhi;
-% westBC = struct('A', 0, 'B', 1, 'C', 0, 'phi', westC);
-
 % Construct initial condition
 initialCondition = zeros(length(nodesY), length(nodesX));
 initialCondition(:, end) = 1;
@@ -561,18 +512,6 @@ southBC = struct('A', 1000, 'B', 1, 'C', southC);
 
 westC = @(y, t) y .* 0;
 westBC = struct('A', 0, 'B', 1, 'C', westC);
-
-% northC = @(previousPhi, x, t) previousPhi;
-% northBC = struct('A', 0, 'B', 1, 'C', 0, 'phi', northC);
-% 
-% eastC = @(previousPhi, y, t) previousPhi;
-% eastBC = struct('A', 0, 'B', 1, 'C', 0, 'phi', eastC);
-% 
-% southC = @(previousPhi, x, t) previousPhi;
-% southBC = struct('A', 1000, 'B', 1, 'C', 1000, 'phi', southC);
-% 
-% westC = @(previousPhi, y, t) previousPhi;
-% westBC = struct('A', 0, 'B', 1, 'C', 0, 'phi', westC);
 
 % Construct initial condition
 initialCondition = zeros(length(nodesY), length(nodesX));
