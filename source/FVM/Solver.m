@@ -353,11 +353,13 @@ for i = 1:timeSteps
     Fx_initial = Fx;
     
     % Pre-emptively generate the Jacobian
-    if (i == FIRST_TIME_STEP_INDEX)
-        jacobian = GenerateJacobian(nodeCount, previousSolution, dt, ...
-            theta, rows, columns, Vx, Vy, Dxx, Dyy, xNodeDeltas, ...
-            yNodeDeltas, nodeWidths, nodeHeights, northBC, eastBC, ...
-            southBC, westBC, advectionHandling, source, F_forwardEuler, Fx);
+    if (i == FIRST_TIME_STEP_INDEX)        
+        jacobian = GenerateJacobian(nodeCount, previousSolution, dt, theta, ...
+            rows, rowForIndex, columnForIndex, Vx, Vy, Dxx, Dyy, xNodeDeltas, ...
+            yNodeDeltas, nodeWidths, nodeHeights, northBC, eastBC, southBC, ...
+            westBC, isUpwinding, source, F_forwardEuler, Fx, ...
+            isNBoundaryIndex, isEBoundaryIndex, isSBoundaryIndex, ...
+            isWBoundaryIndex);
         previousJacobian = jacobian;
         
         [LPrecond, UPrecond] = GenerateMatrixPreconditioner(jacobian, ...
@@ -419,10 +421,13 @@ for i = 1:timeSteps
             if (~jacobianReset)
                 jacobianReset = true;
                 previousJacobian = jacobian;
+                
                 jacobian = GenerateJacobian(nodeCount, currentSolution, dt, ...
-                    theta, rows, columns, Vx, Vy, Dxx, Dyy, xNodeDeltas, ...
-                    yNodeDeltas, nodeWidths, nodeHeights, northBC, eastBC, ...
-                    southBC, westBC, advectionHandling, source, F_forwardEuler, Fx);
+                    theta, rows, rowForIndex, columnForIndex, Vx, Vy, Dxx, ...
+                    Dyy, xNodeDeltas, yNodeDeltas, nodeWidths, nodeHeights, ...
+                    northBC, eastBC, southBC, westBC, isUpwinding, source, ...
+                    F_forwardEuler, Fx, isNBoundaryIndex, isEBoundaryIndex, ...
+                    isSBoundaryIndex, isWBoundaryIndex);
                 
                 % Update preconditioner for Jacobian
                 [LPrecond, UPrecond] = GenerateMatrixPreconditioner(jacobian, ...
@@ -465,9 +470,10 @@ end
 %
 
 function jacobian = GenerateJacobian(nodeCount, currentSolution, dt, theta, ...
-    rows, columns, Vx, Vy, Dxx, Dyy, xNodeDeltas, yNodeDeltas, ...
-    nodeWidths, nodeHeights, northBC, eastBC, southBC, westBC, ...
-    advectionHandling, source, forwardEulerComponent, Fx)
+    rows, rowForIndex, columnForIndex, Vx, Vy, Dxx, Dyy, ...
+    xNodeDeltas, yNodeDeltas, nodeWidths, nodeHeights, northBC, eastBC, ...
+    southBC, westBC, isUpwinding, source, forwardEulerComponent, Fx, ...
+    isNBoundaryIndex, isEBoundaryIndex, isSBoundaryIndex, isWBoundaryIndex)
 
 jacobian = zeros(nodeCount);
 h = determine_newton_step_delta(currentSolution);
@@ -478,11 +484,12 @@ for j = 1:nodeCount
 
     xStepped = currentSolution;
     xStepped(nodeIndex) = xStepped(nodeIndex) + h;
-
-    F_backwardEuler_stepped = dt * theta * GenerateFlux(j, ...
-            rows, columns, xStepped, Vx, Vy, Dxx, Dyy, ...
-            xNodeDeltas, yNodeDeltas, nodeWidths, nodeHeights, ...
-            northBC, eastBC, southBC, westBC, advectionHandling);
+        
+    F_backwardEuler_stepped = dt * theta * GenerateFluxVec(xStepped, ...
+        j, rows, Vx, Vy, Dxx, Dyy, nodeWidths, nodeHeights, ...
+        rowForIndex, columnForIndex, xNodeDeltas, yNodeDeltas, northBC, ...
+        eastBC, southBC, westBC, isUpwinding, isNBoundaryIndex, ...
+        isEBoundaryIndex, isSBoundaryIndex, isWBoundaryIndex);
 
     F_backwardEuler_stepped = F_backwardEuler_stepped ...
         - dt * theta * source(xStepped(j));
@@ -501,11 +508,12 @@ for j = 1:nodeCount
         xStepped = currentSolution;
         xStepped(nodeIndex) = xStepped(nodeIndex) + h;
 
-        F_backwardEuler_stepped = dt * theta * GenerateFlux(j, ...
-                rows, columns, xStepped, Vx, Vy, Dxx, Dyy, ...
-                xNodeDeltas, yNodeDeltas, nodeWidths, nodeHeights, ...
-                northBC, eastBC, southBC, westBC, advectionHandling);
-
+        F_backwardEuler_stepped = dt * theta * GenerateFluxVec(xStepped, ...
+            j, rows, Vx, Vy, Dxx, Dyy, nodeWidths, nodeHeights, ...
+            rowForIndex, columnForIndex, xNodeDeltas, yNodeDeltas, northBC, ...
+            eastBC, southBC, westBC, isUpwinding, isNBoundaryIndex, ...
+            isEBoundaryIndex, isSBoundaryIndex, isWBoundaryIndex);
+            
         F_backwardEuler_stepped = F_backwardEuler_stepped ...
             - dt * theta * source(xStepped(j));
         F_backwardEuler_stepped = F_backwardEuler_stepped + xStepped(j);
@@ -524,10 +532,11 @@ for j = 1:nodeCount
         xStepped = currentSolution;
         xStepped(nodeIndex) = xStepped(nodeIndex) + h;
 
-        F_backwardEuler_stepped = dt * theta * GenerateFlux(j, ...
-                rows, columns, xStepped, Vx, Vy, Dxx, Dyy, ...
-                xNodeDeltas, yNodeDeltas, nodeWidths, nodeHeights, ...
-                northBC, eastBC, southBC, westBC, advectionHandling);
+        F_backwardEuler_stepped = dt * theta * GenerateFluxVec(xStepped, ...
+            j, rows, Vx, Vy, Dxx, Dyy, nodeWidths, nodeHeights, ...
+            rowForIndex, columnForIndex, xNodeDeltas, yNodeDeltas, northBC, ...
+            eastBC, southBC, westBC, isUpwinding, isNBoundaryIndex, ...
+            isEBoundaryIndex, isSBoundaryIndex, isWBoundaryIndex);
 
         F_backwardEuler_stepped = F_backwardEuler_stepped ...
             - dt * theta * source(xStepped(j));
@@ -547,10 +556,11 @@ for j = 1:nodeCount
         xStepped = currentSolution;
         xStepped(nodeIndex) = xStepped(nodeIndex) + h;
 
-        F_backwardEuler_stepped = dt * theta * GenerateFlux(j, ...
-                rows, columns, xStepped, Vx, Vy, Dxx, Dyy, ...
-                xNodeDeltas, yNodeDeltas, nodeWidths, nodeHeights, ...
-                northBC, eastBC, southBC, westBC, advectionHandling);
+        F_backwardEuler_stepped = dt * theta * GenerateFluxVec(xStepped, ...
+            j, rows, Vx, Vy, Dxx, Dyy, nodeWidths, nodeHeights, ...
+            rowForIndex, columnForIndex, xNodeDeltas, yNodeDeltas, northBC, ...
+            eastBC, southBC, westBC, isUpwinding, isNBoundaryIndex, ...
+            isEBoundaryIndex, isSBoundaryIndex, isWBoundaryIndex);
 
         F_backwardEuler_stepped = F_backwardEuler_stepped ...
             - dt * theta * source(xStepped(j));
@@ -570,10 +580,11 @@ for j = 1:nodeCount
         xStepped = currentSolution;
         xStepped(nodeIndex) = xStepped(nodeIndex) + h;
 
-        F_backwardEuler_stepped = dt * theta * GenerateFlux(j, ...
-                rows, columns, xStepped, Vx, Vy, Dxx, Dyy, ...
-                xNodeDeltas, yNodeDeltas, nodeWidths, nodeHeights, ...
-                northBC, eastBC, southBC, westBC, advectionHandling);
+        F_backwardEuler_stepped = dt * theta * GenerateFluxVec(xStepped, ...
+            j, rows, Vx, Vy, Dxx, Dyy, nodeWidths, nodeHeights, ...
+            rowForIndex, columnForIndex, xNodeDeltas, yNodeDeltas, northBC, ...
+            eastBC, southBC, westBC, isUpwinding, isNBoundaryIndex, ...
+            isEBoundaryIndex, isSBoundaryIndex, isWBoundaryIndex);
 
         F_backwardEuler_stepped = F_backwardEuler_stepped ...
             - dt * theta * source(xStepped(j));
@@ -831,133 +842,133 @@ flux = flux ./ ...
 
 end
 
-function flux = GenerateFlux(nodeCount, rows, columns, ...
-    previousSolution, Vx, Vy, Dxx, Dyy, xNodeDeltas, yNodeDeltas, ...
-    nodeWidths, nodeHeights, northBC, eastBC, southBC, westBC, ...
-    advectionHandling)
-%% GenerateFlux: ...
-%
-
-%% Intiailise known constants and solution variables
-
-MIN_INDEX = 1;
-
-row = mod(nodeCount - 1, rows) + 1;
-column = floor((nodeCount - 1) / rows) + 1;
-
-cv_prevSolution = previousSolution(nodeCount); 
-cv_Dxx = Dxx(cv_prevSolution);
-cv_Dyy = Dyy(cv_prevSolution);
-cv_Vx = Vx(cv_prevSolution);
-cv_Vy = Vy(cv_prevSolution);
-cv_width = nodeWidths(column);
-cv_height = nodeHeights(row);
-
-flux = 0;
-
-isUpwinding = strcmp(advectionHandling, 'upwinding');
-
-%% Determine flux for control volume
-
-% North face
-if (row == MIN_INDEX)
-    flux = flux + cv_width ...
-        * ( (cv_Vy + cv_Dyy * northBC.A / northBC.B) * cv_prevSolution ...
-        - cv_Dyy * northBC.C / northBC.B );
-else
-    northPrevSolution = previousSolution(nodeCount - 1);
-    
-    if (isUpwinding)
-        if (cv_Vy > 0)
-            advectionAtFace = cv_prevSolution;
-        else
-            advectionAtFace = northPrevSolution;
-        end
-    else
-        advectionAtFace = (northPrevSolution + cv_prevSolution) / 2;
-    end
-    
-    flux = flux + cv_width ...
-        * (((cv_Vy + Vy(northPrevSolution)) / 2) * advectionAtFace ...
-        - ((cv_Dyy + Dyy(northPrevSolution)) / 2) ...
-        * (northPrevSolution - cv_prevSolution) / yNodeDeltas(row - 1));
-end
-
-% East face
-if (column == columns)
-    flux = flux + cv_height ...
-        * ((cv_Vx + cv_Dxx * eastBC.A / eastBC.B) * cv_prevSolution ...
-        - cv_Dxx * eastBC.C / eastBC.B);
-else
-    eastPrevSolution = previousSolution(nodeCount + rows);
-    
-    if (isUpwinding)
-        if (cv_Vx > 0)
-            advectionAtFace = cv_prevSolution;
-        else
-            advectionAtFace = eastPrevSolution;
-        end
-    else
-        advectionAtFace = (eastPrevSolution + cv_prevSolution) / 2;
-    end
-    
-    flux = flux + cv_height ...
-        * (((cv_Vx + Vx(eastPrevSolution)) / 2) * advectionAtFace ...
-        - ((cv_Dxx + Dxx(eastPrevSolution)) / 2) ...
-        * (eastPrevSolution - cv_prevSolution) / xNodeDeltas(column));
-end
-
-% South face
-if (row == rows)
-    flux = flux - cv_width ...
-        * ((cv_Vy - cv_Dyy * southBC.A / southBC.B) * cv_prevSolution ...
-        + cv_Dyy * southBC.C / southBC.B);
-else
-    southPrevSolution = previousSolution(nodeCount + 1);
-    
-    if (isUpwinding)
-        if (cv_Vy > 0)
-            advectionAtFace = southPrevSolution;
-        else
-            advectionAtFace = cv_prevSolution;
-        end
-    else
-        advectionAtFace = (southPrevSolution + cv_prevSolution) / 2;
-    end
-    
-    flux = flux - cv_width ...
-        * (((cv_Vy + Vy(southPrevSolution)) / 2) * advectionAtFace ...
-        - ((cv_Dyy + Dyy(southPrevSolution)) / 2) ...
-        * (cv_prevSolution - southPrevSolution) / yNodeDeltas(row));
-end
-
-% West face
-if (column == MIN_INDEX)
-    flux = flux - cv_height ...
-        * ( (cv_Vx - cv_Dxx * westBC.A / westBC.B) * cv_prevSolution ...
-        + cv_Dxx * westBC.C / westBC.B );
-else
-    westPrevSolution = previousSolution(nodeCount - rows);
-    
-    if (isUpwinding)
-        if (cv_Vx > 0)
-            advectionAtFace = westPrevSolution;
-        else
-            advectionAtFace = cv_prevSolution;
-        end
-    else
-        advectionAtFace = (westPrevSolution + cv_prevSolution) / 2;
-    end
-    
-    flux = flux - cv_height ...
-        * (((cv_Vx + Vx(westPrevSolution)) / 2) * advectionAtFace ...
-        - ((cv_Dxx + Dxx(westPrevSolution)) / 2) ...
-        * (cv_prevSolution - westPrevSolution) / xNodeDeltas(column - 1));
-end
-
-flux = flux ./ (cv_width * cv_height);
-
-end
+% function flux = GenerateFlux(nodeCount, rows, columns, ...
+%     previousSolution, Vx, Vy, Dxx, Dyy, xNodeDeltas, yNodeDeltas, ...
+%     nodeWidths, nodeHeights, northBC, eastBC, southBC, westBC, ...
+%     advectionHandling)
+% %% GenerateFlux: ...
+% %
+% 
+% %% Intiailise known constants and solution variables
+% 
+% MIN_INDEX = 1;
+% 
+% row = mod(nodeCount - 1, rows) + 1;
+% column = floor((nodeCount - 1) / rows) + 1;
+% 
+% cv_prevSolution = previousSolution(nodeCount); 
+% cv_Dxx = Dxx(cv_prevSolution);
+% cv_Dyy = Dyy(cv_prevSolution);
+% cv_Vx = Vx(cv_prevSolution);
+% cv_Vy = Vy(cv_prevSolution);
+% cv_width = nodeWidths(column);
+% cv_height = nodeHeights(row);
+% 
+% flux = 0;
+% 
+% isUpwinding = strcmp(advectionHandling, 'upwinding');
+% 
+% %% Determine flux for control volume
+% 
+% % North face
+% if (row == MIN_INDEX)
+%     flux = flux + cv_width ...
+%         * ( (cv_Vy + cv_Dyy * northBC.A / northBC.B) * cv_prevSolution ...
+%         - cv_Dyy * northBC.C / northBC.B );
+% else
+%     northPrevSolution = previousSolution(nodeCount - 1);
+%     
+%     if (isUpwinding)
+%         if (cv_Vy > 0)
+%             advectionAtFace = cv_prevSolution;
+%         else
+%             advectionAtFace = northPrevSolution;
+%         end
+%     else
+%         advectionAtFace = (northPrevSolution + cv_prevSolution) / 2;
+%     end
+%     
+%     flux = flux + cv_width ...
+%         * (((cv_Vy + Vy(northPrevSolution)) / 2) * advectionAtFace ...
+%         - ((cv_Dyy + Dyy(northPrevSolution)) / 2) ...
+%         * (northPrevSolution - cv_prevSolution) / yNodeDeltas(row - 1));
+% end
+% 
+% % East face
+% if (column == columns)
+%     flux = flux + cv_height ...
+%         * ((cv_Vx + cv_Dxx * eastBC.A / eastBC.B) * cv_prevSolution ...
+%         - cv_Dxx * eastBC.C / eastBC.B);
+% else
+%     eastPrevSolution = previousSolution(nodeCount + rows);
+%     
+%     if (isUpwinding)
+%         if (cv_Vx > 0)
+%             advectionAtFace = cv_prevSolution;
+%         else
+%             advectionAtFace = eastPrevSolution;
+%         end
+%     else
+%         advectionAtFace = (eastPrevSolution + cv_prevSolution) / 2;
+%     end
+%     
+%     flux = flux + cv_height ...
+%         * (((cv_Vx + Vx(eastPrevSolution)) / 2) * advectionAtFace ...
+%         - ((cv_Dxx + Dxx(eastPrevSolution)) / 2) ...
+%         * (eastPrevSolution - cv_prevSolution) / xNodeDeltas(column));
+% end
+% 
+% % South face
+% if (row == rows)
+%     flux = flux - cv_width ...
+%         * ((cv_Vy - cv_Dyy * southBC.A / southBC.B) * cv_prevSolution ...
+%         + cv_Dyy * southBC.C / southBC.B);
+% else
+%     southPrevSolution = previousSolution(nodeCount + 1);
+%     
+%     if (isUpwinding)
+%         if (cv_Vy > 0)
+%             advectionAtFace = southPrevSolution;
+%         else
+%             advectionAtFace = cv_prevSolution;
+%         end
+%     else
+%         advectionAtFace = (southPrevSolution + cv_prevSolution) / 2;
+%     end
+%     
+%     flux = flux - cv_width ...
+%         * (((cv_Vy + Vy(southPrevSolution)) / 2) * advectionAtFace ...
+%         - ((cv_Dyy + Dyy(southPrevSolution)) / 2) ...
+%         * (cv_prevSolution - southPrevSolution) / yNodeDeltas(row));
+% end
+% 
+% % West face
+% if (column == MIN_INDEX)
+%     flux = flux - cv_height ...
+%         * ( (cv_Vx - cv_Dxx * westBC.A / westBC.B) * cv_prevSolution ...
+%         + cv_Dxx * westBC.C / westBC.B );
+% else
+%     westPrevSolution = previousSolution(nodeCount - rows);
+%     
+%     if (isUpwinding)
+%         if (cv_Vx > 0)
+%             advectionAtFace = westPrevSolution;
+%         else
+%             advectionAtFace = cv_prevSolution;
+%         end
+%     else
+%         advectionAtFace = (westPrevSolution + cv_prevSolution) / 2;
+%     end
+%     
+%     flux = flux - cv_height ...
+%         * (((cv_Vx + Vx(westPrevSolution)) / 2) * advectionAtFace ...
+%         - ((cv_Dxx + Dxx(westPrevSolution)) / 2) ...
+%         * (cv_prevSolution - westPrevSolution) / xNodeDeltas(column - 1));
+% end
+% 
+% flux = flux ./ (cv_width * cv_height);
+% 
+% end
 
 function [delta] = determine_newton_step_delta(x)
 if (norm(x) == 0)
