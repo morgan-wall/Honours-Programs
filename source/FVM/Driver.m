@@ -11,21 +11,23 @@ close all;
 
 % Initialise problem parameters
 tFinal = 1.25;
-Dxx = @(phi) ones(length(phi), 1) * 0.01;
-Dyy = @(phi) ones(length(phi), 1) * 0.01;
-Vx = @(phi) ones(length(phi), 1) .* 0.8;
-Vy = @(phi) ones(length(phi), 1) .* 0.8;
+
+xC = 0.5;
+yC = 0.5;
+
+DXX = 0.01;
+Dxx = @(phi) phi .* 0 + DXX;
+
+DYY = 0.01;
+Dyy = @(phi) phi .* 0 + DYY;
+
+VX = 0.8;
+Vx = @(phi) phi .* 0 + VX;
+
+VY = 0.8;
+Vy = @(phi) phi .* 0 + VY;
+
 source = @(phi) phi .* 0;
-
-% Initialise boundary conditions
-northBC = struct('A', 0, 'B', 1, 'C', 0);
-eastBC = struct('A', 0, 'B', 1, 'C', 0);
-southBC = struct('A', 0, 'B', 1, 'C', 0);
-westBC = struct('A', 0, 'B', 1, 'C', 0);
-
-% Construct initial condition
-initialCondition = zeros(length(nodesY), length(nodesX));
-initialCondition(round(length(nodesY) / 2), round(length(nodesY) / 2)) = 1;
 
 % Construct mesh
 xLower = 0;
@@ -46,6 +48,32 @@ nodesY = flipud(nodesY);
 
 rows = length(nodesY);
 columns = length(nodesX);
+
+% Initialise analytic solution
+phiAnalytic = @(x, y, t) exp( -(x - VX * t - xC).^2 ./ (DXX * (4 * t + 1)) ...
+    - (y - VY * t - yC).^2 ./ (DYY * (4 * t + 1)) ) ./(4 * t + 1);
+
+% Initialise boundary conditions
+dirichletHackCoef = 1000;
+
+northC = @(x, t) dirichletHackCoef .* phiAnalytic(x, yUpper, t);
+northBC = struct('A', dirichletHackCoef, 'B', 1, 'C', northC);
+
+eastC = @(y, t) dirichletHackCoef .* phiAnalytic(xUpper, y, t);
+eastBC = struct('A', dirichletHackCoef, 'B', 1, 'C', eastC);
+
+southC = @(x, t) dirichletHackCoef .* phiAnalytic(x, yLower, t);
+southBC = struct('A', dirichletHackCoef, 'B', 1, 'C', southC);
+
+westC = @(y, t) dirichletHackCoef .* phiAnalytic(xLower, y, t);
+westBC = struct('A', dirichletHackCoef, 'B', 1, 'C', westC);
+
+% Construct initial condition
+[X, Y] = meshgrid(nodesX(:), nodesY(:));
+initialCondition = phiAnalytic(X(:), Y(:), 0);
+
+% Construct analytic solution (at final time)
+analyticSolution = phiAnalytic(X(:), Y(:), tFinal);
 
 % Initialise solver parameters
 theta = 1;
@@ -74,9 +102,8 @@ safeguardParameters = struct('threshold', 0.1);
 % Output plots and metrics
 figure;
 
-surf(nodesX, nodesY, reshape(yout(:, end), rows, columns));
-plotTitle = ['Test Problem (G1.1): Gaussian Diffusion (t = ' ...
-    num2str(tout(end)) ')'];
+surf(nodesX, nodesY, reshape(yout(:, 1), rows, columns));
+plotTitle = 'Analytic Solution (Problem 1) where t = 0';
 title(plotTitle);
 xlabel('x');
 ylabel('y');
@@ -84,8 +111,17 @@ zlabel('Solution');
 
 figure;
 
-surf(nodesX, nodesY, reshape(yout(:, 1), rows, columns));
-plotTitle = 'Test Problem (G1.2): Gaussian Diffusion (t = 0)';
+subplot(2, 1, 1);
+surf(nodesX, nodesY, reshape(yout(:, end), rows, columns));
+plotTitle = ['Numeric Solution (Problem 1) where t = ' num2str(tFinal)];
+title(plotTitle);
+xlabel('x');
+ylabel('y');
+zlabel('Solution');
+
+subplot(2, 1, 2);
+surf(nodesX, nodesY, reshape(analyticSolution(:, end), rows, columns));
+plotTitle = ['Analytic Solution (Problem 1) where t = ' num2str(tFinal)];
 title(plotTitle);
 xlabel('x');
 ylabel('y');
@@ -94,5 +130,3 @@ zlabel('Solution');
 %% Problem 2: Non-linear convection-diffusion (with known steady-state)
 
 %% Problem 3: Non-linear convection-diffusion (incl. Peclet number)
-
-

@@ -732,16 +732,17 @@ if (~isempty(nIndices))
 end
     
 if (~isempty(nBoundaryIndices));
-    previousNBoundaryPhi = phi(nBoundaryIndices);
-    nBoundaryPhi = ...
-        northBC.phi(previousNBoundaryPhi, nodesX(columnForIndex(nBoundaryIndices)), t);
+%     previousNBoundaryPhi = phi(nBoundaryIndices);
+%     nBoundaryPhi = ...
+%         northBC.phi(previousNBoundaryPhi, nodesX(columnForIndex(nBoundaryIndices)), t);
     
+    nBoundaryPhi = phi(nBoundaryIndices);
     diffusion = Dyy(nBoundaryPhi);
     
     flux(nBoundaryIndices) = flux(nBoundaryIndices) ...
         + nodeWidths(columnForIndex(nBoundaryIndices)) ...
         .* ( (Vy(nBoundaryPhi) + diffusion .* northBC.A ./ northBC.B) ...
-        .* nBoundaryPhi - diffusion .* northBC.C ./ northBC.B );
+        .* nBoundaryPhi - diffusion .* northBC.C(nodesX(columnForIndex(nBoundaryIndices)), t) ./ northBC.B );
 end
 
 % East nodes
@@ -769,16 +770,17 @@ if (~isempty(eIndices))
 end
 
 if (~isempty(eBoundaryIndices))
-    previousEBoundaryPhi = phi(eBoundaryIndices);
-    eBoundaryPhi = ...
-        eastBC.phi(previousEBoundaryPhi, nodesY(rowForIndex(eBoundaryIndices)), t);
+%     previousEBoundaryPhi = phi(eBoundaryIndices);
+%     eBoundaryPhi = ...
+%         eastBC.phi(previousEBoundaryPhi, nodesY(rowForIndex(eBoundaryIndices)), t);
     
+    eBoundaryPhi = phi(eBoundaryIndices);
     diffusion = Dxx(eBoundaryPhi);
     
     flux(eBoundaryIndices) = flux(eBoundaryIndices) ...
         + nodeHeights(rowForIndex(eBoundaryIndices)) ...
         .* ( (Vx(eBoundaryPhi) + diffusion .* eastBC.A ./ eastBC.B) ...
-        .* eBoundaryPhi - diffusion .* eastBC.C ./ eastBC.B );
+        .* eBoundaryPhi - diffusion .* eastBC.C(nodesY(rowForIndex(eBoundaryIndices)), t) ./ eastBC.B );
 end
     
 % South nodes
@@ -806,16 +808,17 @@ if (~isempty(sIndices))
 end
    
 if (~isempty(sBoundaryIndices))
-    previousSBoundaryPhi = phi(sBoundaryIndices);
-    sBoundaryPhi = ...
-        southBC.phi(previousSBoundaryPhi, nodesX(columnForIndex(sBoundaryIndices)), t);
-    
+%     previousSBoundaryPhi = phi(sBoundaryIndices);
+%     sBoundaryPhi = ...
+%         southBC.phi(previousSBoundaryPhi, nodesX(columnForIndex(sBoundaryIndices)), t);
+
+    sBoundaryPhi = phi(sBoundaryIndices);
     diffusion = Dyy(sBoundaryPhi);
 
     flux(sBoundaryIndices) = flux(sBoundaryIndices) ...
         - nodeWidths(columnForIndex(sBoundaryIndices)) ...
         .* ( (Vy(sBoundaryPhi) - diffusion .* southBC.A ./ southBC.B) ...
-        .* sBoundaryPhi + diffusion .* southBC.C ./ southBC.B );
+        .* sBoundaryPhi + diffusion .* southBC.C(nodesX(columnForIndex(sBoundaryIndices)), t) ./ southBC.B );
 end
     
 % West nodes
@@ -843,16 +846,17 @@ if (~isempty(wIndices))
 end
 
 if (~isempty(wBoundaryIndices))
-    previousWBoundaryPhi = phi(wBoundaryIndices);
-    wBoundaryPhi = ...
-        westBC.phi(previousWBoundaryPhi, nodesY(rowForIndex(wBoundaryIndices)), t);
+%     previousWBoundaryPhi = phi(wBoundaryIndices);
+%     wBoundaryPhi = ...
+%         westBC.phi(previousWBoundaryPhi, nodesY(rowForIndex(wBoundaryIndices)), t);
     
+    wBoundaryPhi = phi(wBoundaryIndices);
     diffusion = Dxx(wBoundaryPhi);
     
     flux(wBoundaryIndices) = flux(wBoundaryIndices) ...
         - nodeHeights(rowForIndex(wBoundaryIndices)) ...
         .* ( (Vx(wBoundaryPhi) - diffusion .* westBC.A ./ westBC.B) ...
-        .* wBoundaryPhi + diffusion .* westBC.C ./ westBC.B);
+        .* wBoundaryPhi + diffusion .* westBC.C(nodesY(rowForIndex(wBoundaryIndices)), t) ./ westBC.B);
 end
 
 flux = flux(indices);
