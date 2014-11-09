@@ -784,11 +784,11 @@ end
 if (~isempty(sBoundaryIndices))
     sBoundaryPhi = phi(sBoundaryIndices);
     diffusion = Dyy(phi(sBoundaryIndices));
-    
+
     flux(sBoundaryIndices) = flux(sBoundaryIndices) ...
         - nodeWidths(columnForIndex(sBoundaryIndices)) ...
         .* ( (Vy(sBoundaryPhi) - diffusion .* southBC.A ./ southBC.B) ...
-        .* sBoundaryPhi - diffusion .* southBC.C ./ southBC.B );
+        .* sBoundaryPhi + diffusion .* southBC.C ./ southBC.B );
 end
     
 % West nodes
@@ -955,7 +955,7 @@ else
         * (cv_prevSolution - westPrevSolution) / xNodeDeltas(column - 1));
 end
 
-flux = flux / (cv_width * cv_height);
+flux = flux ./ (cv_width * cv_height);
 
 end
 
