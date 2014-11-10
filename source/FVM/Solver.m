@@ -350,7 +350,6 @@ for i = 1:timeSteps
     
     Fx = F_forwardEuler + F_current_backwardEuler;
     Fx_previous = Fx;
-    Fx_initial_norm = norm(Fx);
     Fx_initial = Fx;
     
     % Pre-emptively generate the Jacobian
@@ -373,8 +372,7 @@ for i = 1:timeSteps
     delta_x = realmax;
     jacobianReset = false;
     while (current_iteration <= newtonParameters.maxIterations ...
-            && norm(delta_x / currentSolution) >= newtonParameters.tolUpdate ...
-            && norm(Fx) >= newtonParameters.tolResidual * Fx_initial_norm)
+            && norm(delta_x) >= newtonParameters.tolUpdate * norm(currentSolution))
         
         % Determine the error tolerance based on the forcing term
         if (strcmp(forcingTermParameters.type, 'none'))
@@ -415,11 +413,13 @@ for i = 1:timeSteps
         
         % Ensure an accurate solution to F(u) = 0 was determined
         if (current_iteration > newtonParameters.maxIterations ...
-                && norm(delta_x / currentSolution) < newtonParameters.tolUpdate ...
-                && norm(Fx) < newtonParameters.tolResidual * Fx_initial_norm)
+                && norm(delta_x) >= newtonParameters.tolUpdate * norm(currentSolution))
+            
+            disp ('rebuilding jacobian');
             
             % Update the Jacobian
             if (~jacobianReset)
+                current_iteration = 0;
                 jacobianReset = true;
                 previousJacobian = jacobian;
                 
@@ -714,7 +714,7 @@ if (~isempty(nIndices))
     northNeighbourPhi = phi(nIndices - 1);
     
     % Determine advection at face
-    advectionAtFace = zeros(length(flux), 1);
+    advectionAtFace = zeros(length(nIndices), 1);
     advectionVelocityY = Vy(phi(nIndices));
     if (isUpwinding)
         positiveAdvection = advectionVelocityY > 0;
@@ -731,11 +731,7 @@ if (~isempty(nIndices))
         ./ yNodeDeltas(rowForIndex(nIndices) - 1));
 end
     
-if (~isempty(nBoundaryIndices));
-%     previousNBoundaryPhi = phi(nBoundaryIndices);
-%     nBoundaryPhi = ...
-%         northBC.phi(previousNBoundaryPhi, nodesX(columnForIndex(nBoundaryIndices)), t);
-    
+if (~isempty(nBoundaryIndices));    
     nBoundaryPhi = phi(nBoundaryIndices);
     diffusion = Dyy(nBoundaryPhi);
     
@@ -752,7 +748,7 @@ if (~isempty(eIndices))
     eastNeighbourPhi = phi(eIndices + rows);
     
     % Determine advection at face
-    advectionAtFace = zeros(length(flux), 1);
+    advectionAtFace = zeros(length(eIndices), 1);
     advectionVelocityX = Vx(phi(eIndices));
     if (isUpwinding)
         positiveAdvection = advectionVelocityX > 0;
@@ -769,11 +765,7 @@ if (~isempty(eIndices))
         ./ xNodeDeltas(columnForIndex(eIndices))); 
 end
 
-if (~isempty(eBoundaryIndices))
-%     previousEBoundaryPhi = phi(eBoundaryIndices);
-%     eBoundaryPhi = ...
-%         eastBC.phi(previousEBoundaryPhi, nodesY(rowForIndex(eBoundaryIndices)), t);
-    
+if (~isempty(eBoundaryIndices))    
     eBoundaryPhi = phi(eBoundaryIndices);
     diffusion = Dxx(eBoundaryPhi);
     
@@ -790,7 +782,7 @@ if (~isempty(sIndices))
     southNeighbourPhi = phi(sIndices + 1);
     
     % Determine advection at face
-    advectionAtFace = zeros(length(flux), 1);
+    advectionAtFace = zeros(length(sIndices), 1);
     advectionVelocityY = Vy(phi(sIndices));
     if (isUpwinding)
         positiveAdvection = advectionVelocityY > 0;
@@ -808,10 +800,6 @@ if (~isempty(sIndices))
 end
    
 if (~isempty(sBoundaryIndices))
-%     previousSBoundaryPhi = phi(sBoundaryIndices);
-%     sBoundaryPhi = ...
-%         southBC.phi(previousSBoundaryPhi, nodesX(columnForIndex(sBoundaryIndices)), t);
-
     sBoundaryPhi = phi(sBoundaryIndices);
     diffusion = Dyy(sBoundaryPhi);
 
@@ -828,7 +816,7 @@ if (~isempty(wIndices))
     westNeighbourPhi = phi(wIndices - rows);
     
     % Determine advection at face
-    advectionAtFace = zeros(length(flux), 1);
+    advectionAtFace = zeros(length(wIndices), 1);
     advectionVelocityX = Vx(phi(wIndices));
     if (isUpwinding)
         positiveAdvection = advectionVelocityX > 0;
@@ -845,11 +833,7 @@ if (~isempty(wIndices))
         ./ xNodeDeltas(columnForIndex(wIndices) - 1));
 end
 
-if (~isempty(wBoundaryIndices))
-%     previousWBoundaryPhi = phi(wBoundaryIndices);
-%     wBoundaryPhi = ...
-%         westBC.phi(previousWBoundaryPhi, nodesY(rowForIndex(wBoundaryIndices)), t);
-    
+if (~isempty(wBoundaryIndices))    
     wBoundaryPhi = phi(wBoundaryIndices);
     diffusion = Dxx(wBoundaryPhi);
     
