@@ -10,6 +10,7 @@ close all;
 %% Problem 1: Linear convection-diffusion (with analytic solution)
 
 % Initialise problem parameters
+dt = 0.001;
 tFinal = 1.25;
 
 xC = 0.5;
@@ -32,13 +33,13 @@ source = @(phi) phi .* 0;
 % Construct mesh
 xLower = 0;
 xUpper = 2;
-xCount = 30;
+xCount = 85;
 xGeoParameters = struct('lowerIsGeometric', false, ...
     'upperIsGeometric', false, 'commonRatio', 1); 
 
 yLower = 0;
 yUpper = 2;
-yCount = 30;
+yCount = 85;
 yGeoParameters = struct('lowerIsGeometric', false, ...
     'upperIsGeometric', false, 'commonRatio', 1);
 
@@ -54,7 +55,7 @@ phiAnalytic = @(x, y, t) exp( -(x - VX * t - xC).^2 ./ (DXX * (4 * t + 1)) ...
     - (y - VY * t - yC).^2 ./ (DYY * (4 * t + 1)) ) ./(4 * t + 1);
 
 % Initialise boundary conditions
-dirichletHackCoef = 1000;
+dirichletHackCoef = 10000;
 
 northC = @(x, t) dirichletHackCoef .* phiAnalytic(x, yUpper, t);
 northBC = struct('A', dirichletHackCoef, 'B', 1, 'C', northC);
@@ -77,16 +78,15 @@ analyticSolution = phiAnalytic(X(:), Y(:), tFinal);
 
 % Initialise solver parameters
 theta = 1;
-advectionHandling = 'averaging';
+advectionHandling = 'upwinding';
 
-dt = 0.001;
 storedTimeSteps = 100;
 
-newtonParameters = struct('maxIterations', 5, 'tolUpdate', 1e-6, ...
-    'tolResidual', 1e-6);
+newtonParameters = struct('maxIterations', 5, 'tolUpdate', 1e-8, ...
+    'tolResidual', 1e-8);
 
-gmresParameters = struct('maxIterations', 1000, 'restartValue', 20, ...
-    'errorTol', 1e-10, 'preconditioningType', 'ilu', 'omega', 0);
+gmresParameters = struct('maxIterations', 1000, 'restartValue', 80, ...
+    'errorTol', 1e-6, 'preconditioningType', 'ilu', 'omega', 0);
 
 forcingTermParameters = struct('maxForcingTerm', 0.9, 'type', 'none', ...
     'gamma', 0.9, 'alpha', 2);
@@ -94,10 +94,12 @@ forcingTermParameters = struct('maxForcingTerm', 0.9, 'type', 'none', ...
 safeguardParameters = struct('threshold', 0.1);
 
 % Solve problem
+tic;
 [tout, yout] = Solver(dt, tFinal, Dxx, Dyy, Vx, Vy, source, theta, ...
     advectionHandling, nodesX, nodesY, northBC, eastBC, southBC, westBC, ...
     initialCondition, storedTimeSteps, newtonParameters, gmresParameters, ...
     forcingTermParameters, safeguardParameters);
+toc;
 
 % Output plots and metrics
 figure;
@@ -126,6 +128,8 @@ title(plotTitle);
 xlabel('x');
 ylabel('y');
 zlabel('Solution');
+
+error = norm(yout(:, end) - analyticSolution(:, end)) / length(yout(:, end));
 
 %% Problem 2: Non-linear convection-diffusion (with known steady-state)
 
