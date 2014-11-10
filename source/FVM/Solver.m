@@ -327,13 +327,10 @@ for i = 1:timeSteps
             xNodeDeltas, yNodeDeltas, northBC, eastBC, southBC, westBC, ...
             isUpwinding, isNBoundaryIndex, isEBoundaryIndex, ...
             isSBoundaryIndex, isWBoundaryIndex, nodesX, nodesY, times(i+1));
+        F_forwardEuler = F_forwardEuler ...
+            - dt .* (1 - theta) .* source(previousSolution);
     end
-    F_forwardEuler = F_forwardEuler ...
-        - dt .* (1 - theta) .* source(previousSolution);
     F_forwardEuler = F_forwardEuler - previousSolution;
-
-    % Initialise variables for Newton-GMRES solver
-    current_iteration = 0;
     
     % Formulate the Backward Euler component of F(u) = 0 
     if (i == FIRST_TIME_STEP_INDEX)
@@ -370,7 +367,7 @@ for i = 1:timeSteps
     currentSolution = previousSolution;
     forcingTerm = 1/2;
     delta_x = realmax;
-    jacobianReset = false;
+    current_iteration = 0;
     while (current_iteration <= newtonParameters.maxIterations ...
             && norm(delta_x) >= newtonParameters.tolUpdate * norm(currentSolution))
         
@@ -401,7 +398,6 @@ for i = 1:timeSteps
             xNodeDeltas, yNodeDeltas, northBC, eastBC, southBC, westBC, ...
             isUpwinding, isNBoundaryIndex, isEBoundaryIndex, ...
             isSBoundaryIndex, isWBoundaryIndex, nodesX, nodesY, times(i+1));
-
         F_current_backwardEuler = F_current_backwardEuler ...
             - dt .* theta .* source(currentSolution);
         F_current_backwardEuler = F_current_backwardEuler + currentSolution;
@@ -410,37 +406,31 @@ for i = 1:timeSteps
         Fx = F_current_backwardEuler + F_forwardEuler;
         
         current_iteration = current_iteration + 1;
+    end
+    
+    % Update the Jacobian based the performance of the Newton-GMRES method
+    if (current_iteration >= newtonParameters.maxIterations)
         
-        % Ensure an accurate solution to F(u) = 0 was determined
-        if (current_iteration > newtonParameters.maxIterations ...
-                && norm(delta_x) >= newtonParameters.tolUpdate * norm(currentSolution))
-            
-            disp ('rebuilding jacobian');
-            
-            % Update the Jacobian
-            if (~jacobianReset)
-                current_iteration = 0;
-                jacobianReset = true;
-                previousJacobian = jacobian;
-                
-                jacobian = GenerateJacobian(nodeCount, currentSolution, dt, ...
-                    theta, rows, rowForIndex, columnForIndex, Vx, Vy, Dxx, ...
-                    Dyy, xNodeDeltas, yNodeDeltas, nodeWidths, nodeHeights, ...
-                    northBC, eastBC, southBC, westBC, isUpwinding, source, ...
-                    F_forwardEuler, Fx, isNBoundaryIndex, isEBoundaryIndex, ...
-                    isSBoundaryIndex, isWBoundaryIndex, nodesX, nodesY, times(i+1));
-                
-                % Update preconditioner for Jacobian
-                [LPrecond, UPrecond] = GenerateMatrixPreconditioner(jacobian, ...
-                    gmresParameters.preconditioningType, gmresParameters.omega);
-            else
-                error(['Method Failure: the non-linear system generated at '...
-                    't = ' num2str(i * dt) ' was not solved using ' ...
-                    num2str(max_iterations) ' iterations of inexact Newton ' ...
-                    'method.']);
-            end
+        continueNewtonMethod = ...
+            norm(delta_x) >= newtonParameters.tolUpdate * norm(currentSolution);
+        if (continueNewtonMethod)
+            error(['Method Failure: the non-linear system generated at '...
+                't = ' num2str(i * dt) ' was not solved using ' ...
+                num2str(max_iterations) ' iterations of inexact Newton ' ...
+                'method.']);
         else
-            jacobianReset = false;
+            previousJacobian = jacobian;
+
+            jacobian = GenerateJacobian(nodeCount, currentSolution, dt, ...
+                theta, rows, rowForIndex, columnForIndex, Vx, Vy, Dxx, ...
+                Dyy, xNodeDeltas, yNodeDeltas, nodeWidths, nodeHeights, ...
+                northBC, eastBC, southBC, westBC, isUpwinding, source, ...
+                F_forwardEuler, Fx, isNBoundaryIndex, isEBoundaryIndex, ...
+                isSBoundaryIndex, isWBoundaryIndex, nodesX, nodesY, times(i+1));
+
+            % Update preconditioner for Jacobian
+            [LPrecond, UPrecond] = GenerateMatrixPreconditioner(jacobian, ...
+                gmresParameters.preconditioningType, gmresParameters.omega);
         end
     end
     
@@ -620,7 +610,7 @@ switch(type)
     case 'ilu'
         setup.type = 'nofill';
         setup.milu = 'row';
-        setup.droptol = 0.1;
+        setup.droptol = 1e-4;
         [L,U] = ilu(A, setup);
     case 'jacobi'
         L = spdiags(diag(A), diagonal_index, speye(rows));
