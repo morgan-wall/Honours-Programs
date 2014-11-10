@@ -33,13 +33,13 @@ source = @(phi) phi .* 0;
 % Construct mesh
 xLower = 0;
 xUpper = 2;
-xCount = 85;
+xCount = 30;
 xGeoParameters = struct('lowerIsGeometric', false, ...
     'upperIsGeometric', false, 'commonRatio', 1); 
 
 yLower = 0;
 yUpper = 2;
-yCount = 85;
+yCount = 30;
 yGeoParameters = struct('lowerIsGeometric', false, ...
     'upperIsGeometric', false, 'commonRatio', 1);
 
@@ -129,7 +129,7 @@ xlabel('x');
 ylabel('y');
 zlabel('Solution');
 
-error = norm(yout(:, end) - analyticSolution(:, end)) / length(yout(:, end));
+error = norm(yout(:, end) - analyticSolution(:, end)) / sqrt(length(yout(:, end)));
 
 %% Problem 2: Non-linear convection-diffusion (with known steady-state)
 

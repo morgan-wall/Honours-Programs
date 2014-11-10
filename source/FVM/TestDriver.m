@@ -30,26 +30,26 @@ safeguardParameters = struct('threshold', 0.1);
 %% Test: Gaussian Diffusion (G1) - Single Point Initial Condition
 
 % Initialise temporal parameters
-tFinal = dt;
+tFinal = 0.4;
 storedTimeSteps = 100;
 
 % Initialise equation parameters
-Dxx = @(phi) ones(length(phi), 1) * 0.1; Dxx = @(phi) phi .* 0;
-Dyy = @(phi) ones(length(phi), 1) * 0.1; Dyy = @(phi) phi .* 0;
-Vx = @(phi) phi .* 0; Vx = @(phi) ones(length(phi), 1) * 0.1;
-Vy = @(phi) phi .* 0; Vy = @(phi) ones(length(phi), 1) * 0.1;
+Dxx = @(phi) ones(length(phi), 1) * 0.1; %Dxx = @(phi) phi .* 0;
+Dyy = @(phi) ones(length(phi), 1) * 0.1; %Dyy = @(phi) phi .* 0;
+Vx = @(phi) phi .* 0; %Vx = @(phi) ones(length(phi), 1) * 0.1;
+Vy = @(phi) phi .* 0; %Vy = @(phi) ones(length(phi), 1) * 0.1;
 source = @(phi) phi .* 0;
 
 % Initialise mesh parameters
 xLower = 0;
 xUpper = 1;
-xCount = 75;
+xCount = 85;
 xGeoParameters = struct('lowerIsGeometric', false, 'upperIsGeometric', false, ...
     'commonRatio', 1); 
 
 yLower = 0;
 yUpper = 1;
-yCount = 75;
+yCount = 85;
 yGeoParameters = struct('lowerIsGeometric', false, 'upperIsGeometric', false, ...
     'commonRatio', 1);
 
@@ -75,17 +75,13 @@ westBC = struct('A', 0, 'B', 1, 'C', westC);
 
 % Construct initial condition
 initialCondition = zeros(length(nodesY), length(nodesX));
-initialCondition(round(length(nodesY) / 2), round(length(nodesY) / 2)) = 1;
+initialCondition(round(length(nodesY) / 2), round(length(nodesX) / 2)) = 1;
 
 % Solve problem
-tic;
-
 [tout, yout] = Solver(dt, tFinal, Dxx, Dyy, Vx, Vy, source, theta, ...
     advectionHandling, nodesX, nodesY, northBC, eastBC, southBC, westBC, ...
     initialCondition, storedTimeSteps, newtonParameters, gmresParameters, ...
     forcingTermParameters, safeguardParameters);
-
-toc;
 
 % Output plots and metrics
 figure;
