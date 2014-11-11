@@ -349,7 +349,7 @@ for i = 1:timeSteps
     
     % Pre-emptively generate the Jacobian
     if (i == FIRST_TIME_STEP_INDEX)        
-        jacobian = GenerateJacobian(nodeCount, previousSolution, dt, theta, ...
+        jacobian = GenerateJacobian(indices, nodeCount, previousSolution, dt, theta, ...
             rows, columns, rowForIndex, columnForIndex, Vx, Vy, Dxx, Dyy, xNodeDeltas, ...
             yNodeDeltas, nodeWidths, nodeHeights, northBC, eastBC, southBC, ...
             westBC, isUpwinding, source, F_forwardEuler, Fx, ...
@@ -421,7 +421,7 @@ for i = 1:timeSteps
         
         previousJacobian = jacobian;
 
-        jacobian = GenerateJacobian(nodeCount, currentSolution, dt, ...
+        jacobian = GenerateJacobian(indices, nodeCount, currentSolution, dt, ...
             theta, rows, columns, rowForIndex, columnForIndex, Vx, Vy, Dxx, ...
             Dyy, xNodeDeltas, yNodeDeltas, nodeWidths, nodeHeights, ...
             northBC, eastBC, southBC, westBC, isUpwinding, source, ...
@@ -459,8 +459,8 @@ end
 %   Helper Functions
 %
 
-function jacobian = GenerateJacobian(nodeCount, currentSolution, dt, theta, ...
-    rows, columns, rowForIndex, columnForIndex, Vx, Vy, Dxx, Dyy, ...
+function jacobian = GenerateJacobian(indices, nodeCount, currentSolution, dt, ...
+    theta, rows, columns, rowForIndex, columnForIndex, Vx, Vy, Dxx, Dyy, ...
     xNodeDeltas, yNodeDeltas, nodeWidths, nodeHeights, northBC, eastBC, ...
     southBC, westBC, isUpwinding, source, forwardEulerComponent, Fx, ...
     isNBoundaryIndex, isEBoundaryIndex, isSBoundaryIndex, isWBoundaryIndex, ...
@@ -471,124 +471,44 @@ jacobianNonZeroCount = nodeCount * nonZerosPerInternalNode - (2 * rows) - (2 * c
 jacobian = sparse([], [], [], nodeCount, nodeCount, jacobianNonZeroCount);
 
 h = determine_newton_step_delta(currentSolution);
-        
-%% Generate self-dependent Jacobian components
-for j = 1:nodeCount
-    nodeIndex = j;
 
+initialOffset = 2;
+offSet = rows + initialOffset;
+for i = 0:rows+initialOffset
+    
+    % Perturb solutions at selected nodes
+    initialIndex = 1 + i;
+    perturbedNodeIndices = initialIndex:offSet:nodeCount;
     xStepped = currentSolution;
-    xStepped(nodeIndex) = xStepped(nodeIndex) + h;
-        
+    xStepped(perturbedNodeIndices) = xStepped(perturbedNodeIndices) + h;
+    
+    % Determine impacted nodes
+    impactedNodePerturbationNodeIndex = ...
+        [perturbedNodeIndices perturbedNodeIndices perturbedNodeIndices ...
+        perturbedNodeIndices perturbedNodeIndices];
+    impactedNodes = ...
+        [perturbedNodeIndices perturbedNodeIndices+1 perturbedNodeIndices-1 ...
+        perturbedNodeIndices+rows perturbedNodeIndices-rows];
+    isInvalidNode = impactedNodes <= 0 | impactedNodes > nodeCount;
+    impactedNodePerturbationNodeIndex(isInvalidNode) = [];
+    impactedNodes(isInvalidNode) = [];
+    
+    % Evaluate F(u + e) = 0
     F_backwardEuler_stepped = dt * theta * GenerateFluxVec(xStepped, ...
-        j, rows, Vx, Vy, Dxx, Dyy, nodeWidths, nodeHeights, ...
+        impactedNodes, rows, Vx, Vy, Dxx, Dyy, nodeWidths, nodeHeights, ...
         rowForIndex, columnForIndex, xNodeDeltas, yNodeDeltas, northBC, ...
         eastBC, southBC, westBC, isUpwinding, isNBoundaryIndex, ...
         isEBoundaryIndex, isSBoundaryIndex, isWBoundaryIndex, ...
         nodesX, nodesY, t);
     F_backwardEuler_stepped = F_backwardEuler_stepped ...
-        - dt * theta * source(nodesX(columnForIndex(j)), nodesY(rowForIndex(j)));
-    F_backwardEuler_stepped = F_backwardEuler_stepped + xStepped(j);
-
-    F_stepped = F_backwardEuler_stepped + forwardEulerComponent(j);
-
-    jacobian(j, nodeIndex) = (F_stepped - Fx(j)) / h;
-end
-
-%% Generate North-dependent Jacobian components
-for j = 1:nodeCount
-    nodeIndex = j - 1;
-
-    if (nodeIndex >= 1 && nodeIndex <= nodeCount)
-        xStepped = currentSolution;
-        xStepped(nodeIndex) = xStepped(nodeIndex) + h;
-
-        F_backwardEuler_stepped = dt * theta * GenerateFluxVec(xStepped, ...
-            j, rows, Vx, Vy, Dxx, Dyy, nodeWidths, nodeHeights, ...
-            rowForIndex, columnForIndex, xNodeDeltas, yNodeDeltas, northBC, ...
-            eastBC, southBC, westBC, isUpwinding, isNBoundaryIndex, ...
-            isEBoundaryIndex, isSBoundaryIndex, isWBoundaryIndex, ...
-            nodesX, nodesY, t);  
-        F_backwardEuler_stepped = F_backwardEuler_stepped ...
-            - dt * theta * source(nodesX(columnForIndex(j)), nodesY(rowForIndex(j)));
-        F_backwardEuler_stepped = F_backwardEuler_stepped + xStepped(j);
-
-        F_stepped = F_backwardEuler_stepped + forwardEulerComponent(j);
-
-        jacobian(j, nodeIndex) = (F_stepped - Fx(j)) / h;
-    end
-end
-
-%% Generate South-dependent Jacobian components
-for j = 1:nodeCount
-    nodeIndex = j + 1;
-
-    if (nodeIndex >= 1 && nodeIndex <= nodeCount)
-        xStepped = currentSolution;
-        xStepped(nodeIndex) = xStepped(nodeIndex) + h;
-
-        F_backwardEuler_stepped = dt * theta * GenerateFluxVec(xStepped, ...
-            j, rows, Vx, Vy, Dxx, Dyy, nodeWidths, nodeHeights, ...
-            rowForIndex, columnForIndex, xNodeDeltas, yNodeDeltas, northBC, ...
-            eastBC, southBC, westBC, isUpwinding, isNBoundaryIndex, ...
-            isEBoundaryIndex, isSBoundaryIndex, isWBoundaryIndex, ...
-            nodesX, nodesY, t);
-        F_backwardEuler_stepped = F_backwardEuler_stepped ...
-            - dt * theta * source(nodesX(columnForIndex(j)), nodesY(rowForIndex(j)));
-        F_backwardEuler_stepped = F_backwardEuler_stepped + xStepped(j);
-
-        F_stepped = F_backwardEuler_stepped + forwardEulerComponent(j);
-
-        jacobian(j, nodeIndex) = (F_stepped - Fx(j)) / h;
-    end
-end
-
-%% Generate East-dependent Jacobian components
-for j = 1:nodeCount
-    nodeIndex = j + rows;
-
-    if (nodeIndex >= 1 && nodeIndex <= nodeCount)
-        xStepped = currentSolution;
-        xStepped(nodeIndex) = xStepped(nodeIndex) + h;
-
-        F_backwardEuler_stepped = dt * theta * GenerateFluxVec(xStepped, ...
-            j, rows, Vx, Vy, Dxx, Dyy, nodeWidths, nodeHeights, ...
-            rowForIndex, columnForIndex, xNodeDeltas, yNodeDeltas, northBC, ...
-            eastBC, southBC, westBC, isUpwinding, isNBoundaryIndex, ...
-            isEBoundaryIndex, isSBoundaryIndex, isWBoundaryIndex, ...
-            nodesX, nodesY, t);
-
-        F_backwardEuler_stepped = F_backwardEuler_stepped ...
-            - dt * theta * source(nodesX(columnForIndex(j)), nodesY(rowForIndex(j)));
-        F_backwardEuler_stepped = F_backwardEuler_stepped + xStepped(j);
-
-        F_stepped = F_backwardEuler_stepped + forwardEulerComponent(j);
-
-        jacobian(j, nodeIndex) = (F_stepped - Fx(j)) / h;
-    end
-end
-
-%% Generate West-dependent Jacobian components
-for j = 1:nodeCount
-    nodeIndex = j - rows;
-
-    if (nodeIndex >= 1 && nodeIndex <= nodeCount)
-        xStepped = currentSolution;
-        xStepped(nodeIndex) = xStepped(nodeIndex) + h;
-
-        F_backwardEuler_stepped = dt * theta * GenerateFluxVec(xStepped, ...
-            j, rows, Vx, Vy, Dxx, Dyy, nodeWidths, nodeHeights, ...
-            rowForIndex, columnForIndex, xNodeDeltas, yNodeDeltas, northBC, ...
-            eastBC, southBC, westBC, isUpwinding, isNBoundaryIndex, ...
-            isEBoundaryIndex, isSBoundaryIndex, isWBoundaryIndex, ...
-            nodesX, nodesY, t);
-
-        F_backwardEuler_stepped = F_backwardEuler_stepped ...
-            - dt * theta * source(nodesX(columnForIndex(j)), nodesY(rowForIndex(j)));
-        F_backwardEuler_stepped = F_backwardEuler_stepped + xStepped(j);
-
-        F_stepped = F_backwardEuler_stepped + forwardEulerComponent(j);
-
-        jacobian(j, nodeIndex) = (F_stepped - Fx(j)) / h;
+        - dt * theta * source(nodesX(columnForIndex(impactedNodes)), nodesY(rowForIndex(impactedNodes)));
+    F_backwardEuler_stepped = F_backwardEuler_stepped + xStepped(impactedNodes);
+    
+    F_stepped = F_backwardEuler_stepped + forwardEulerComponent(impactedNodes);
+    
+    for j = 1:length(impactedNodes)
+        jacobian(impactedNodes(j), impactedNodePerturbationNodeIndex(j)) = ...
+            (F_stepped(j) - Fx(impactedNodes(j))) / h;
     end
 end
 end
