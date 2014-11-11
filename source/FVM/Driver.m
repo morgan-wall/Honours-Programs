@@ -135,7 +135,7 @@ error = norm(yout(:, end) - analyticSolution(:, end)) / sqrt(length(yout(:, end)
 
 % Initialise problem parameters
 dt = 0.001;
-tFinal = 0.2;
+tFinal = 10;
 
 Dxx = @(phi) phi .^ 2;
 
@@ -154,7 +154,7 @@ source = @(x,y) 100 * x .* y .* (1-x) .* (1-y) .* exp(2 * x.^4.5) ...
     .* exp(x.^4.5) .* (4.5 * x.^3.5 .*(5.5 - 7.5 * x) + 4.5^2 * x.^8 ...
     .* (1-x) - 2) + 100 * x.^ 2 .* y .* (1-x).^2 .* (1-y) .* exp(x.^4.5));
 
-% source = @(x, y) 0.2000e4 .* x .* (y .^ 2) .* ((1 - x) .^ 2) .* ((1 - y) .^ 2) ...
+% sourceMaple = @(x, y) 0.2000e4 .* x .* (y .^ 2) .* ((1 - x) .^ 2) .* ((1 - y) .^ 2) ...
 %     .* exp((x .^ 0.45e1)) .^ 2 - 0.2000e4 .* (x .^ 2) .* (y .^ 2) .* (1 - x) ...
 %     .* ((1 - y) .^ 2) .* exp((x .^ 0.45e1)) .^ 2 + 0.90000e4 .* (x .^ 0.55e1) ...
 %     .* (y .^ 2) .* ((1 - x) .^ 2) .* ((1 - y) .^ 2) .* exp((x .^ 0.45e1)) .^ 2 ...
@@ -206,6 +206,11 @@ nodesY = flipud(nodesY);
 rows = length(nodesY);
 columns = length(nodesX);
 
+% Determine source term
+[X, Y] = meshgrid(nodesX(:), nodesY(:));
+sourceTerm = source(X(:), Y(:));
+% sourceTermMaple = sourceMaple(X(:), Y(:));
+
 % Initialise boundary conditions
 dirichletHackCoef = 10000;
 
@@ -222,7 +227,6 @@ westC = @(y, t) zeros(length(y), 1);
 westBC = struct('A', dirichletHackCoef, 'B', 1, 'C', westC);
 
 % Construct initial condition
-[X, Y] = meshgrid(nodesX(:), nodesY(:));
 initialCondition = zeros(rows, columns);
 
 % Construct steady state solution
@@ -233,7 +237,7 @@ steadyStateSolution = steadyState(X(:), Y(:));
 theta = 1;
 advectionHandling = 'averaging';
 
-storedTimeSteps = 100;
+storedTimeSteps = 1000;
 
 newtonParameters = struct('rebuildJacobianIterations', 5, ...
     'maxIterations', 10, 'tolUpdate', 1e-8, 'tolResidual', 1e-8);
@@ -259,6 +263,14 @@ figure;
 
 surf(nodesX, nodesY, reshape(yout(:, 1), rows, columns));
 plotTitle = 'Analytic Solution (Problem 2) where t = 0';
+title(plotTitle);
+xlabel('x');
+ylabel('y');
+zlabel('Solution');
+
+figure;
+surf(nodesX, nodesY,reshape(sourceTerm, rows, columns));
+plotTitle = 'Source Term (Problem 2)';
 title(plotTitle);
 xlabel('x');
 ylabel('y');
