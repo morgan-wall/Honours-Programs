@@ -326,7 +326,7 @@ for i = 1:timeSteps
             isUpwinding, isNBoundaryIndex, isEBoundaryIndex, ...
             isSBoundaryIndex, isWBoundaryIndex, nodesX, nodesY, times(i+1));
         F_forwardEuler = F_forwardEuler ...
-            - dt .* (1 - theta) .* source(previousSolution);
+            - dt .* (1 - theta) .* source(nodesX(columnForIndex(indices)), nodesY(rowForIndex(indices)));
     end
     F_forwardEuler = F_forwardEuler - previousSolution;
     
@@ -339,7 +339,7 @@ for i = 1:timeSteps
             isUpwinding, isNBoundaryIndex, isEBoundaryIndex, ...
             isSBoundaryIndex, isWBoundaryIndex, nodesX, nodesY, times(i+1));
         F_current_backwardEuler = F_current_backwardEuler ...
-            - dt .* theta .* source(previousSolution);
+            - dt .* theta .* source(nodesX(columnForIndex(indices)), nodesY(rowForIndex(indices)));
         F_current_backwardEuler = F_current_backwardEuler + previousSolution;
     end
     
@@ -397,7 +397,7 @@ for i = 1:timeSteps
             isUpwinding, isNBoundaryIndex, isEBoundaryIndex, ...
             isSBoundaryIndex, isWBoundaryIndex, nodesX, nodesY, times(i+1));
         F_current_backwardEuler = F_current_backwardEuler ...
-            - dt .* theta .* source(currentSolution);
+            - dt .* theta .* source(nodesX(columnForIndex(indices)), nodesY(rowForIndex(indices)));
         F_current_backwardEuler = F_current_backwardEuler + currentSolution;
 
         Fx_previous = Fx;
@@ -406,30 +406,31 @@ for i = 1:timeSteps
         current_iteration = current_iteration + 1;
     end
     
+    % Ensure a solution 
+    if (current_iteration > newtonParameters.maxIterations ...
+            && norm(delta_x) >= newtonParameters.tolUpdate * norm(currentSolution))
+        error(['Method Failure: the non-linear system generated at '...
+            't = ' num2str(i * dt) ' was not solved using ' ...
+            num2str(newtonParameters.maxIterations) ' iterations of inexact '...
+            'Newton method.']);
+    end
+    
     % Update the Jacobian based the performance of the Newton-GMRES method
-    if (current_iteration >= newtonParameters.maxIterations)
+    if (current_iteration >= newtonParameters.rebuildJacobianIterations ...
+            && i ~= timeSteps)
         
-        continueNewtonMethod = ...
-            norm(delta_x) >= newtonParameters.tolUpdate * norm(currentSolution);
-        if (continueNewtonMethod)
-            error(['Method Failure: the non-linear system generated at '...
-                't = ' num2str(i * dt) ' was not solved using ' ...
-                num2str(max_iterations) ' iterations of inexact Newton ' ...
-                'method.']);
-        else
-            previousJacobian = jacobian;
+        previousJacobian = jacobian;
 
-            jacobian = GenerateJacobian(nodeCount, currentSolution, dt, ...
-                theta, rows, columns, rowForIndex, columnForIndex, Vx, Vy, Dxx, ...
-                Dyy, xNodeDeltas, yNodeDeltas, nodeWidths, nodeHeights, ...
-                northBC, eastBC, southBC, westBC, isUpwinding, source, ...
-                F_forwardEuler, Fx, isNBoundaryIndex, isEBoundaryIndex, ...
-                isSBoundaryIndex, isWBoundaryIndex, nodesX, nodesY, times(i+1));
+        jacobian = GenerateJacobian(nodeCount, currentSolution, dt, ...
+            theta, rows, columns, rowForIndex, columnForIndex, Vx, Vy, Dxx, ...
+            Dyy, xNodeDeltas, yNodeDeltas, nodeWidths, nodeHeights, ...
+            northBC, eastBC, southBC, westBC, isUpwinding, source, ...
+            F_forwardEuler, Fx, isNBoundaryIndex, isEBoundaryIndex, ...
+            isSBoundaryIndex, isWBoundaryIndex, nodesX, nodesY, times(i+1));
 
-            % Update preconditioner for Jacobian
-            [LPrecond, UPrecond] = GenerateMatrixPreconditioner(jacobian, ...
-                gmresParameters.preconditioningType, gmresParameters.omega);
-        end
+        % Update preconditioner for Jacobian
+        [LPrecond, UPrecond] = GenerateMatrixPreconditioner(jacobian, ...
+            gmresParameters.preconditioningType, gmresParameters.omega);
     end
     
     newtonIterations = newtonIterations + current_iteration;
@@ -485,7 +486,7 @@ for j = 1:nodeCount
         isEBoundaryIndex, isSBoundaryIndex, isWBoundaryIndex, ...
         nodesX, nodesY, t);
     F_backwardEuler_stepped = F_backwardEuler_stepped ...
-        - dt * theta * source(xStepped(j));
+        - dt * theta * source(nodesX(columnForIndex(j)), nodesY(rowForIndex(j)));
     F_backwardEuler_stepped = F_backwardEuler_stepped + xStepped(j);
 
     F_stepped = F_backwardEuler_stepped + forwardEulerComponent(j);
@@ -508,7 +509,7 @@ for j = 1:nodeCount
             isEBoundaryIndex, isSBoundaryIndex, isWBoundaryIndex, ...
             nodesX, nodesY, t);  
         F_backwardEuler_stepped = F_backwardEuler_stepped ...
-            - dt * theta * source(xStepped(j));
+            - dt * theta * source(nodesX(columnForIndex(j)), nodesY(rowForIndex(j)));
         F_backwardEuler_stepped = F_backwardEuler_stepped + xStepped(j);
 
         F_stepped = F_backwardEuler_stepped + forwardEulerComponent(j);
@@ -532,7 +533,7 @@ for j = 1:nodeCount
             isEBoundaryIndex, isSBoundaryIndex, isWBoundaryIndex, ...
             nodesX, nodesY, t);
         F_backwardEuler_stepped = F_backwardEuler_stepped ...
-            - dt * theta * source(xStepped(j));
+            - dt * theta * source(nodesX(columnForIndex(j)), nodesY(rowForIndex(j)));
         F_backwardEuler_stepped = F_backwardEuler_stepped + xStepped(j);
 
         F_stepped = F_backwardEuler_stepped + forwardEulerComponent(j);
@@ -557,7 +558,7 @@ for j = 1:nodeCount
             nodesX, nodesY, t);
 
         F_backwardEuler_stepped = F_backwardEuler_stepped ...
-            - dt * theta * source(xStepped(j));
+            - dt * theta * source(nodesX(columnForIndex(j)), nodesY(rowForIndex(j)));
         F_backwardEuler_stepped = F_backwardEuler_stepped + xStepped(j);
 
         F_stepped = F_backwardEuler_stepped + forwardEulerComponent(j);
@@ -582,7 +583,7 @@ for j = 1:nodeCount
             nodesX, nodesY, t);
 
         F_backwardEuler_stepped = F_backwardEuler_stepped ...
-            - dt * theta * source(xStepped(j));
+            - dt * theta * source(nodesX(columnForIndex(j)), nodesY(rowForIndex(j)));
         F_backwardEuler_stepped = F_backwardEuler_stepped + xStepped(j);
 
         F_stepped = F_backwardEuler_stepped + forwardEulerComponent(j);
