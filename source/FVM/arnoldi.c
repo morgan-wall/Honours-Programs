@@ -6,6 +6,7 @@
  * @brief 
  */
 
+#include "matrix.h"
 #include <stdlib.h>
 #include <math.h>
 
@@ -13,9 +14,9 @@
 #include "blas.h"
 #include "lapack.h"
 
-#define ROWS 2
-#define COLUMNS 2
-#define ELEMENTS 4
+#define Q_ROWS m
+#define H_ROWS (restart_value + 1)
+#define g_ROWS (restart_value + 1)
 
 /* Interface */
 
@@ -109,78 +110,93 @@ void arnoldi(mxArray* A, mxArray* L, mxArray* U, double* b,
 	}
 
 	// generate each basis vector in the Krylov subspace
-	for (unsigned int i = 0; i <= restart_value; i++) {
+	for (unsigned int i = 0; i < restart_value; i++) {
 
 		// determine the next Kyrlov subspace basis vector
 		retrieve_array_from_matrix(m, restart_value, q_data, 
-				temp_basis_vector, i, COLUMN);
-		// mxSetPr(tempMxArray, temp_basis_vector);
+			temp_basis_vector, i, COLUMN);
+		mxSetPr(tempMxArray, temp_basis_vector);
 
-		// rhs[0] = L;
-		// rhs[1] = tempMxArray;
+		rhs[0] = L;
+		rhs[1] = tempMxArray;
 
-		// mexCallMATLAB(MEX_OUTPUT_PARMETERS, lhs, MEX_INPUT_PARAMETERS, rhs, 
-		// 	"mldivide");
+		mexCallMATLAB(MEX_OUTPUT_PARMETERS, lhs, MEX_INPUT_PARAMETERS, rhs, 
+			"mldivide");
 
-		// rhs[0] = U;
-		// rhs[1] = lhs[0];
+		rhs[0] = U;
+		rhs[1] = lhs[0];
 
-		// mexCallMATLAB(MEX_OUTPUT_PARMETERS, lhs, MEX_INPUT_PARAMETERS, rhs, 
-		// 	"mldivide");
+		mexCallMATLAB(MEX_OUTPUT_PARMETERS, lhs, MEX_INPUT_PARAMETERS, rhs, 
+			"mldivide");
 
-		// rhs[0] = A;
-		// rhs[1] = lhs[0];
+		rhs[0] = A;
+		rhs[1] = lhs[0];
 
-		// mexCallMATLAB(MEX_OUTPUT_PARMETERS, lhs, MEX_INPUT_PARAMETERS, rhs, 
-		// 	"mtimes");
+		mexCallMATLAB(MEX_OUTPUT_PARMETERS, lhs, MEX_INPUT_PARAMETERS, rhs, 
+			"mtimes");
 
-		// q = mxGetPr(lhs[0]);
+		q = mxGetPr(lhs[0]);
 
-		// // orthogonalise the basis vector
-		// for (unsigned int j = 0; j <= i; j++) {
+		// orthogonalise the basis vector
+		for (unsigned int j = 0; j <= i; j++) {
 
-		// 	retrieve_array_from_matrix(m, restart_value, q_data, 
-		// 		temp_basis_vector, j, COLUMN);
-		// 	h_data[i * m + j] = 
-		// 		ddot(&m, temp_basis_vector, &double_size, q, &double_size);
-
-		// 	retrieve_array_from_matrix(m, restart_value, q_data, 
-		// 		temp_basis_vector, j, COLUMN);
-		// 	dscal(&m, &h_data[i * m + j], temp_basis_vector, &double_size);
+			retrieve_array_from_matrix(m, restart_value, q_data, 
+				temp_basis_vector, j, COLUMN);
 			
-		// 	for (int k = 0; k < m; k++) {
-		// 		q[k] = q[k] - temp_basis_vector[k];
-		// 	}
-		// }
+			// h_data[i * H_ROWS + j] = 
+			// 	ddot(&m, temp_basis_vector, &double_size, q, &double_size);
+			h_data[i * H_ROWS + j] = 0;
+			for (int k = 0; k < m; k++) {
+				h_data[i * H_ROWS + j] = h_data[i * H_ROWS + j] + temp_basis_vector[k] * q[k];
+			}
+
+			retrieve_array_from_matrix(Q_ROWS, restart_value, q_data, 
+				temp_basis_vector, j, COLUMN);
+
+			// dscal(&m, &h_data[i * H_ROWS + j], temp_basis_vector, &double_size);
+			for (int k = 0; k < m; k++) {
+				temp_basis_vector[k] = temp_basis_vector[k] * h_data[i * H_ROWS + j];
+			}
+
+			for (int k = 0; k < m; k++) {
+				q[k] = q[k] - temp_basis_vector[k];
+			}
+		}
 
 		// // normalise the basis vector
-		// (*H)[i+1][i] = dnrm2(&m, q, &double_size);
+		// h_data[i * H_ROWS + (i+1)] = dnrm2(&m, q, &double_size);
 		// for (int j = 0; j < m; j++) {
-		// 	(*Q)[j][i+1] = q[i] / (*H)[i+1][i];
+		// 	q_data[(i + 1) * Q_ROWS + j] = q[i] / h_data[i * H_ROWS + (i+1)];
 		// }
 
-		// // apply Given's rotations
-		// for (unsigned int j = 0; j <= i; j++) {
+		// apply Given's rotations
+		for (int j = 0; j <= i; j++) {
 
-		// 	// construct rotations for new vector is Hessenberg matrix
-		// 	if (j == i) {
-		// 		s[i] = (*H)[i+1][i] 
-		// 			/ sqrt(pow((*H)[i][i], 2) + pow((*H)[i+1][i], 2));
-		// 		c[i] = (*H)[i][i] 
-		// 			/ sqrt(pow((*H)[i][i], 2) + pow((*H)[i+1][i], 2));
-		// 	}
+			// construct rotations for new vector is Hessenberg matrix
+			if (j == i) {
+				s[i] = h_data[i * H_ROWS + (i+1)] 
+					/ sqrt(pow(h_data[i * H_ROWS + i], 2) + pow(h_data[i * H_ROWS + (i+1)], 2));
+				c[i] = h_data[i * H_ROWS + i] 
+					/ sqrt(pow(h_data[i * H_ROWS + i], 2) + pow(h_data[i * H_ROWS + (i+1)], 2));
+			}
 
-		// 	H_diag_temp = c[j] * (*H)[j][i] + s[j] * (*H)[j+1][i];
-		// 	(*H)[j+1][i] = - s[j] * (*H)[j][i] + c[j] * (*H)[j+1][i];
-		// 	(*H)[j][i] = H_diag_temp;
-		// }
+			H_diag_temp = c[j] * h_data[i * H_ROWS + j] 
+				+ s[j] * h_data[i * H_ROWS + (j+1)];
+			h_data[i * H_ROWS + (j+1)] = - s[j] * h_data[i * H_ROWS + j]
+				+ c[j] * h_data[i * H_ROWS + (j+1)];
+			h_data[i * H_ROWS + j] = H_diag_temp;
+		}
 
 		// // hack (avoid round-off error)
-		// (*H)[i+1][i] = 0.0;
+		// h_data[i * H_ROWS + (i+1)] = 0.0;
 
-		// g_temp = (*g)[i];
-		// (*g)[i] = c[i] * g_temp;
-		// (*g)[i+1] = - s[i] * g_temp;
+		g_temp = g_data[i];
+		g_data[i] = c[i] * g_temp;
+		g_data[i+1] = - s[i] * g_temp;
+
+		if (abs(g_data[i+1]) < error_tol || i == restart_value) {
+			break;
+		}
 
 		// if (abs((*g)[i+1]) < error_tol || i == restart_value) {
 
