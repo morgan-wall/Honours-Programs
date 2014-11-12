@@ -6,13 +6,13 @@
  * @brief 
  */
 
-#include "matrix.h"
 #include <stdlib.h>
 #include <math.h>
 
+#include "matrix.h"
 #include "mex.h"
-#include "blas.h"
-#include "lapack.h"
+// #include "blas.h"
+// #include "lapack.h"
 
 #define Q_ROWS m
 #define H_ROWS (restart_value + 1)
@@ -104,7 +104,15 @@ void arnoldi(mxArray* A, mxArray* L, mxArray* U, double* b,
 	
 	// generate initial basis vector
 	double* q = mxCalloc(m, double_size);
-	double b_norm = dnrm2(&m, b, &double_size);
+	
+	// double b_norm = dnrm2(&m, b, &double_size);
+	double b_norm = 0;
+	for (int i = 0; i < m; i++) {
+		b_norm = b_norm + pow(b[i], 2);
+	}
+	b_norm = sqrt(b_norm);
+	g_data[0] = b_norm;
+
 	for (int i = 0; i < m; i++) {
 		q_data[i] = b[i] / b_norm; 
 	}
@@ -163,11 +171,21 @@ void arnoldi(mxArray* A, mxArray* L, mxArray* U, double* b,
 			}
 		}
 
-		// // normalise the basis vector
+		// normalise the basis vector
 		// h_data[i * H_ROWS + (i+1)] = dnrm2(&m, q, &double_size);
+		h_data[i * H_ROWS + (i+1)] = 0;
+		for (int j = 0; j < m; j++) {
+			h_data[i * H_ROWS + (i+1)] = h_data[i * H_ROWS + (i+1)] + pow(q[j], 2);
+		}
+		h_data[i * H_ROWS + (i+1)] = sqrt(h_data[i * H_ROWS + (i+1)]);
+
 		// for (int j = 0; j < m; j++) {
 		// 	q_data[(i + 1) * Q_ROWS + j] = q[i] / h_data[i * H_ROWS + (i+1)];
 		// }
+
+		for (int j = 0; j < m; j++) {
+			q_data[(i + 1) * Q_ROWS + j] = q[j] / h_data[i * H_ROWS + (i+1)];
+		}
 
 		// apply Given's rotations
 		for (int j = 0; j <= i; j++) {
@@ -187,8 +205,8 @@ void arnoldi(mxArray* A, mxArray* L, mxArray* U, double* b,
 			h_data[i * H_ROWS + j] = H_diag_temp;
 		}
 
-		// // hack (avoid round-off error)
-		// h_data[i * H_ROWS + (i+1)] = 0.0;
+		// hack (avoid round-off error)
+		h_data[i * H_ROWS + (i+1)] = 0.0;
 
 		g_temp = g_data[i];
 		g_data[i] = c[i] * g_temp;
