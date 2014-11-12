@@ -93,12 +93,14 @@ forcingTermParameters = struct('maxForcingTerm', 0.9, 'type', 'none', ...
 
 safeguardParameters = struct('threshold', 0.1);
 
+chordSteps = newtonParameters.maxIterations + 1;
+
 % Solve problem
 tic;
 [tout, yout] = Solver(dt, tFinal, Dxx, Dyy, Vx, Vy, source, theta, ...
     advectionHandling, nodesX, nodesY, northBC, eastBC, southBC, westBC, ...
     initialCondition, storedTimeSteps, newtonParameters, gmresParameters, ...
-    forcingTermParameters, safeguardParameters);
+    forcingTermParameters, safeguardParameters, chordSteps);
 toc;
 
 % Output plots and metrics
@@ -250,12 +252,14 @@ forcingTermParameters = struct('maxForcingTerm', 0.9, 'type', 'none', ...
 
 safeguardParameters = struct('threshold', 0.1);
 
+chordSteps = 3;
+
 % Solve problem
 tic;
 [tout, yout] = Solver(dt, tFinal, Dxx, Dyy, Vx, Vy, source, theta, ...
     advectionHandling, nodesX, nodesY, northBC, eastBC, southBC, westBC, ...
     initialCondition, storedTimeSteps, newtonParameters, gmresParameters, ...
-    forcingTermParameters, safeguardParameters);
+    forcingTermParameters, safeguardParameters, chordSteps);
 toc;
 
 % Output plots and metrics
