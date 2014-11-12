@@ -29,7 +29,7 @@ void arnoldi(mxArray* A, mxArray* L, mxArray* U, double* b,
 
 void copy_array(int n, double* array, double* copy);
 
-void retrieve_array_from_matrix(int rows, int columns, double** matrix, 
+void retrieve_array_from_matrix(int rows, int columns, double* matrix, 
 	double* copy, int index, orientation_t orientation);
 
 /* Implementation */
@@ -37,7 +37,7 @@ void retrieve_array_from_matrix(int rows, int columns, double** matrix,
 void mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[]) {
 
 	const unsigned short int INPUT_ARGUMENT_COUNT = 6;
-	const unsigned short int OUTPUT_ARGUMENT_COUNT = 1;
+	const unsigned short int OUTPUT_ARGUMENT_COUNT = 3;
 
 	// validate input arguments
 	if (nrhs != INPUT_ARGUMENT_COUNT) {
@@ -66,7 +66,7 @@ void mexFunction(int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[]) {
 	mxArray* Q = mxCreateDoubleMatrix((mwSize)m, (mwSize)restart_value, mxREAL);
 	mxArray* H = mxCreateDoubleMatrix((mwSize)(restart_value + 1), (mwSize)restart_value, mxREAL);
 	mxArray* g = mxCreateDoubleMatrix((mwSize)(restart_value + 1), (mwSize)1, mxREAL);
-	
+
 	arnoldi(A, L, U, b, m, n, restart_value, error_tol, Q, H, g);
 
 	plhs[0] = Q;
@@ -84,7 +84,7 @@ void arnoldi(mxArray* A, mxArray* L, mxArray* U, double* b,
 
 	mxArray *lhs[MEX_OUTPUT_PARMETERS], *rhs[MEX_INPUT_PARAMETERS];
 
-	mxArray* tempArray = mxCreateDoubleMatrix(m, 1, mxREAL);
+	mxArray* tempMxArray = mxCreateDoubleMatrix(m, 1, mxREAL);
 
 	double* q_data = mxGetPr(Q);
 	double* h_data = mxGetPr(H);
@@ -95,54 +95,43 @@ void arnoldi(mxArray* A, mxArray* L, mxArray* U, double* b,
 
 	double H_diag_temp;
 	double g_temp;
-	// double* temp_basis_vector = mxMalloc(m, sizeof(*temp_basis_vector));
+	double* temp_basis_vector = mxCalloc(m, double_size);
 
-	// // initialise solution parameters
-	// *Q = malloc(sizeof(**Q) * m);
-	// for (unsigned int i = 0; i < m; i++) {
-	// 	(*Q)[i] = malloc(sizeof(***Q) * restart_value);
-	// }
-
-	// *H = malloc(sizeof(**H) * (restart_value + 1));
-	// for (unsigned int i = 0; i < m; i++) {
-	// 	(*H)[i] = malloc(sizeof(***H) * restart_value);
-	// }
-
-	// *g = malloc(sizeof(**g) * (restart_value + 1));
-
-	// // initialise Given's rotations variables
-	// double* c = malloc(sizeof(*c) * restart_value);
-	// double* s = malloc(sizeof(*c) * restart_value);
+	// initialise Given's rotations variables
+	double* c = mxCalloc(restart_value, double_size);
+	double* s = mxCalloc(restart_value, double_size);
 	
 	// generate initial basis vector
-	// double* q = malloc(sizeof(*q) * m);
-	double* q;
+	double* q = mxCalloc(m, double_size);
 	double b_norm = dnrm2(&m, b, &double_size);
+	for (int i = 0; i < m; i++) {
+		q_data[i] = b[i] / b_norm; 
+	}
 
 	// generate each basis vector in the Krylov subspace
 	for (unsigned int i = 0; i <= restart_value; i++) {
 
 		// determine the next Kyrlov subspace basis vector
-		// retrieve_array_from_matrix(m, restart_value, (*Q), 
-		// 		temp_basis_vector, i, COLUMN);
-		// mxSetPr(tempArray, temp_basis_vector);
+		retrieve_array_from_matrix(m, restart_value, q_data, 
+				temp_basis_vector, i, COLUMN);
+		// mxSetPr(tempMxArray, temp_basis_vector);
 
 		// rhs[0] = L;
-		// rhs[1] = tempArray;
+		// rhs[1] = tempMxArray;
 
-		// mexCallMATLAB(MEX_INPUT_PARAMETERS, lhs, MEX_OUTPUT_PARMETERS, rhs, 
+		// mexCallMATLAB(MEX_OUTPUT_PARMETERS, lhs, MEX_INPUT_PARAMETERS, rhs, 
 		// 	"mldivide");
 
 		// rhs[0] = U;
 		// rhs[1] = lhs[0];
 
-		// mexCallMATLAB(MEX_INPUT_PARAMETERS, lhs, MEX_OUTPUT_PARMETERS, rhs, 
+		// mexCallMATLAB(MEX_OUTPUT_PARMETERS, lhs, MEX_INPUT_PARAMETERS, rhs, 
 		// 	"mldivide");
 
 		// rhs[0] = A;
 		// rhs[1] = lhs[0];
 
-		// mexCallMATLAB(MEX_INPUT_PARAMETERS, lhs, MEX_OUTPUT_PARMETERS, rhs, 
+		// mexCallMATLAB(MEX_OUTPUT_PARMETERS, lhs, MEX_INPUT_PARAMETERS, rhs, 
 		// 	"mtimes");
 
 		// q = mxGetPr(lhs[0]);
@@ -150,14 +139,15 @@ void arnoldi(mxArray* A, mxArray* L, mxArray* U, double* b,
 		// // orthogonalise the basis vector
 		// for (unsigned int j = 0; j <= i; j++) {
 
-		// 	retrieve_array_from_matrix(m, restart_value, (*Q), 
+		// 	retrieve_array_from_matrix(m, restart_value, q_data, 
 		// 		temp_basis_vector, j, COLUMN);
-		// 	(*H)[j][i] = 
+		// 	h_data[i * m + j] = 
 		// 		ddot(&m, temp_basis_vector, &double_size, q, &double_size);
 
-		// 	retrieve_array_from_matrix(m, restart_value, (*Q), 
+		// 	retrieve_array_from_matrix(m, restart_value, q_data, 
 		// 		temp_basis_vector, j, COLUMN);
-		// 	dscal(&m, &(*H)[j][i], temp_basis_vector, &double_size);
+		// 	dscal(&m, &h_data[i * m + j], temp_basis_vector, &double_size);
+			
 		// 	for (int k = 0; k < m; k++) {
 		// 		q[k] = q[k] - temp_basis_vector[k];
 		// 	}
@@ -218,10 +208,9 @@ void arnoldi(mxArray* A, mxArray* L, mxArray* U, double* b,
 	}
 
 	// deallocate solver variables
-	// free(temp_basis_vector);
-	// free(c);
-	// free(s);
-	// free(q);
+	// mxFree(temp_basis_vector);
+	// mxFree(c);
+	// mxFree(s);
 }
 
 void copy_array(int n, double* array, double* copy) {
@@ -230,17 +219,18 @@ void copy_array(int n, double* array, double* copy) {
 	}
 }
 
-void retrieve_array_from_matrix(int rows, int columns, double** matrix, 
+void retrieve_array_from_matrix(int rows, int columns, double* matrix, 
 	double* copy, int index, orientation_t orientation) {
 
-	if (orientation == ROW) {
-		for (int i = 0; i < rows; i++) {
-			copy[i] = matrix[index][i];
+	if (orientation == COLUMN) {
+		int startingIndex = index * rows;
+		for (int i = index * rows, j = 0; i < startingIndex + rows; i++, j++) {
+			copy[j] = matrix[i];
 		}
 
-	} else if (orientation == COLUMN) {
-		for (int i = 0; i < columns; i++) {
-			copy[i] = matrix[i][index];
+	} else if (orientation == ROW) {
+		for (int i = index, j = 0; i < rows * columns; i = i + rows, j++) {
+			copy[j] = matrix[i];
 		}
 	}
 }
