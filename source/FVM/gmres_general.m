@@ -34,6 +34,7 @@ while (residual > error_tol && i < max_iter)
     
     % generate the orthonormal basis
     [Q, H, g] = arnoldi_general(A, L, U, r0, restart_value, error_tol);
+%     [Q_t, H_t, g_t] = arnoldi(A, L, U, r0, restart_value, error_tol);
     
     % tally the number of Arnoldi iterations
     subspaceBasisSize = size(Q);
