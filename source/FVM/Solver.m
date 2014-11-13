@@ -621,7 +621,7 @@ if (~isempty(nIndices))
     
     % Determine advection at face
     advectionAtFace = zeros(length(nIndices), 1);
-    advectionVelocityY = Vy(phi(nIndices));
+    advectionVelocityY = Vy(phi(nIndices), nodesX(columnForIndex(nIndices)), nodesY(rowForIndex(nIndices)));
     if (isUpwinding)
         positiveAdvection = advectionVelocityY > 0;
         advectionAtFace(positiveAdvection) = phi(nIndices(positiveAdvection));
@@ -632,7 +632,7 @@ if (~isempty(nIndices))
     end
     
     flux(nIndices) = flux(nIndices) + nodeWidths(columnForIndex(nIndices)) ...
-        .* (((Vy(nPhi) + Vy(northNeighbourPhi)) ./ 2) .* advectionAtFace ...
+        .* (((Vy(nPhi, nodesX(columnForIndex(nIndices)), nodesY(rowForIndex(nIndices))) + Vy(northNeighbourPhi, nodesX(columnForIndex(nIndices - 1)), nodesY(rowForIndex(nIndices - 1)))) ./ 2) .* advectionAtFace ...
         - ((Dyy(nPhi) + Dyy(northNeighbourPhi)) ./ 2) .* (northNeighbourPhi - nPhi) ...
         ./ yNodeDeltas(rowForIndex(nIndices) - 1));
 end
@@ -643,7 +643,7 @@ if (~isempty(nBoundaryIndices));
     
     flux(nBoundaryIndices) = flux(nBoundaryIndices) ...
         + nodeWidths(columnForIndex(nBoundaryIndices)) ...
-        .* ( (Vy(nBoundaryPhi) + diffusion .* northBC.A ./ northBC.B) ...
+        .* ( (Vy(nBoundaryPhi, nodesX(columnForIndex(nBoundaryIndices)), nodesY(rowForIndex(nBoundaryIndices))) + diffusion .* northBC.A ./ northBC.B) ...
         .* nBoundaryPhi - diffusion .* northBC.C(nodesX(columnForIndex(nBoundaryIndices)), t) ./ northBC.B );
 end
 
@@ -655,7 +655,7 @@ if (~isempty(eIndices))
     
     % Determine advection at face
     advectionAtFace = zeros(length(eIndices), 1);
-    advectionVelocityX = Vx(phi(eIndices));
+    advectionVelocityX = Vx(phi(eIndices), nodesX(columnForIndex(eIndices)), nodesY(rowForIndex(eIndices)));
     if (isUpwinding)
         positiveAdvection = advectionVelocityX > 0;
         advectionAtFace(positiveAdvection) = phi(eIndices(positiveAdvection));
@@ -666,7 +666,7 @@ if (~isempty(eIndices))
     end
     
     flux(eIndices) = flux(eIndices) + nodeHeights(rowForIndex(eIndices)) ...
-        .* (((Vx(ePhi) + Vx(eastNeighbourPhi)) ./ 2) .* advectionAtFace ...
+        .* (((Vx(ePhi, nodesX(columnForIndex(eIndices)), nodesY(rowForIndex(eIndices))) + Vx(eastNeighbourPhi, nodesX(columnForIndex(eIndices + rows)), nodesY(rowForIndex(eIndices + rows)))) ./ 2) .* advectionAtFace ...
         - ((Dxx(ePhi) + Dxx(eastNeighbourPhi)) ./ 2) .* (eastNeighbourPhi - ePhi) ...
         ./ xNodeDeltas(columnForIndex(eIndices))); 
 end
@@ -677,7 +677,7 @@ if (~isempty(eBoundaryIndices))
     
     flux(eBoundaryIndices) = flux(eBoundaryIndices) ...
         + nodeHeights(rowForIndex(eBoundaryIndices)) ...
-        .* ( (Vx(eBoundaryPhi) + diffusion .* eastBC.A ./ eastBC.B) ...
+        .* ( (Vx(eBoundaryPhi, nodesX(columnForIndex(eBoundaryIndices)), nodesY(rowForIndex(eBoundaryIndices))) + diffusion .* eastBC.A ./ eastBC.B) ...
         .* eBoundaryPhi - diffusion .* eastBC.C(nodesY(rowForIndex(eBoundaryIndices)), t) ./ eastBC.B );
 end
     
@@ -689,7 +689,7 @@ if (~isempty(sIndices))
     
     % Determine advection at face
     advectionAtFace = zeros(length(sIndices), 1);
-    advectionVelocityY = Vy(phi(sIndices));
+    advectionVelocityY = Vy(phi(sIndices), nodesX(columnForIndex(sIndices)), nodesY(rowForIndex(sIndices)));
     if (isUpwinding)
         positiveAdvection = advectionVelocityY > 0;
         advectionAtFace(~positiveAdvection) = phi(sIndices(~positiveAdvection));
@@ -700,7 +700,7 @@ if (~isempty(sIndices))
     end
     
     flux(sIndices) = flux(sIndices) - nodeWidths(columnForIndex(sIndices)) ...
-        .* (((Vy(sPhi) + Vy(southNeighbourPhi)) ./ 2) .* advectionAtFace ...
+        .* (((Vy(sPhi, nodesX(columnForIndex(sIndices)), nodesY(rowForIndex(sIndices))) + Vy(southNeighbourPhi, nodesX(columnForIndex(sIndices + 1)), nodesY(rowForIndex(sIndices + 1)))) ./ 2) .* advectionAtFace ...
         - ((Dyy(sPhi) + Dyy(southNeighbourPhi)) ./ 2) .* (sPhi - southNeighbourPhi) ...
         ./ yNodeDeltas(rowForIndex(sIndices)));
 end
@@ -711,7 +711,7 @@ if (~isempty(sBoundaryIndices))
 
     flux(sBoundaryIndices) = flux(sBoundaryIndices) ...
         - nodeWidths(columnForIndex(sBoundaryIndices)) ...
-        .* ( (Vy(sBoundaryPhi) - diffusion .* southBC.A ./ southBC.B) ...
+        .* ( (Vy(sBoundaryPhi, nodesX(columnForIndex(sBoundaryIndices)), nodesY(rowForIndex(sBoundaryIndices))) - diffusion .* southBC.A(nodesX(columnForIndex(sBoundaryIndices)), t) ./ southBC.B) ...
         .* sBoundaryPhi + diffusion .* southBC.C(nodesX(columnForIndex(sBoundaryIndices)), t) ./ southBC.B );
 end
     
@@ -723,7 +723,7 @@ if (~isempty(wIndices))
     
     % Determine advection at face
     advectionAtFace = zeros(length(wIndices), 1);
-    advectionVelocityX = Vx(phi(wIndices));
+    advectionVelocityX = Vx(phi(wIndices), nodesX(columnForIndex(wIndices)), nodesY(rowForIndex(wIndices)));
     if (isUpwinding)
         positiveAdvection = advectionVelocityX > 0;
         advectionAtFace(~positiveAdvection) = phi(wIndices(~positiveAdvection));
@@ -734,7 +734,7 @@ if (~isempty(wIndices))
     end
     
     flux(wIndices) = flux(wIndices) - nodeHeights(rowForIndex(wIndices)) ...
-        .* (((Vx(wPhi) + Vx(westNeighbourPhi)) ./ 2) .* advectionAtFace ...
+        .* (((Vx(wPhi, nodesX(columnForIndex(wIndices)), nodesY(rowForIndex(wIndices))) + Vx(westNeighbourPhi, nodesX(columnForIndex(wIndices - rows)), nodesY(rowForIndex(wIndices - rows)))) ./ 2) .* advectionAtFace ...
         - ((Dxx(wPhi) + Dxx(westNeighbourPhi)) ./ 2) .* (wPhi - westNeighbourPhi) ...
         ./ xNodeDeltas(columnForIndex(wIndices) - 1));
 end
@@ -745,7 +745,7 @@ if (~isempty(wBoundaryIndices))
     
     flux(wBoundaryIndices) = flux(wBoundaryIndices) ...
         - nodeHeights(rowForIndex(wBoundaryIndices)) ...
-        .* ( (Vx(wBoundaryPhi) - diffusion .* westBC.A ./ westBC.B) ...
+        .* ( (Vx(wBoundaryPhi, nodesX(columnForIndex(wBoundaryIndices)), nodesY(rowForIndex(wBoundaryIndices))) - diffusion .* westBC.A ./ westBC.B) ...
         .* wBoundaryPhi + diffusion .* westBC.C(nodesY(rowForIndex(wBoundaryIndices)), t) ./ westBC.B);
 end
 
