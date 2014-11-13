@@ -208,28 +208,6 @@ function [tout, yout] = Solver(dt, tFinal, Dxx, Dyy, Vx, Vy, source, theta, ...
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%% Validate input parameters
-
-if (northBC.B == 0)
-    error(['Invalid Boundary Condition (North): The B coefficient ' ...
-            'for a boundary condition must be positive.']);
-end
-
-if (eastBC.B == 0)
-    error(['Invalid Boundary Condition (East): The B coefficient ' ...
-            'for a boundary condition must be positive.']);
-end
-
-if (southBC.B == 0)
-    error(['Invalid Boundary Condition (South): The B coefficient ' ...
-            'for a boundary condition must be positive.']);
-end
-
-if (westBC.B == 0)
-    error(['Invalid Boundary Condition (West): The B coefficient ' ...
-            'for a boundary condition must be positive.']);
-end
-
 %% Initialise constants
 
 FIRST_TIME_STEP_INDEX = 1;
@@ -645,8 +623,8 @@ if (~isempty(nBoundaryIndices));
     
     flux(nBoundaryIndices) = flux(nBoundaryIndices) ...
         + nodeWidths(columnForIndex(nBoundaryIndices)) ...
-        .* ( (Vy(nBoundaryPhi, nodesX(columnForIndex(nBoundaryIndices)), nodesY(rowForIndex(nBoundaryIndices)), t) + diffusion .* northBC.A ./ northBC.B) ...
-        .* nBoundaryPhi - diffusion .* northBC.C(nodesX(columnForIndex(nBoundaryIndices)), t) ./ northBC.B );
+        .* ( (Vy(nBoundaryPhi, nodesX(columnForIndex(nBoundaryIndices)), nodesY(rowForIndex(nBoundaryIndices)), t) + diffusion .* northBC.A(nodesX(columnForIndex(nBoundaryIndices)), t) ./ northBC.B(nodesX(columnForIndex(nBoundaryIndices)), t)) ...
+        .* nBoundaryPhi - diffusion .* northBC.C(nodesX(columnForIndex(nBoundaryIndices)), t) ./ northBC.B(nodesX(columnForIndex(nBoundaryIndices)), t) );
 end
 
 % East nodes
@@ -679,8 +657,8 @@ if (~isempty(eBoundaryIndices))
     
     flux(eBoundaryIndices) = flux(eBoundaryIndices) ...
         + nodeHeights(rowForIndex(eBoundaryIndices)) ...
-        .* ( (Vx(eBoundaryPhi, nodesX(columnForIndex(eBoundaryIndices)), nodesY(rowForIndex(eBoundaryIndices)), t) + diffusion .* eastBC.A ./ eastBC.B) ...
-        .* eBoundaryPhi - diffusion .* eastBC.C(nodesY(rowForIndex(eBoundaryIndices)), t) ./ eastBC.B );
+        .* ( (Vx(eBoundaryPhi, nodesX(columnForIndex(eBoundaryIndices)), nodesY(rowForIndex(eBoundaryIndices)), t) + diffusion .* eastBC.A(nodesY(rowForIndex(eBoundaryIndices)), t) ./ eastBC.B(nodesY(rowForIndex(eBoundaryIndices)), t)) ...
+        .* eBoundaryPhi - diffusion .* eastBC.C(nodesY(rowForIndex(eBoundaryIndices)), t) ./ eastBC.B(nodesY(rowForIndex(eBoundaryIndices)), t) );
 end
     
 % South nodes
@@ -713,8 +691,8 @@ if (~isempty(sBoundaryIndices))
 
     flux(sBoundaryIndices) = flux(sBoundaryIndices) ...
         - nodeWidths(columnForIndex(sBoundaryIndices)) ...
-        .* ( (Vy(sBoundaryPhi, nodesX(columnForIndex(sBoundaryIndices)), nodesY(rowForIndex(sBoundaryIndices)), t) - diffusion .* southBC.A(nodesX(columnForIndex(sBoundaryIndices)), t) ./ southBC.B) ...
-        .* sBoundaryPhi + diffusion .* southBC.C(nodesX(columnForIndex(sBoundaryIndices)), t) ./ southBC.B );
+        .* ( (Vy(sBoundaryPhi, nodesX(columnForIndex(sBoundaryIndices)), nodesY(rowForIndex(sBoundaryIndices)), t) - diffusion .* southBC.A(nodesX(columnForIndex(sBoundaryIndices)), t) ./ southBC.B(nodesX(columnForIndex(sBoundaryIndices)), t)) ...
+        .* sBoundaryPhi + diffusion .* southBC.C(nodesX(columnForIndex(sBoundaryIndices)), t) ./ southBC.B(nodesX(columnForIndex(sBoundaryIndices)), t) );
 end
     
 % West nodes
@@ -747,8 +725,8 @@ if (~isempty(wBoundaryIndices))
     
     flux(wBoundaryIndices) = flux(wBoundaryIndices) ...
         - nodeHeights(rowForIndex(wBoundaryIndices)) ...
-        .* ( (Vx(wBoundaryPhi, nodesX(columnForIndex(wBoundaryIndices)), nodesY(rowForIndex(wBoundaryIndices)), t) - diffusion .* westBC.A ./ westBC.B) ...
-        .* wBoundaryPhi + diffusion .* westBC.C(nodesY(rowForIndex(wBoundaryIndices)), t) ./ westBC.B);
+        .* ( (Vx(wBoundaryPhi, nodesX(columnForIndex(wBoundaryIndices)), nodesY(rowForIndex(wBoundaryIndices)), t) - diffusion .* westBC.A(nodesY(rowForIndex(wBoundaryIndices)), t) ./ westBC.B(nodesY(rowForIndex(wBoundaryIndices)), t)) ...
+        .* wBoundaryPhi + diffusion .* westBC.C(nodesY(rowForIndex(wBoundaryIndices)), t) ./ westBC.B(nodesY(rowForIndex(wBoundaryIndices)), t));
 end
 
 flux = flux(indices);

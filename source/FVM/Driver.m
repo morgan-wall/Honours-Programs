@@ -341,19 +341,25 @@ columns = length(nodesX);
 % Initialise boundary conditions
 dirichletHackCoef = 10000;
 
+northA = @(x, t) x .* 0 + dirichletHackCoef;
+northB = @(x, t) x .* 0 + 1;
 northC = @(x, t) dirichletHackCoef .* ones(length(x), 1) .* (1 - tanh(Pe));
-northBC = struct('A', dirichletHackCoef, 'B', 1, 'C', northC);
+northBC = struct('A', northA, 'B', northB, 'C', northC);
 
+eastA = @(y, t) y .* 0 + dirichletHackCoef;
+eastB = @(y, t) y .* 0 + 1;
 eastC = @(y, t) dirichletHackCoef .* ones(length(y), 1) .* (1 - tanh(Pe));
-eastBC = struct('A', dirichletHackCoef, 'B', 1, 'C', eastC);
+eastBC = struct('A', eastA, 'B', eastB, 'C', eastC);
 
 southA = @(x, t) southA_problem3(x, t, dirichletHackCoef);
-southB = @(x, t) southB_problem3(x, t);
+southB = @(x, t) x .* 0 + 1;
 southC = @(x, t) southC_problem3(x, t, Pe, dirichletHackCoef);
-southBC = struct('A', southA, 'B', 1, 'C', southC);
+southBC = struct('A', southA, 'B', southB, 'C', southC);
 
+westA = @(y, t) y .* 0 + dirichletHackCoef;
+westB = @(y, t) y .* 0 + 1;
 westC = @(y, t) dirichletHackCoef .* ones(length(y), 1) .* (1 - tanh(Pe));
-westBC = struct('A', dirichletHackCoef, 'B', 1, 'C', westC);
+westBC = struct('A', westA, 'B', westB, 'C', westC);
 
 % Construct initial condition
 initialCondition = zeros(rows, columns);
