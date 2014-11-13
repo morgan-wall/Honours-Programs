@@ -307,16 +307,16 @@ tFinal = 7.5;
 Pe = 10;
 
 DXX = 1 / Pe;
-Dxx = @(phi) phi .* 0 + DXX;
+Dxx = @(phi, x, y, t) phi .* 0 + DXX;
 
 DYY = 1 / Pe;
-Dyy = @(phi) phi .* 0 + DYY;
+Dyy = @(phi, x, y, t) phi .* 0 + DYY;
 
-Vx = @(phi, x, y) 2 .* y .* (1 - x.^2);
+Vx = @(phi, x, y, t) 2 .* y .* (1 - x.^2);
 
-Vy = @(phi, x, y) -2 .* x .* (1 - y.^2);
+Vy = @(phi, x, y, t) -2 .* x .* (1 - y.^2);
 
-source = @(x, y) x .* 0;
+source = @(phi, x, y, t) x .* 0;
 
 % Construct mesh
 xLower = -1;
