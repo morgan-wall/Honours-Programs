@@ -81,14 +81,26 @@ westBC = struct('A', westA, 'B', westB, 'C', westC);
 [X, Y] = meshgrid(nodesX(:), nodesY(:));
 initialCondition = phiAnalytic(X(:), Y(:), 0);
 
-% Construct analytic solution (at final time)
-analyticSolution = phiAnalytic(X(:), Y(:), tFinal);
+% Construct analytic solution
+xNodesAnalytic = linspace(xLower, xUpper, 50);
+yNodesAnalytic = linspace(yLower, yUpper, 50);
+rowsAnalytic = length(yNodesAnalytic);
+columnsAnalytic = length(xNodesAnalytic);
+[X, Y] = meshgrid(xNodesAnalytic, yNodesAnalytic);
+
+analyticTimes = [0 0.25 0.5 0.75 1.0 1.25];
+analyticSolutions = length(analyticTimes);
+analyticSolution = zeros(rowsAnalytic * columnsAnalytic, analyticSolutions);
+
+for i = 1:analyticSolutions
+    analyticSolution(:, i) = phiAnalytic(X(:), Y(:), analyticTimes(i));
+end
 
 % Initialise solver parameters
 theta = 1;
 advectionHandling = 'averaging';
 
-storedTimeSteps = 100;
+storedTimeSteps = 250;
 
 newtonParameters = struct('rebuildJacobianIterations', 5, ...
     'maxIterations', 10, 'tolUpdate', 1e-8, 'tolResidual', 1e-8);
@@ -112,30 +124,52 @@ chordSteps = newtonParameters.maxIterations + 1;
 % Output plots and metrics
 figure;
 
-surf(nodesX, nodesY, reshape(yout(:, 1), rows, columns));
-plotTitle = 'Analytic Solution (Problem 1) where t = 0';
-title(plotTitle);
-xlabel('x');
-ylabel('y');
-zlabel('Solution');
+j = 1;
+for i = 1:4
+    
+    subplot(2, 2, j);
+    j = j + 1;
+    
+    surf(xNodesAnalytic, yNodesAnalytic, ...
+        reshape(analyticSolution(:, i), rowsAnalytic, columnsAnalytic), ...
+        'EdgeColor','none','FaceColor', 'interp');
+    plotTitle = ['t = ' num2str(analyticTimes(i))];
+    title(plotTitle);
+    xlabel('x');
+    ylabel('y');
+    zlabel('Solution');
+    
+    zlim([0, 1]);
+    
+    set(findall(gcf,'type','text'), 'fontSize', 12);
+    set(gca, 'fontSize', 11);
+end
 
 figure;
 
-surf(nodesX, nodesY, reshape(yout(:, end), rows, columns));
-plotTitle = ['Numeric Solution (Problem 1) where t = ' num2str(tFinal)];
-title(plotTitle);
-xlabel('x');
-ylabel('y');
-zlabel('Solution');
+j = 1;
+for i = 3:length(tout)
+    
+    subplot(2, 2, j);
+    j = j + 1;
+    
+    plot(nodesX, diag(flipud( reshape(yout(:, i), rows, columns) )), 'LineWidth', 2);
+    hold all;
+    plot(xNodesAnalytic, diag(reshape(analyticSolution(:, i), ...
+        rowsAnalytic, columnsAnalytic)), '--r', 'LineWidth', 2);
+    
+    plotTitle = ['t = ' num2str(tout(i))];
+    title(plotTitle);
+    xlabel('x, y');
+    ylabel('Solution');
 
-figure;
+    ylim([0 0.4]);
+    
+    legend('Numeric', 'Analytic');
 
-surf(nodesX, nodesY, reshape(analyticSolution(:, end), rows, columns));
-plotTitle = ['Analytic Solution (Problem 1) where t = ' num2str(tFinal)];
-title(plotTitle);
-xlabel('x');
-ylabel('y');
-zlabel('Solution');
+    set(findall(gcf,'type','text'), 'fontSize', 12);
+        set(gca, 'fontSize', 11);
+end
 
 error = norm(yout(:, end) - analyticSolution(:, end)) / sqrt(length(yout(:, end)));
 
@@ -231,7 +265,7 @@ eastB = @(y, t) y .* 0 + 1;
 eastC = @(y, t) zeros(length(y), 1);
 eastBC = struct('A', eastA, 'B', eastB, 'C', eastC);
 
-southA = @(x, t) southA_problem3(x, t, dirichletHackCoef);
+southA = @(x, t) x .* 0 + dirichletHackCoef;
 southB = @(x, t) x .* 0 + 1;
 southC = @(x, t) zeros(length(x), 1);
 southBC = struct('A', southA, 'B', southB, 'C', southC);
@@ -268,12 +302,10 @@ safeguardParameters = struct('threshold', 0.1);
 chordSteps = 3;
 
 % Solve problem
-tic;
 [tout, yout] = Solver(dt, tFinal, Dxx, Dyy, Vx, Vy, source, theta, ...
     advectionHandling, nodesX, nodesY, northBC, eastBC, southBC, westBC, ...
     initialCondition, storedTimeSteps, newtonParameters, gmresParameters, ...
     forcingTermParameters, safeguardParameters, chordSteps);
-toc;
 
 % Output plots and metrics
 figure;
@@ -286,12 +318,17 @@ ylabel('y');
 zlabel('Solution');
 
 figure;
-surf(nodesX, nodesY,reshape(sourceTerm, rows, columns));
+
+surf(nodesX, nodesY, reshape(sourceTerm, rows, columns));
 plotTitle = 'Source Term (Problem 2)';
 title(plotTitle);
 xlabel('x');
 ylabel('y');
 zlabel('Solution');
+colormap('parula');
+
+set(findall(gcf,'type','text'), 'fontSize', 12);
+set(gca, 'fontSize', 11);
 
 figure;
 
@@ -314,8 +351,8 @@ zlabel('Solution');
 %% Problem 3: Non-linear convection-diffusion (incl. Peclet number)
 
 % Initialise problem parameters
-dt = 0.001;
-tFinal = 7.5;
+dt = 0.01;
+tFinal = 7;
 
 Pe = 10;
 
@@ -381,7 +418,7 @@ initialCondition = zeros(rows, columns);
 theta = 1;
 advectionHandling = 'upwinding';
 
-storedTimeSteps = 100;
+storedTimeSteps = 25;
 
 newtonParameters = struct('rebuildJacobianIterations', 5, ...
     'maxIterations', 10, 'tolUpdate', 1e-8, 'tolResidual', 1e-8);
@@ -404,10 +441,59 @@ chordSteps = newtonParameters.maxIterations + 1;
 
 % Output plots and metrics
 figure;
-
-surf(nodesX, nodesY, reshape(yout(:, end), rows, columns));
-plotTitle = ['Numeric Solution (Problem 1) where t = ' num2str(tFinal)];
+    
+subplot(2, 2, 1);
+surf(nodesX, nodesY, reshape(yout(:, 2), rows, columns), ...
+    'EdgeColor','none','FaceColor', 'interp');
+plotTitle = ['t = ' num2str(tout(2))];
 title(plotTitle);
 xlabel('x');
 ylabel('y');
 zlabel('Solution');
+
+colormap('parula');
+
+set(findall(gcf,'type','text'), 'fontSize', 12);
+set(gca, 'fontSize', 11);
+
+subplot(2, 2, 2);
+surf(nodesX, nodesY, reshape(yout(:, 3), rows, columns), ...
+    'EdgeColor','none','FaceColor', 'interp');
+plotTitle = ['t = ' num2str(tout(3))];
+title(plotTitle);
+xlabel('x');
+ylabel('y');
+zlabel('Solution');
+
+colormap('parula');
+
+set(findall(gcf,'type','text'), 'fontSize', 12);
+set(gca, 'fontSize', 11);
+
+subplot(2, 2, 3);
+surf(nodesX, nodesY, reshape(yout(:, 5), rows, columns), ...
+    'EdgeColor','none','FaceColor', 'interp');
+plotTitle = ['t = ' num2str(tout(5))];
+title(plotTitle);
+xlabel('x');
+ylabel('y');
+zlabel('Solution');
+
+colormap('parula');
+
+set(findall(gcf,'type','text'), 'fontSize', 12);
+set(gca, 'fontSize', 11);
+
+subplot(2, 2, 4);
+surf(nodesX, nodesY, reshape(yout(:, end), rows, columns), ...
+    'EdgeColor','none','FaceColor', 'interp');
+plotTitle = ['t = ' num2str(tout(end))];
+title(plotTitle);
+xlabel('x');
+ylabel('y');
+zlabel('Solution');
+
+colormap('parula');
+
+set(findall(gcf,'type','text'), 'fontSize', 12);
+set(gca, 'fontSize', 11);
