@@ -177,7 +177,7 @@ error = norm(yout(:, end) - analyticSolution(:, end)) / sqrt(length(yout(:, end)
 
 % Initialise problem parameters
 dt = 0.001;
-tFinal = 1;
+tFinal = 15;
 
 Dxx = @(phi, x, y, t) phi .^ 2;
 Dyy = @(phi, x, y, t) 5 .* phi .^ 2;
@@ -310,43 +310,66 @@ chordSteps = 3;
 % Output plots and metrics
 figure;
 
-surf(nodesX, nodesY, reshape(yout(:, 1), rows, columns));
-plotTitle = 'Analytic Solution (Problem 2) where t = 0';
-title(plotTitle);
-xlabel('x');
-ylabel('y');
-zlabel('Solution');
+for i = [1 2 3 10]
+    tout(i)
+    plot(nodesX, diag(flipud(reshape(yout(:, i), rows, columns))), 'LineWidth', 2);
+    hold all;
+end
 
-figure;
+plot(nodesX, diag(reshape(steadyStateSolution, rows, columns)), 'Xk', 'LineWidth', 2);
 
-surf(nodesX, nodesY, reshape(sourceTerm, rows, columns));
-plotTitle = 'Source Term (Problem 2)';
+plotTitle = '';
 title(plotTitle);
-xlabel('x');
-ylabel('y');
-zlabel('Solution');
-colormap('parula');
+xlabel('x, y');
+ylabel('Solution');
+
+legend(['t = ' num2str(tout(1))], ['t = ' num2str(tout(2))], ...
+    ['t = ' num2str(tout(3))], ['t = ' num2str(tout(10))], 'Steady State');
 
 set(findall(gcf,'type','text'), 'fontSize', 12);
 set(gca, 'fontSize', 11);
 
-figure;
+hold off;
 
-surf(nodesX, nodesY, reshape(yout(:, end), rows, columns));
-plotTitle = ['Numeric Solution (Problem 2) where t = ' num2str(tFinal)];
-title(plotTitle);
-xlabel('x');
-ylabel('y');
-zlabel('Solution');
-
-figure;
-
-surf(nodesX, nodesY, reshape(steadyStateSolution, rows, columns));
-plotTitle = 'Steady State Solution (Problem 2)';
-title(plotTitle);
-xlabel('x');
-ylabel('y');
-zlabel('Solution');
+% figure;
+% 
+% surf(nodesX, nodesY, reshape(yout(:, 1), rows, columns));
+% plotTitle = 'Analytic Solution (Problem 2) where t = 0';
+% title(plotTitle);
+% xlabel('x');
+% ylabel('y');
+% zlabel('Solution');
+% 
+% figure;
+% 
+% surf(nodesX, nodesY, reshape(sourceTerm, rows, columns));
+% plotTitle = 'Source Term (Problem 2)';
+% title(plotTitle);
+% xlabel('x');
+% ylabel('y');
+% zlabel('Solution');
+% colormap('parula');
+% 
+% set(findall(gcf,'type','text'), 'fontSize', 12);
+% set(gca, 'fontSize', 11);
+% 
+% figure;
+% 
+% surf(nodesX, nodesY, reshape(yout(:, end), rows, columns));
+% plotTitle = ['Numeric Solution (Problem 2) where t = ' num2str(tFinal)];
+% title(plotTitle);
+% xlabel('x');
+% ylabel('y');
+% zlabel('Solution');
+% 
+% figure;
+% 
+% surf(nodesX, nodesY, reshape(steadyStateSolution, rows, columns));
+% plotTitle = 'Steady State Solution (Problem 2)';
+% title(plotTitle);
+% xlabel('x');
+% ylabel('y');
+% zlabel('Solution');
 
 %% Problem 3: Non-linear convection-diffusion (incl. Peclet number)
 
