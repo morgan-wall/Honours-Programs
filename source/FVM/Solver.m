@@ -198,17 +198,6 @@ function [tout, yout, gmresIterations, nonlinearFnCalls] = Solver(dt, tFinal, ..
 %       matrix of solution values at the first time step.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Errors:
-%   
-%   1. Errors are thrown if the B field in any boundary condition struct 
-%      is zero.
-%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Unimplemented features:
-%
-%   1. Jacobian-free Newton-GMRES solver.
-%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% Initialise constants
 
