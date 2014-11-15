@@ -115,11 +115,18 @@ safeguardParameters = struct('threshold', 0.1);
 
 chordSteps = newtonParameters.maxIterations + 1;
 
+isGlobalised = false;
+linesearchParam = 1e-4;
+minLambda = 0.1;
+maxLambda = 0.5;
+maxBacktracks = 15;
+
 % Solve problem
 [tout, yout] = Solver(dt, tFinal, Dxx, Dyy, Vx, Vy, source, theta, ...
     advectionHandling, nodesX, nodesY, northBC, eastBC, southBC, westBC, ...
     initialCondition, storedTimeSteps, newtonParameters, gmresParameters, ...
-    forcingTermParameters, safeguardParameters, chordSteps);
+    forcingTermParameters, safeguardParameters, chordSteps, isGlobalised, ...
+    linesearchParam, minLambda, maxLambda, maxBacktracks);
 
 % Output plots and metrics
 figure;
@@ -130,7 +137,7 @@ for i = 1:4
     subplot(2, 2, j);
     j = j + 1;
     
-    surf(xNodesAnalytic, yNodesAnalytic, ...
+    ax(i) = surf(xNodesAnalytic, yNodesAnalytic, ...
         reshape(analyticSolution(:, i), rowsAnalytic, columnsAnalytic), ...
         'EdgeColor','none','FaceColor', 'interp');
     plotTitle = ['t = ' num2str(analyticTimes(i))];
@@ -171,7 +178,7 @@ for i = 3:length(tout)
         set(gca, 'fontSize', 11);
 end
 
-error = norm(yout(:, end) - analyticSolution(:, end)) / sqrt(length(yout(:, end)));
+% error = norm(yout(:, end) - analyticSolution(:, end)) / sqrt(length(yout(:, end)));
 
 %% Problem 2: Non-linear convection-diffusion (with known steady-state)
 
@@ -301,11 +308,18 @@ safeguardParameters = struct('threshold', 0.1);
 
 chordSteps = 3;
 
+isGlobalised = false;
+linesearchParam = 1e-4;
+minLambda = 0.1;
+maxLambda = 0.5;
+maxBacktracks = 15;
+
 % Solve problem
 [tout, yout] = Solver(dt, tFinal, Dxx, Dyy, Vx, Vy, source, theta, ...
     advectionHandling, nodesX, nodesY, northBC, eastBC, southBC, westBC, ...
     initialCondition, storedTimeSteps, newtonParameters, gmresParameters, ...
-    forcingTermParameters, safeguardParameters, chordSteps);
+    forcingTermParameters, safeguardParameters, chordSteps, isGlobalised, ...
+    linesearchParam, minLambda, maxLambda, maxBacktracks);
 
 % Output plots and metrics
 figure;
@@ -456,11 +470,18 @@ safeguardParameters = struct('threshold', 0.1);
 
 chordSteps = newtonParameters.maxIterations + 1;
 
+isGlobalised = false;
+linesearchParam = 1e-4;
+minLambda = 0.1;
+maxLambda = 0.5;
+maxBacktracks = 15;
+
 % Solve problem
 [tout, yout] = Solver(dt, tFinal, Dxx, Dyy, Vx, Vy, source, theta, ...
     advectionHandling, nodesX, nodesY, northBC, eastBC, southBC, westBC, ...
     initialCondition, storedTimeSteps, newtonParameters, gmresParameters, ...
-    forcingTermParameters, safeguardParameters, chordSteps);
+    forcingTermParameters, safeguardParameters, chordSteps, isGlobalised, ...
+    linesearchParam, minLambda, maxLambda, maxBacktracks);
 
 % Output plots and metrics
 figure;
