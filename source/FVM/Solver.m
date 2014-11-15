@@ -699,9 +699,9 @@ if (~isempty(nIndices))
     northNeighbourPhi = phi(nIndices - 1);
     
     % Determine advection at face
-    advectionAtFace = zeros(length(nIndices), 1);
     advectionVelocityY = Vy_eval(nIndices);
     if (isUpwinding)
+        advectionAtFace = zeros(length(nIndices), 1);
         positiveAdvection = advectionVelocityY > 0;
         advectionAtFace(positiveAdvection) = phi(nIndices(positiveAdvection));
         advectionAtFace(~positiveAdvection) = ...
@@ -733,9 +733,9 @@ if (~isempty(eIndices))
     eastNeighbourPhi = phi(eIndices + rows);
     
     % Determine advection at face
-    advectionAtFace = zeros(length(eIndices), 1);
     advectionVelocityX = Vx_eval(eIndices);
     if (isUpwinding)
+        advectionAtFace = zeros(length(eIndices), 1);
         positiveAdvection = advectionVelocityX > 0;
         advectionAtFace(positiveAdvection) = phi(eIndices(positiveAdvection));
         advectionAtFace(~positiveAdvection) = ...
@@ -767,9 +767,9 @@ if (~isempty(sIndices))
     southNeighbourPhi = phi(sIndices + 1);
     
     % Determine advection at face
-    advectionAtFace = zeros(length(sIndices), 1);
     advectionVelocityY = Vy_eval(sIndices);
     if (isUpwinding)
+        advectionAtFace = zeros(length(sIndices), 1);
         positiveAdvection = advectionVelocityY > 0;
         advectionAtFace(~positiveAdvection) = phi(sIndices(~positiveAdvection));
         advectionAtFace(positiveAdvection) = ...
@@ -801,9 +801,9 @@ if (~isempty(wIndices))
     westNeighbourPhi = phi(wIndices - rows);
     
     % Determine advection at face
-    advectionAtFace = zeros(length(wIndices), 1);
     advectionVelocityX = Vx_eval(wIndices);
     if (isUpwinding)
+        advectionAtFace = zeros(length(wIndices), 1);
         positiveAdvection = advectionVelocityX > 0;
         advectionAtFace(~positiveAdvection) = phi(wIndices(~positiveAdvection));
         advectionAtFace(positiveAdvection) = ...
@@ -828,8 +828,7 @@ if (~isempty(wBoundaryIndices))
         .* wBoundaryPhi + diffusion .* westBC.C(nodesYPos(wBoundaryIndices), t) ./ westBC.B(nodesYPos(wBoundaryIndices), t));
 end
 
-flux = flux(indices);
-flux = flux ./ ...
+flux = flux(indices) ./ ...
     (nodeWidthsAll(indices) .* nodeHeightsAll(indices));
 
 end
