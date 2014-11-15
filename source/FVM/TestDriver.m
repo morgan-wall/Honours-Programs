@@ -307,7 +307,8 @@ indices = 1:rows*columns;
 cIndices = indices - 1;
 northboundaryIndices = indices(mod(cIndices, rows) == 0);
 
-error = norm(yout(northboundaryIndices, 2) - analyticSolution(:)) / sqrt(nodeCount);
+error = ...
+    norm(yout(northboundaryIndices, 2) - analyticSolution(:)) / sqrt(nodeCount);
 disp(['H2.1 error: ' num2str(error)]);
 
 plot(nodesX, analyticSolution, 'b');
