@@ -122,11 +122,13 @@ maxLambda = 0.5;
 maxBacktracks = 15;
 
 % Solve problem
+tic;
 [tout, yout] = Solver(dt, tFinal, Dxx, Dyy, Vx, Vy, source, theta, ...
     advectionHandling, nodesX, nodesY, northBC, eastBC, southBC, westBC, ...
     initialCondition, storedTimeSteps, newtonParameters, gmresParameters, ...
     forcingTermParameters, safeguardParameters, chordSteps, isGlobalised, ...
     linesearchParam, minLambda, maxLambda, maxBacktracks);
+toc;
 
 % Output plots and metrics
 figure;
