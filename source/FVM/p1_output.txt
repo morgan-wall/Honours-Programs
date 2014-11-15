@@ -1,0 +1,256 @@
+***** Begin: Backward-Euler (averaging) *****
+Begin "mass": 0.031416
+End "mass": 0.031201
+Elapsed time is 19.219843 seconds.
+GMRES Iterations: 9346
+Nonlinear function calls: 2965
+Failed: 0
+***** End: Backward-Euler (averaging) *****
+***** Begin: Backward-Euler (upwinding) *****
+Begin "mass": 0.031416
+End "mass": 0.030137
+Elapsed time is 20.373359 seconds.
+GMRES Iterations: 10019
+Nonlinear function calls: 2972
+Failed: 0
+***** End: Backward-Euler (upwinding) *****
+***** Begin: Crank-Nicolson (averaging) *****
+Begin "mass": 0.031416
+End "mass": 0.031229
+Elapsed time is 22.808567 seconds.
+GMRES Iterations: 8619
+Nonlinear function calls: 2962
+Failed: 0
+***** End: Crank-Nicolson (averaging) *****
+***** Begin: Crank-Nicolson (upwinding) *****
+Begin "mass": 0.031416
+End "mass": 0.030195
+Elapsed time is 24.500445 seconds.
+GMRES Iterations: 8640
+Nonlinear function calls: 2969
+Failed: 0
+***** End: Crank-Nicolson (upwinding) *****
+***** Begin: Backward-Euler (averaging/backtracking) *****
+Begin "mass": 0.031416
+End "mass": 0.031201
+Elapsed time is 46.181869 seconds.
+GMRES Iterations: 9346
+Nonlinear function calls: 10749
+Failed: 0
+***** End: Backward-Euler (averaging/backtracking) *****
+***** Begin: Backward-Euler (upwinding/backtracking) *****
+Begin "mass": 0.031416
+End "mass": 0.030137
+Elapsed time is 41.287794 seconds.
+GMRES Iterations: 10019
+Nonlinear function calls: 8334
+Failed: 0
+***** End: Backward-Euler (upwinding/backtracking) *****
+***** Begin: Crank-Nicolson (averaging/backtracking) *****
+Begin "mass": 0.031416
+End "mass": 0.031229
+Elapsed time is 41.010514 seconds.
+GMRES Iterations: 8619
+Nonlinear function calls: 8025
+Failed: 0
+***** End: Crank-Nicolson (averaging/backtracking) *****
+***** Begin: Crank-Nicolson (upwinding/backtracking) *****
+Begin "mass": 0.031416
+End "mass": 0.030195
+Elapsed time is 45.354266 seconds.
+GMRES Iterations: 8640
+Nonlinear function calls: 8289
+Failed: 0
+***** End: Crank-Nicolson (upwinding/backtracking) *****
+***** Begin: Backward-Euler (averaging/assignment) *****
+Begin "mass": 0.031416
+End "mass": 0.031201
+Elapsed time is 32.079552 seconds.
+GMRES Iterations: 12644
+Nonlinear function calls: 5233
+Failed: 0
+***** End: Backward-Euler (averaging/assignment) *****
+***** Begin: Backward-Euler (upwinding/assignment) *****
+Begin "mass": 0.031416
+End "mass": 0.030137
+Elapsed time is 34.236641 seconds.
+GMRES Iterations: 12649
+Nonlinear function calls: 5238
+Failed: 0
+***** End: Backward-Euler (upwinding/assignment) *****
+***** Begin: Crank-Nicolson (averaging/assignment) *****
+Begin "mass": 0.031416
+End "mass": 0.031229
+Elapsed time is 29.189860 seconds.
+GMRES Iterations: 7896
+Nonlinear function calls: 4067
+Failed: 0
+***** End: Crank-Nicolson (averaging/assignment) *****
+***** Begin: Crank-Nicolson (upwinding/assignment) *****
+Begin "mass": 0.031416
+End "mass": 0.030195
+Elapsed time is 33.837615 seconds.
+GMRES Iterations: 9578
+Nonlinear function calls: 4489
+Failed: 0
+***** End: Crank-Nicolson (upwinding/assignment) *****
+***** Begin: Backward-Euler (averaging/choice1) *****
+Begin "mass": 0.031416
+End "mass": 0.031201
+Elapsed time is 32.292039 seconds.
+GMRES Iterations: 12644
+Nonlinear function calls: 5233
+Failed: 0
+***** End: Backward-Euler (averaging/choice1) *****
+***** Begin: Backward-Euler (upwinding/choice1) *****
+Begin "mass": 0.031416
+End "mass": 0.030137
+Elapsed time is 34.590557 seconds.
+GMRES Iterations: 12649
+Nonlinear function calls: 5238
+Failed: 0
+***** End: Backward-Euler (upwinding/choice1) *****
+***** Begin: Crank-Nicolson (averaging/choice1) *****
+Begin "mass": 0.031416
+End "mass": 0.031229
+Elapsed time is 28.953420 seconds.
+GMRES Iterations: 7896
+Nonlinear function calls: 4067
+Failed: 0
+***** End: Crank-Nicolson (averaging/choice1) *****
+***** Begin: Crank-Nicolson (upwinding/choice1) *****
+Begin "mass": 0.031416
+End "mass": 0.030195
+Elapsed time is 34.062634 seconds.
+GMRES Iterations: 9578
+Nonlinear function calls: 4489
+Failed: 0
+***** End: Crank-Nicolson (upwinding/choice1) *****
+***** Begin: Backward-Euler (averaging/choice2) *****
+Begin "mass": 0.031416
+End "mass": 0.031201
+Elapsed time is 31.248268 seconds.
+GMRES Iterations: 12519
+Nonlinear function calls: 5108
+Failed: 0
+***** End: Backward-Euler (averaging/choice2) *****
+***** Begin: Backward-Euler (upwinding/choice2) *****
+Begin "mass": 0.031416
+End "mass": 0.030137
+Elapsed time is 33.265097 seconds.
+GMRES Iterations: 12515
+Nonlinear function calls: 5104
+Failed: 0
+***** End: Backward-Euler (upwinding/choice2) *****
+***** Begin: Crank-Nicolson (averaging/choice2) *****
+Begin "mass": 0.031416
+End "mass": 0.031229
+Elapsed time is 28.026286 seconds.
+GMRES Iterations: 7783
+Nonlinear function calls: 3954
+Failed: 0
+***** End: Crank-Nicolson (averaging/choice2) *****
+***** Begin: Crank-Nicolson (upwinding/choice2) *****
+Begin "mass": 0.031416
+End "mass": 0.030195
+Elapsed time is 32.949686 seconds.
+GMRES Iterations: 9460
+Nonlinear function calls: 4371
+Failed: 0
+***** End: Crank-Nicolson (upwinding/choice2) *****
+***** Begin: Backward-Euler (averaging/backtracking/assignment) *****
+Begin "mass": 0.031416
+End "mass": 0.031201
+Elapsed time is 32.413605 seconds.
+GMRES Iterations: 12644
+Nonlinear function calls: 5233
+Failed: 0
+***** End: Backward-Euler (averaging/backtracking/assignment) *****
+***** Begin: Backward-Euler (upwinding/backtracking/assignment) *****
+Begin "mass": 0.031416
+End "mass": 0.030137
+Elapsed time is 34.505139 seconds.
+GMRES Iterations: 12649
+Nonlinear function calls: 5238
+Failed: 0
+***** End: Backward-Euler (upwinding/backtracking/assignment) *****
+***** Begin: Crank-Nicolson (averaging/backtracking/assignment) *****
+Begin "mass": 0.031416
+End "mass": 0.031229
+Elapsed time is 29.033794 seconds.
+GMRES Iterations: 7896
+Nonlinear function calls: 4067
+Failed: 0
+***** End: Crank-Nicolson (averaging/backtracking/assignment) *****
+***** Begin: Crank-Nicolson (upwinding/backtracking/assignment) *****
+Begin "mass": 0.031416
+End "mass": 0.030195
+Elapsed time is 34.085029 seconds.
+GMRES Iterations: 9578
+Nonlinear function calls: 4489
+Failed: 0
+***** End: Crank-Nicolson (upwinding/backtracking/assignment) *****
+***** Begin: Backward-Euler (averaging/backtracking/choice1) *****
+Begin "mass": 0.031416
+End "mass": 0.031201
+Elapsed time is 32.691206 seconds.
+GMRES Iterations: 12644
+Nonlinear function calls: 5233
+Failed: 0
+***** End: Backward-Euler (averaging/backtracking/choice1) *****
+***** Begin: Backward-Euler (upwinding/backtracking/choice1) *****
+Begin "mass": 0.031416
+End "mass": 0.030137
+Elapsed time is 34.782092 seconds.
+GMRES Iterations: 12649
+Nonlinear function calls: 5238
+Failed: 0
+***** End: Backward-Euler (upwinding/backtracking/choice1) *****
+***** Begin: Crank-Nicolson (averaging/backtracking/choice1) *****
+Begin "mass": 0.031416
+End "mass": 0.031229
+Elapsed time is 29.133711 seconds.
+GMRES Iterations: 7896
+Nonlinear function calls: 4067
+Failed: 0
+***** End: Crank-Nicolson (averaging/backtracking/choice1) *****
+***** Begin: Crank-Nicolson (upwinding/backtracking/choice1) *****
+Begin "mass": 0.031416
+End "mass": 0.030195
+Elapsed time is 34.323519 seconds.
+GMRES Iterations: 9578
+Nonlinear function calls: 4489
+Failed: 0
+***** End: Crank-Nicolson (upwinding/backtracking/choice1) *****
+***** Begin: Backward-Euler (averaging/backtracking/choice2) *****
+Begin "mass": 0.031416
+End "mass": 0.031201
+Elapsed time is 31.881145 seconds.
+GMRES Iterations: 12519
+Nonlinear function calls: 5108
+Failed: 0
+***** End: Backward-Euler (averaging/backtracking/choice2) *****
+***** Begin: Backward-Euler (upwinding/backtracking/choice2) *****
+Begin "mass": 0.031416
+End "mass": 0.030137
+Elapsed time is 33.744875 seconds.
+GMRES Iterations: 12515
+Nonlinear function calls: 5104
+Failed: 0
+***** End: Backward-Euler (upwinding/backtracking/choice2) *****
+***** Begin: Crank-Nicolson (averaging/backtracking/choice2) *****
+Begin "mass": 0.031416
+End "mass": 0.031229
+Elapsed time is 28.425578 seconds.
+GMRES Iterations: 7783
+Nonlinear function calls: 3954
+Failed: 0
+***** End: Crank-Nicolson (averaging/backtracking/choice2) *****
+***** Begin: Crank-Nicolson (upwinding/backtracking/choice2) *****
+Begin "mass": 0.031416
+End "mass": 0.030195
+Elapsed time is 33.478113 seconds.
+GMRES Iterations: 9460
+Nonlinear function calls: 4371
+Failed: 0
+***** End: Crank-Nicolson (upwinding/backtracking/choice2) *****
