@@ -124,7 +124,7 @@ storedTimeSteps = 250;
 times = 0:storedTimeSteps*dt:tFinal;
 analyticSolution = zeros(rows * columns, length(times));
 for i = 1:length(times)
-    analyticSolution(:, i) = phiAnalytic(X(:), Y(:), analyticTimes(i));
+    analyticSolution(:, i) = phiAnalytic(X(:), Y(:), times(i));
 end
 
 phiAnalyticDiagSol = diag(flipud(reshape(analyticSolution(:, end), rows, columns)));
