@@ -9,7 +9,7 @@ close all;
 
 % Initialise problem parameters
 dt = 0.001;
-tFinal = 15;
+tFinal = 10;
 
 Dxx = @(phi, x, y, t) phi .^ 2;
 Dyy = @(phi, x, y, t) 5 .* phi .^ 2;

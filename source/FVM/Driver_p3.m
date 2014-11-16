@@ -4,6 +4,9 @@
 % aimed to test a vertex-centred finite volume method for solving generalised
 % two-dimensional non-linear advection-diffusion equations.
 
+clear all;
+close all;
+
 % Initialise problem parameters
 dt = 0.01;
 tFinal = 7;

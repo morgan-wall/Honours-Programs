@@ -127,6 +127,8 @@ for i = 1:length(times)
     analyticSolution(:, i) = phiAnalytic(X(:), Y(:), analyticTimes(i));
 end
 
+phiAnalyticDiagSol = diag(flipud(reshape(analyticSolution(:, end), rows, columns)));
+
 %% Case: Backward-Euler with Averaging
 
 disp('***** Begin: Backward-Euler (averaging) *****');
@@ -172,7 +174,13 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_be_avg)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_be_avg)]);
 disp(['Failed: ' num2str(failed_be_avg)]);
 
+DetermineSecondaryErrorMetricsP1(yout_be_avg, analyticSolution);
+
 if (~failed_be_avg)
+    numericDiag = diag(flipud(reshape(yout_be_avg(:, end), rows, columns)));
+    [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
+    disp(['Error: ' num2str(error)]);
+    
     PlotSolutionAndAnalytic(nodesX, tout_be_avg, yout_be_avg, analyticSolution, ...
         rows, columns, 'be_avg');
 end
@@ -224,7 +232,13 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_be_up)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_be_up)]);
 disp(['Failed: ' num2str(failed_be_up)]);
 
+DetermineSecondaryErrorMetricsP1(yout_be_up, analyticSolution);
+
 if (~failed_be_up)
+    numericDiag = diag(flipud(reshape(yout_be_up(:, end), rows, columns)));
+    [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
+    disp(['Error: ' num2str(error)]);
+    
     PlotSolutionAndAnalytic(nodesX, tout_be_up, yout_be_up, analyticSolution, ...
         rows, columns, 'be_up');
 end
@@ -276,7 +290,13 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_cn_avg)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_cn_avg)]);
 disp(['Failed: ' num2str(failed_cn_avg)]);
 
+DetermineSecondaryErrorMetricsP1(yout_cn_avg, analyticSolution);
+
 if (~failed_cn_avg)
+    numericDiag = diag(flipud(reshape(yout_cn_avg(:, end), rows, columns)));
+    [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
+    disp(['Error: ' num2str(error)]);
+    
     PlotSolutionAndAnalytic(nodesX, tout_cn_avg, yout_cn_avg, analyticSolution, ...
         rows, columns, 'cn_avg');
 end
@@ -328,7 +348,13 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_cn_up)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_cn_up)]);
 disp(['Failed: ' num2str(failed_cn_up)]);
 
+DetermineSecondaryErrorMetricsP1(yout_cn_up, analyticSolution);
+
 if (~failed_cn_up)
+    numericDiag = diag(flipud(reshape(yout_cn_up(:, end), rows, columns)));
+    [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
+    disp(['Error: ' num2str(error)]);
+    
     PlotSolutionAndAnalytic(nodesX, tout_cn_up, yout_cn_up, analyticSolution, ...
         rows, columns, 'cn_up');
 end
@@ -381,7 +407,13 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_be_avg_linesearch)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_be_avg_linesearch)]);
 disp(['Failed: ' num2str(failed_be_avg_linesearch)]);
 
+DetermineSecondaryErrorMetricsP1(yout_be_avg_linesearch, analyticSolution);
+
 if (~failed_be_avg_linesearch)
+    numericDiag = diag(flipud(reshape(yout_be_avg_linesearch(:, end), rows, columns)));
+    [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
+    disp(['Error: ' num2str(error)]);
+    
     PlotSolutionAndAnalytic(nodesX, tout_be_avg_linesearch, ...
         yout_be_avg_linesearch, analyticSolution, rows, columns, 'be_avg_linesearch');
 end
@@ -434,7 +466,13 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_be_up_linesearch)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_be_up_linesearch)]);
 disp(['Failed: ' num2str(failed_be_up_linesearch)]);
 
+DetermineSecondaryErrorMetricsP1(yout_be_up_linesearch, analyticSolution);
+
 if (~failed_be_up_linesearch)
+    numericDiag = diag(flipud(reshape(yout_be_up_linesearch(:, end), rows, columns)));
+    [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
+    disp(['Error: ' num2str(error)]);
+    
     PlotSolutionAndAnalytic(nodesX, tout_be_up_linesearch, ...
         yout_be_up_linesearch, analyticSolution, rows, columns, 'be_up_linesearch');
 end
@@ -487,7 +525,13 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_cn_avg_linesearch)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_cn_avg_linesearch)]);
 disp(['Failed: ' num2str(failed_cn_avg_linesearch)]);
 
+DetermineSecondaryErrorMetricsP1(yout_cn_avg_linesearch, analyticSolution);
+
 if (~failed_cn_avg_linesearch)
+    numericDiag = diag(flipud(reshape(yout_cn_avg_linesearch(:, end), rows, columns)));
+    [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
+    disp(['Error: ' num2str(error)]);
+    
     PlotSolutionAndAnalytic(nodesX, tout_cn_avg_linesearch, ...
         yout_cn_avg_linesearch, analyticSolution, rows, columns, 'cn_avg_linesearch');
 end
@@ -540,7 +584,13 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_cn_up_linesearch)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_cn_up_linesearch)]);
 disp(['Failed: ' num2str(failed_cn_up_linesearch)]);
 
+DetermineSecondaryErrorMetricsP1(yout_cn_up_linesearch, analyticSolution);
+
 if (~failed_cn_up_linesearch)
+    numericDiag = diag(flipud(reshape(yout_cn_up_linesearch(:, end), rows, columns)));
+    [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
+    disp(['Error: ' num2str(error)]);
+    
     PlotSolutionAndAnalytic(nodesX, tout_cn_up_linesearch, ...
         yout_cn_up_linesearch, analyticSolution, rows, columns, 'cn_up_linesearch');
 end
@@ -593,7 +643,13 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_be_avg_inexact_asgn)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_be_avg_inexact_asgn)]);
 disp(['Failed: ' num2str(failed_be_avg_inexact_asgn)]);
 
+DetermineSecondaryErrorMetricsP1(yout_be_avg_inexact_asgn, analyticSolution);
+
 if (~failed_be_avg_inexact_asgn)
+    numericDiag = diag(flipud(reshape(yout_be_avg_inexact_asgn(:, end), rows, columns)));
+    [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
+    disp(['Error: ' num2str(error)]);
+    
     PlotSolutionAndAnalytic(nodesX, tout_be_avg_inexact_asgn, ...
         yout_be_avg_inexact_asgn, analyticSolution, rows, columns, 'be_avg_inexact_asgn');
 end
@@ -646,7 +702,13 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_be_up_inexact_asgn)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_be_up_inexact_asgn)]);
 disp(['Failed: ' num2str(failed_be_up_inexact_asgn)]);
 
+DetermineSecondaryErrorMetricsP1(yout_be_up_inexact_asgn, analyticSolution);
+
 if (~failed_be_up_inexact_asgn)
+    numericDiag = diag(flipud(reshape(yout_be_up_inexact_asgn(:, end), rows, columns)));
+    [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
+    disp(['Error: ' num2str(error)]);
+    
     PlotSolutionAndAnalytic(nodesX, tout_be_up_inexact_asgn, ...
         yout_be_up_inexact_asgn, analyticSolution, rows, columns, 'be_up_inexact_asgn');
 end
@@ -699,7 +761,13 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_cn_avg_inexact_asgn)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_cn_avg_inexact_asgn)]);
 disp(['Failed: ' num2str(failed_cn_avg_inexact_asgn)]);
 
+DetermineSecondaryErrorMetricsP1(yout_cn_avg_inexact_asgn, analyticSolution);
+
 if (~failed_cn_avg_inexact_asgn)
+    numericDiag = diag(flipud(reshape(yout_cn_avg_inexact_asgn(:, end), rows, columns)));
+    [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
+    disp(['Error: ' num2str(error)]);
+    
     PlotSolutionAndAnalytic(nodesX, tout_cn_avg_inexact_asgn, ...
         yout_cn_avg_inexact_asgn, analyticSolution, rows, columns, 'cn_avg_inexact_asgn');
 end
@@ -752,7 +820,13 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_cn_up_inexact_asgn)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_cn_up_inexact_asgn)]);
 disp(['Failed: ' num2str(failed_cn_up_inexact_asgn)]);
 
+DetermineSecondaryErrorMetricsP1(yout_cn_up_inexact_asgn, analyticSolution);
+
 if (~failed_cn_up_inexact_asgn)
+    numericDiag = diag(flipud(reshape(yout_cn_up_inexact_asgn(:, end), rows, columns)));
+    [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
+    disp(['Error: ' num2str(error)]);
+    
     PlotSolutionAndAnalytic(nodesX, tout_cn_up_inexact_asgn, ...
         yout_cn_up_inexact_asgn, analyticSolution, rows, columns, 'cn_up_inexact_asgn');
 end
@@ -805,7 +879,13 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_be_avg_inexact_c1)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_be_avg_inexact_c1)]);
 disp(['Failed: ' num2str(failed_be_avg_inexact_c1)]);
 
+DetermineSecondaryErrorMetricsP1(yout_be_avg_inexact_c1, analyticSolution);
+
 if (~failed_be_avg_inexact_c1)
+    numericDiag = diag(flipud(reshape(yout_be_avg_inexact_c1(:, end), rows, columns)));
+    [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
+    disp(['Error: ' num2str(error)]);
+    
     PlotSolutionAndAnalytic(nodesX, tout_be_avg_inexact_c1, ...
         yout_be_avg_inexact_c1, analyticSolution, rows, columns, 'be_avg_inexact_c1');
 end
@@ -858,7 +938,13 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_be_up_inexact_c1)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_be_up_inexact_c1)]);
 disp(['Failed: ' num2str(failed_be_up_inexact_c1)]);
 
+DetermineSecondaryErrorMetricsP1(yout_be_up_inexact_c1, analyticSolution);
+
 if (~failed_be_up_inexact_c1)
+    numericDiag = diag(flipud(reshape(yout_be_up_inexact_c1(:, end), rows, columns)));
+    [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
+    disp(['Error: ' num2str(error)]);
+    
     PlotSolutionAndAnalytic(nodesX, tout_be_up_inexact_c1, ...
         yout_be_up_inexact_c1, analyticSolution, rows, columns, 'be_up_inexact_c1');
 end
@@ -911,7 +997,13 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_cn_avg_inexact_c1)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_cn_avg_inexact_c1)]);
 disp(['Failed: ' num2str(failed_cn_avg_inexact_c1)]);
 
+DetermineSecondaryErrorMetricsP1(yout_cn_avg_inexact_c1, analyticSolution);
+
 if (~failed_cn_avg_inexact_c1)
+    numericDiag = diag(flipud(reshape(yout_cn_avg_inexact_c1(:, end), rows, columns)));
+    [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
+    disp(['Error: ' num2str(error)]);
+    
     PlotSolutionAndAnalytic(nodesX, tout_cn_avg_inexact_c1, ...
         yout_cn_avg_inexact_c1, analyticSolution, rows, columns, 'cn_avg_inexact_c1');
 end
@@ -964,7 +1056,13 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_cn_up_inexact_c1)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_cn_up_inexact_c1)]);
 disp(['Failed: ' num2str(failed_cn_up_inexact_c1)]);
 
+DetermineSecondaryErrorMetricsP1(yout_cn_up_inexact_c1, analyticSolution);
+
 if (~failed_cn_up_inexact_c1)
+    numericDiag = diag(flipud(reshape(yout_cn_up_inexact_c1(:, end), rows, columns)));
+    [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
+    disp(['Error: ' num2str(error)]);
+    
     PlotSolutionAndAnalytic(nodesX, tout_cn_up_inexact_c1, ...
         yout_cn_up_inexact_c1, analyticSolution, rows, columns, 'cn_up_inexact_c1');
 end
@@ -1017,7 +1115,13 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_be_avg_inexact_c2)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_be_avg_inexact_c2)]);
 disp(['Failed: ' num2str(failed_be_avg_inexact_c2)]);
 
+DetermineSecondaryErrorMetricsP1(yout_be_avg_inexact_c2, analyticSolution);
+
 if (~failed_be_avg_inexact_c2)
+    numericDiag = diag(flipud(reshape(yout_be_avg_inexact_c2(:, end), rows, columns)));
+    [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
+    disp(['Error: ' num2str(error)]);
+    
     PlotSolutionAndAnalytic(nodesX, tout_be_avg_inexact_c2, ...
         yout_be_avg_inexact_c2, analyticSolution, rows, columns, 'be_avg_inexact_c2');
 end
@@ -1070,7 +1174,13 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_be_up_inexact_c2)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_be_up_inexact_c2)]);
 disp(['Failed: ' num2str(failed_be_up_inexact_c2)]);
 
+DetermineSecondaryErrorMetricsP1(yout_be_up_inexact_c2, analyticSolution);
+
 if (~failed_be_up_inexact_c2)
+    numericDiag = diag(flipud(reshape(yout_be_up_inexact_c2(:, end), rows, columns)));
+    [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
+    disp(['Error: ' num2str(error)]);
+    
     PlotSolutionAndAnalytic(nodesX, tout_be_up_inexact_c2, ...
         yout_be_up_inexact_c2, analyticSolution, rows, columns, 'be_up_inexact_c2');
 end
@@ -1123,7 +1233,13 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_cn_avg_inexact_c2)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_cn_avg_inexact_c2)]);
 disp(['Failed: ' num2str(failed_cn_avg_inexact_c2)]);
 
+DetermineSecondaryErrorMetricsP1(yout_cn_avg_inexact_c2, analyticSolution);
+
 if (~failed_cn_avg_inexact_c2)
+    numericDiag = diag(flipud(reshape(yout_cn_avg_inexact_c2(:, end), rows, columns)));
+    [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
+    disp(['Error: ' num2str(error)]);
+    
     PlotSolutionAndAnalytic(nodesX, tout_cn_avg_inexact_c2, ...
         yout_cn_avg_inexact_c2, analyticSolution, rows, columns, 'cn_avg_inexact_c2');
 end
@@ -1176,7 +1292,13 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_cn_up_inexact_c2)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_cn_up_inexact_c2)]);
 disp(['Failed: ' num2str(failed_cn_up_inexact_c2)]);
 
+DetermineSecondaryErrorMetricsP1(yout_cn_up_inexact_c2, analyticSolution);
+
 if (~failed_cn_up_inexact_c2)
+    numericDiag = diag(flipud(reshape(yout_cn_up_inexact_c2(:, end), rows, columns)));
+    [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
+    disp(['Error: ' num2str(error)]);
+    
     PlotSolutionAndAnalytic(nodesX, tout_cn_up_inexact_c2, ...
         yout_cn_up_inexact_c2, analyticSolution, rows, columns, 'cn_up_inexact_c2');
 end
@@ -1229,7 +1351,13 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_be_avg_inexact_asgn_ls)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_be_avg_inexact_asgn_ls)]);
 disp(['Failed: ' num2str(failed_be_avg_inexact_asgn_ls)]);
 
+DetermineSecondaryErrorMetricsP1(yout_be_avg_inexact_asgn_ls, analyticSolution);
+
 if (~failed_be_avg_inexact_asgn_ls)
+    numericDiag = diag(flipud(reshape(yout_be_avg_inexact_asgn_ls(:, end), rows, columns)));
+    [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
+    disp(['Error: ' num2str(error)]);
+    
     PlotSolutionAndAnalytic(nodesX, tout_be_avg_inexact_asgn_ls, ...
         yout_be_avg_inexact_asgn_ls, analyticSolution, rows, columns, 'be_avg_inexact_asgn_ls');
 end
@@ -1282,7 +1410,13 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_be_up_inexact_asgn_ls)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_be_up_inexact_asgn_ls)]);
 disp(['Failed: ' num2str(failed_be_up_inexact_asgn_ls)]);
 
+DetermineSecondaryErrorMetricsP1(yout_be_up_inexact_asgn_ls, analyticSolution);
+
 if (~failed_be_up_inexact_asgn_ls)
+    numericDiag = diag(flipud(reshape(yout_be_up_inexact_asgn_ls(:, end), rows, columns)));
+    [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
+    disp(['Error: ' num2str(error)]);
+    
     PlotSolutionAndAnalytic(nodesX, tout_be_up_inexact_asgn_ls, ...
         yout_be_up_inexact_asgn_ls, analyticSolution, rows, columns, 'be_up_inexact_asgn_ls');
 end
@@ -1335,7 +1469,13 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_cn_avg_inexact_asgn_ls)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_cn_avg_inexact_asgn_ls)]);
 disp(['Failed: ' num2str(failed_cn_avg_inexact_asgn_ls)]);
 
+DetermineSecondaryErrorMetricsP1(yout_cn_avg_inexact_asgn_ls, analyticSolution);
+
 if (~failed_cn_avg_inexact_asgn_ls)
+    numericDiag = diag(flipud(reshape(yout_cn_avg_inexact_asgn_ls(:, end), rows, columns)));
+    [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
+    disp(['Error: ' num2str(error)]);
+    
     PlotSolutionAndAnalytic(nodesX, tout_cn_avg_inexact_asgn_ls, ...
         yout_cn_avg_inexact_asgn_ls, analyticSolution, rows, columns, 'cn_avg_inexact_asgn_ls');
 end
@@ -1388,7 +1528,13 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_cn_up_inexact_asgn_ls)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_cn_up_inexact_asgn_ls)]);
 disp(['Failed: ' num2str(failed_cn_up_inexact_asgn_ls)]);
 
+DetermineSecondaryErrorMetricsP1(yout_cn_up_inexact_asgn_ls, analyticSolution);
+
 if (~failed_cn_up_inexact_asgn_ls)
+    numericDiag = diag(flipud(reshape(yout_cn_up_inexact_asgn_ls(:, end), rows, columns)));
+    [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
+    disp(['Error: ' num2str(error)]);
+    
     PlotSolutionAndAnalytic(nodesX, tout_cn_up_inexact_asgn_ls, ...
         yout_cn_up_inexact_asgn_ls, analyticSolution, rows, columns, 'cn_up_inexact_asgn_ls');
 end
@@ -1441,7 +1587,13 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_be_avg_inexact_c1_ls)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_be_avg_inexact_c1_ls)]);
 disp(['Failed: ' num2str(failed_be_avg_inexact_c1_ls)]);
 
+DetermineSecondaryErrorMetricsP1(yout_be_avg_inexact_c1_ls, analyticSolution);
+
 if (~failed_be_avg_inexact_c1_ls)
+    numericDiag = diag(flipud(reshape(yout_be_avg_inexact_c1_ls(:, end), rows, columns)));
+    [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
+    disp(['Error: ' num2str(error)]);
+    
     PlotSolutionAndAnalytic(nodesX, tout_be_avg_inexact_c1_ls, ...
         yout_be_avg_inexact_c1_ls, analyticSolution, rows, columns, 'be_avg_inexact_c1_ls');
 end
@@ -1494,7 +1646,13 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_be_up_inexact_c1_ls)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_be_up_inexact_c1_ls)]);
 disp(['Failed: ' num2str(failed_be_up_inexact_c1_ls)]);
 
+DetermineSecondaryErrorMetricsP1(yout_be_up_inexact_c1_ls, analyticSolution);
+
 if (~failed_be_up_inexact_c1_ls)
+    numericDiag = diag(flipud(reshape(yout_be_up_inexact_c1_ls(:, end), rows, columns)));
+    [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
+    disp(['Error: ' num2str(error)]);
+    
     PlotSolutionAndAnalytic(nodesX, tout_be_up_inexact_c1_ls, ...
         yout_be_up_inexact_c1_ls, analyticSolution, rows, columns, 'be_up_inexact_c1_ls');
 end
@@ -1547,7 +1705,13 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_cn_avg_inexact_c1_ls)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_cn_avg_inexact_c1_ls)]);
 disp(['Failed: ' num2str(failed_cn_avg_inexact_c1_ls)]);
 
+DetermineSecondaryErrorMetricsP1(yout_cn_avg_inexact_c1_ls, analyticSolution);
+
 if (~failed_cn_avg_inexact_c1_ls)
+    numericDiag = diag(flipud(reshape(yout_cn_avg_inexact_c1_ls(:, end), rows, columns)));
+    [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
+    disp(['Error: ' num2str(error)]);
+    
     PlotSolutionAndAnalytic(nodesX, tout_cn_avg_inexact_c1_ls, ...
         yout_cn_avg_inexact_c1_ls, analyticSolution, rows, columns, 'cn_avg_inexact_c1_ls');
 end
@@ -1600,7 +1764,13 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_cn_up_inexact_c1_ls)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_cn_up_inexact_c1_ls)]);
 disp(['Failed: ' num2str(failed_cn_up_inexact_c1_ls)]);
 
+DetermineSecondaryErrorMetricsP1(yout_cn_up_inexact_c1_ls, analyticSolution);
+
 if (~failed_cn_up_inexact_c1_ls)
+    numericDiag = diag(flipud(reshape(yout_cn_up_inexact_c1_ls(:, end), rows, columns)));
+    [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
+    disp(['Error: ' num2str(error)]);
+    
     PlotSolutionAndAnalytic(nodesX, tout_cn_up_inexact_c1_ls, ...
         yout_cn_up_inexact_c1_ls, analyticSolution, rows, columns, 'cn_up_inexact_c1_ls');
 end
@@ -1653,7 +1823,13 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_be_avg_inexact_c2_ls)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_be_avg_inexact_c2_ls)]);
 disp(['Failed: ' num2str(failed_be_avg_inexact_c2_ls)]);
 
+DetermineSecondaryErrorMetricsP1(yout_be_avg_inexact_c2_ls, analyticSolution);
+
 if (~failed_be_avg_inexact_c2_ls)
+    numericDiag = diag(flipud(reshape(yout_be_avg_inexact_c2_ls(:, end), rows, columns)));
+    [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
+    disp(['Error: ' num2str(error)]);
+    
     PlotSolutionAndAnalytic(nodesX, tout_be_avg_inexact_c2_ls, ...
         yout_be_avg_inexact_c2_ls, analyticSolution, rows, columns, 'be_avg_inexact_c2_ls');
 end
@@ -1706,7 +1882,13 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_be_up_inexact_c2_ls)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_be_up_inexact_c2_ls)]);
 disp(['Failed: ' num2str(failed_be_up_inexact_c2_ls)]);
 
+DetermineSecondaryErrorMetricsP1(yout_be_up_inexact_c2_ls, analyticSolution);
+
 if (~failed_be_up_inexact_c2_ls)
+    numericDiag = diag(flipud(reshape(yout_be_up_inexact_c2_ls(:, end), rows, columns)));
+    [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
+    disp(['Error: ' num2str(error)]);
+    
     PlotSolutionAndAnalytic(nodesX, tout_be_up_inexact_c2_ls, ...
         yout_be_up_inexact_c2_ls, analyticSolution, rows, columns, 'be_up_inexact_c2_ls');
 end
@@ -1759,7 +1941,13 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_cn_avg_inexact_c2_ls)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_cn_avg_inexact_c2_ls)]);
 disp(['Failed: ' num2str(failed_cn_avg_inexact_c2_ls)]);
 
+DetermineSecondaryErrorMetricsP1(yout_cn_avg_inexact_c2_ls, analyticSolution);
+
 if (~failed_cn_avg_inexact_c2_ls)
+    numericDiag = diag(flipud(reshape(yout_cn_avg_inexact_c2_ls(:, end), rows, columns)));
+    [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
+    disp(['Error: ' num2str(error)]);
+    
     PlotSolutionAndAnalytic(nodesX, tout_cn_avg_inexact_c2_ls, ...
         yout_cn_avg_inexact_c2_ls, analyticSolution, rows, columns, 'cn_avg_inexact_c2_ls');
 end
@@ -1812,7 +2000,13 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_cn_up_inexact_c2_ls)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_cn_up_inexact_c2_ls)]);
 disp(['Failed: ' num2str(failed_cn_up_inexact_c2_ls)]);
 
+DetermineSecondaryErrorMetricsP1(yout_cn_up_inexact_c2_ls, analyticSolution);
+
 if (~failed_cn_up_inexact_c2_ls)
+    numericDiag = diag(flipud(reshape(yout_cn_up_inexact_c2_ls(:, end), rows, columns)));
+    [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
+    disp(['Error: ' num2str(error)]);
+    
     PlotSolutionAndAnalytic(nodesX, tout_cn_up_inexact_c2_ls, ...
         yout_cn_up_inexact_c2_ls, analyticSolution, rows, columns, 'cn_up_inexact_c2_ls');
 end
