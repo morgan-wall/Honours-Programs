@@ -276,12 +276,6 @@ previousSolution = initialCondition(:);
 nonlinearFnCalls = 0;
 gmresIterations = 0;
 
-%% Output conservation metrics
-
-total = sum(yout(:, 1) ...
-    .* (nodeHeights(rowForIndex(indices)) .* nodeWidths(columnForIndex(indices))));
-disp(['Begin "mass": ' num2str(total)]);
-
 %% Initialise solver parameters
 
 isUpwinding = strcmp(advectionHandling, 'upwinding');
@@ -460,13 +454,6 @@ for i = 1:timeSteps
     
     previousSolution = currentSolution;
 end
-
-%% Output conservation metrics 
-
-total = sum(yout(:, end) ...
-    .* (nodeHeights(rowForIndex(indices)) .* nodeWidths(columnForIndex(indices))));
-disp(['End "mass": ' num2str(total)]);
-
 end
 
 %
