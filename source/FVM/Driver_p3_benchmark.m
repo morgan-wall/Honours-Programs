@@ -28,13 +28,13 @@ source = @(phi, x, y, t) x .* 0;
 % Construct mesh
 xLower = -1;
 xUpper = 1;
-xCount = 200;
+xCount = 201;
 xGeoParameters = struct('lowerIsGeometric', false, ...
     'upperIsGeometric', false, 'commonRatio', 1); 
 
 yLower = 0;
 yUpper = 1;
-yCount = 100;
+yCount = 101;
 yGeoParameters = struct('lowerIsGeometric', false, ...
     'upperIsGeometric', false, 'commonRatio', 1);
 

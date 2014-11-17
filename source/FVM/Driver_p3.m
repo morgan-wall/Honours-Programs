@@ -7,6 +7,15 @@
 clear all;
 close all;
 
+% Load the benchmark solution
+load('p3_output_benchmark_fixed.mat');
+
+benchmarkSolution_t7 = reshape(yout_fine(:, end), rows, columns);
+size_benchmarkSolution_ty7 = size(benchmarkSolution_t7);
+benchmarkSolution_t7(2:2:size_benchmarkSolution_ty7(1), :) = [];
+benchmarkSolution_t7(:, 2:2:size_benchmarkSolution_ty7(2)) = [];
+benchmarkSolution_coarseMesh = benchmarkSolution_t7;
+
 % Initialise problem parameters
 dt = 0.01;
 tFinal = 7;
@@ -28,13 +37,13 @@ source = @(phi, x, y, t) x .* 0;
 % Construct mesh
 xLower = -1;
 xUpper = 1;
-xCount = 50;
+xCount = 101;
 xGeoParameters = struct('lowerIsGeometric', false, ...
     'upperIsGeometric', false, 'commonRatio', 1); 
 
 yLower = 0;
 yUpper = 1;
-yCount = 50;
+yCount = 51;
 yGeoParameters = struct('lowerIsGeometric', false, ...
     'upperIsGeometric', false, 'commonRatio', 1);
 
@@ -207,10 +216,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_be_avg)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_be_avg)]);
 disp(['Failed: ' num2str(failed_be_avg)]);
 
-% if (~failed_be_avg)
-%     PlotSolutionAndAnalytic(nodesX, tout_be_avg, yout_be_avg, analyticSolution, ...
-%         rows, columns, 'be_avg');
-% end
+if (~failed_be_avg)
+    error = norm(yout_be_avg(:, end) - benchmarkSolution_coarseMesh(:)) / sqrt(rows * columns);
+    disp(['Error: ' num2str(error)]);
+end
 
 disp('***** End: Backward-Euler (averaging) *****');
 
@@ -259,10 +268,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_be_up)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_be_up)]);
 disp(['Failed: ' num2str(failed_be_up)]);
 
-% if (~failed_be_up)
-%     PlotSolutionAndAnalytic(nodesX, tout_be_up, yout_be_up, analyticSolution, ...
-%         rows, columns, 'be_up');
-% end
+if (~failed_be_up)
+    error = norm(yout_be_up(:, end) - benchmarkSolution_coarseMesh(:)) / sqrt(rows * columns);
+    disp(['Error: ' num2str(error)]);
+end
 
 disp('***** End: Backward-Euler (upwinding) *****');
 
@@ -311,10 +320,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_cn_avg)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_cn_avg)]);
 disp(['Failed: ' num2str(failed_cn_avg)]);
 
-% if (~failed_cn_avg)
-%     PlotSolutionAndAnalytic(nodesX, tout_cn_avg, yout_cn_avg, analyticSolution, ...
-%         rows, columns, 'cn_avg');
-% end
+if (~failed_cn_avg)
+    error = norm(yout_cn_avg(:, end) - benchmarkSolution_coarseMesh(:)) / sqrt(rows * columns);
+    disp(['Error: ' num2str(error)]);
+end
 
 disp('***** End: Crank-Nicolson (averaging) *****');
 
@@ -363,10 +372,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_cn_up)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_cn_up)]);
 disp(['Failed: ' num2str(failed_cn_up)]);
 
-% if (~failed_cn_up)
-%     PlotSolutionAndAnalytic(nodesX, tout_cn_up, yout_cn_up, analyticSolution, ...
-%         rows, columns, 'cn_up');
-% end
+if (~failed_cn_up)
+    error = norm(yout_cn_up(:, end) - benchmarkSolution_coarseMesh(:)) / sqrt(rows * columns);
+    disp(['Error: ' num2str(error)]);
+end
 
 disp('***** End: Crank-Nicolson (upwinding) *****');
 
@@ -416,10 +425,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_be_avg_linesearch)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_be_avg_linesearch)]);
 disp(['Failed: ' num2str(failed_be_avg_linesearch)]);
 
-% if (~failed_be_avg_linesearch)
-%     PlotSolutionAndAnalytic(nodesX, tout_be_avg_linesearch, ...
-%         yout_be_avg_linesearch, analyticSolution, rows, columns, 'be_avg_linesearch');
-% end
+if (~failed_be_avg_linesearch)
+    error = norm(yout_be_avg_linesearch(:, end) - benchmarkSolution_coarseMesh(:)) / sqrt(rows * columns);
+    disp(['Error: ' num2str(error)]);
+end
 
 disp('***** End: Backward-Euler (averaging/backtracking) *****');
 
@@ -469,10 +478,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_be_up_linesearch)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_be_up_linesearch)]);
 disp(['Failed: ' num2str(failed_be_up_linesearch)]);
 
-% if (~failed_be_up_linesearch)
-%     PlotSolutionAndAnalytic(nodesX, tout_be_up_linesearch, ...
-%         yout_be_up_linesearch, analyticSolution, rows, columns, 'be_up_linesearch');
-% end
+if (~failed_be_up_linesearch)
+    error = norm(yout_be_up_linesearch(:, end) - benchmarkSolution_coarseMesh(:)) / sqrt(rows * columns);
+    disp(['Error: ' num2str(error)]);
+end
 
 disp('***** End: Backward-Euler (upwinding/backtracking) *****');
 
@@ -522,10 +531,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_cn_avg_linesearch)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_cn_avg_linesearch)]);
 disp(['Failed: ' num2str(failed_cn_avg_linesearch)]);
 
-% if (~failed_cn_avg_linesearch)
-%     PlotSolutionAndAnalytic(nodesX, tout_cn_avg_linesearch, ...
-%         yout_cn_avg_linesearch, analyticSolution, rows, columns, 'cn_avg_linesearch');
-% end
+if (~failed_cn_avg_linesearch)
+    error = norm(yout_cn_avg_linesearch(:, end) - benchmarkSolution_coarseMesh(:)) / sqrt(rows * columns);
+    disp(['Error: ' num2str(error)]);
+end
 
 disp('***** End: Crank-Nicolson (averaging/backtracking) *****');
 
@@ -575,10 +584,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_cn_up_linesearch)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_cn_up_linesearch)]);
 disp(['Failed: ' num2str(failed_cn_up_linesearch)]);
 
-% if (~failed_cn_up_linesearch)
-%     PlotSolutionAndAnalytic(nodesX, tout_cn_up_linesearch, ...
-%         yout_cn_up_linesearch, analyticSolution, rows, columns, 'cn_up_linesearch');
-% end
+if (~failed_cn_up_linesearch)
+    error = norm(yout_cn_up_linesearch(:, end) - benchmarkSolution_coarseMesh(:)) / sqrt(rows * columns);
+    disp(['Error: ' num2str(error)]);
+end
 
 disp('***** End: Crank-Nicolson (upwinding/backtracking) *****');
 
@@ -628,10 +637,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_be_avg_inexact_asgn)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_be_avg_inexact_asgn)]);
 disp(['Failed: ' num2str(failed_be_avg_inexact_asgn)]);
 
-% if (~failed_be_avg_inexact_asgn)
-%     PlotSolutionAndAnalytic(nodesX, tout_be_avg_inexact_asgn, ...
-%         yout_be_avg_inexact_asgn, analyticSolution, rows, columns, 'be_avg_inexact_asgn');
-% end
+if (~failed_be_avg_inexact_asgn)
+    error = norm(yout_be_avg_inexact_asgn(:, end) - benchmarkSolution_coarseMesh(:)) / sqrt(rows * columns);
+    disp(['Error: ' num2str(error)]);
+end
 
 disp('***** End: Backward-Euler (averaging/assignment) *****');
 
@@ -681,10 +690,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_be_up_inexact_asgn)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_be_up_inexact_asgn)]);
 disp(['Failed: ' num2str(failed_be_up_inexact_asgn)]);
 
-% if (~failed_be_up_inexact_asgn)
-%     PlotSolutionAndAnalytic(nodesX, tout_be_up_inexact_asgn, ...
-%         yout_be_up_inexact_asgn, analyticSolution, rows, columns, 'be_up_inexact_asgn');
-% end
+if (~failed_be_up_inexact_asgn)
+    error = norm(yout_be_up_inexact_asgn(:, end) - benchmarkSolution_coarseMesh(:)) / sqrt(rows * columns);
+    disp(['Error: ' num2str(error)]);
+end
 
 disp('***** End: Backward-Euler (upwinding/assignment) *****');
 
@@ -734,10 +743,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_cn_avg_inexact_asgn)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_cn_avg_inexact_asgn)]);
 disp(['Failed: ' num2str(failed_cn_avg_inexact_asgn)]);
 
-% if (~failed_cn_avg_inexact_asgn)
-%     PlotSolutionAndAnalytic(nodesX, tout_cn_avg_inexact_asgn, ...
-%         yout_cn_avg_inexact_asgn, analyticSolution, rows, columns, 'cn_avg_inexact_asgn');
-% end
+if (~failed_cn_avg_inexact_asgn)
+    error = norm(yout_cn_avg_inexact_asgn(:, end) - benchmarkSolution_coarseMesh(:)) / sqrt(rows * columns);
+    disp(['Error: ' num2str(error)]);
+end
 
 disp('***** End: Crank-Nicolson (averaging/assignment) *****');
 
@@ -787,10 +796,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_cn_up_inexact_asgn)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_cn_up_inexact_asgn)]);
 disp(['Failed: ' num2str(failed_cn_up_inexact_asgn)]);
 
-% if (~failed_cn_up_inexact_asgn)
-%     PlotSolutionAndAnalytic(nodesX, tout_cn_up_inexact_asgn, ...
-%         yout_cn_up_inexact_asgn, analyticSolution, rows, columns, 'cn_up_inexact_asgn');
-% end
+if (~failed_cn_up_inexact_asgn)
+    error = norm(yout_cn_up_inexact_asgn(:, end) - benchmarkSolution_coarseMesh(:)) / sqrt(rows * columns);
+    disp(['Error: ' num2str(error)]);;
+end
 
 disp('***** End: Crank-Nicolson (upwinding/assignment) *****');
 
@@ -840,10 +849,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_be_avg_inexact_c1)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_be_avg_inexact_c1)]);
 disp(['Failed: ' num2str(failed_be_avg_inexact_c1)]);
 
-% if (~failed_be_avg_inexact_c1)
-%     PlotSolutionAndAnalytic(nodesX, tout_be_avg_inexact_c1, ...
-%         yout_be_avg_inexact_c1, analyticSolution, rows, columns, 'be_avg_inexact_c1');
-% end
+if (~failed_be_avg_inexact_c1)
+    error = norm(yout_be_avg_inexact_c1(:, end) - benchmarkSolution_coarseMesh(:)) / sqrt(rows * columns);
+    disp(['Error: ' num2str(error)]);
+end
 
 disp('***** End: Backward-Euler (averaging/choice1) *****');
 
@@ -893,10 +902,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_be_up_inexact_c1)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_be_up_inexact_c1)]);
 disp(['Failed: ' num2str(failed_be_up_inexact_c1)]);
 
-% if (~failed_be_up_inexact_c1)
-%     PlotSolutionAndAnalytic(nodesX, tout_be_up_inexact_c1, ...
-%         yout_be_up_inexact_c1, analyticSolution, rows, columns, 'be_up_inexact_c1');
-% end
+if (~failed_be_up_inexact_c1)
+    error = norm(yout_be_up_inexact_c1(:, end) - benchmarkSolution_coarseMesh(:)) / sqrt(rows * columns);
+    disp(['Error: ' num2str(error)]);
+end
 
 disp('***** End: Backward-Euler (upwinding/choice1) *****');
 
@@ -946,10 +955,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_cn_avg_inexact_c1)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_cn_avg_inexact_c1)]);
 disp(['Failed: ' num2str(failed_cn_avg_inexact_c1)]);
 
-% if (~failed_cn_avg_inexact_c1)
-%     PlotSolutionAndAnalytic(nodesX, tout_cn_avg_inexact_c1, ...
-%         yout_cn_avg_inexact_c1, analyticSolution, rows, columns, 'cn_avg_inexact_c1');
-% end
+if (~failed_cn_avg_inexact_c1)
+    error = norm(yout_cn_avg_inexact_c1(:, end) - benchmarkSolution_coarseMesh(:)) / sqrt(rows * columns);
+    disp(['Error: ' num2str(error)]);
+end
 
 disp('***** End: Crank-Nicolson (averaging/choice1) *****');
 
@@ -999,10 +1008,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_cn_up_inexact_c1)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_cn_up_inexact_c1)]);
 disp(['Failed: ' num2str(failed_cn_up_inexact_c1)]);
 
-% if (~failed_cn_up_inexact_c1)
-%     PlotSolutionAndAnalytic(nodesX, tout_cn_up_inexact_c1, ...
-%         yout_cn_up_inexact_c1, analyticSolution, rows, columns, 'cn_up_inexact_c1');
-% end
+if (~failed_cn_up_inexact_c1)
+    error = norm(yout_cn_up_inexact_c1(:, end) - benchmarkSolution_coarseMesh(:)) / sqrt(rows * columns);
+    disp(['Error: ' num2str(error)]);
+end
 
 disp('***** End: Crank-Nicolson (upwinding/choice1) *****');
 
@@ -1052,10 +1061,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_be_avg_inexact_c2)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_be_avg_inexact_c2)]);
 disp(['Failed: ' num2str(failed_be_avg_inexact_c2)]);
 
-% if (~failed_be_avg_inexact_c2)
-%     PlotSolutionAndAnalytic(nodesX, tout_be_avg_inexact_c2, ...
-%         yout_be_avg_inexact_c2, analyticSolution, rows, columns, 'be_avg_inexact_c2');
-% end
+if (~failed_be_avg_inexact_c2)
+    error = norm(yout_be_avg_inexact_c2(:, end) - benchmarkSolution_coarseMesh(:)) / sqrt(rows * columns);
+    disp(['Error: ' num2str(error)]);
+end
 
 disp('***** End: Backward-Euler (averaging/choice2) *****');
 
@@ -1105,10 +1114,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_be_up_inexact_c2)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_be_up_inexact_c2)]);
 disp(['Failed: ' num2str(failed_be_up_inexact_c2)]);
 
-% if (~failed_be_up_inexact_c2)
-%     PlotSolutionAndAnalytic(nodesX, tout_be_up_inexact_c2, ...
-%         yout_be_up_inexact_c2, analyticSolution, rows, columns, 'be_up_inexact_c2');
-% end
+if (~failed_be_up_inexact_c2)
+    error = norm(yout_be_up_inexact_c2(:, end) - benchmarkSolution_coarseMesh(:)) / sqrt(rows * columns);
+    disp(['Error: ' num2str(error)]);
+end
 
 disp('***** End: Backward-Euler (upwinding/choice2) *****');
 
@@ -1158,10 +1167,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_cn_avg_inexact_c2)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_cn_avg_inexact_c2)]);
 disp(['Failed: ' num2str(failed_cn_avg_inexact_c2)]);
 
-% if (~failed_cn_avg_inexact_c2)
-%     PlotSolutionAndAnalytic(nodesX, tout_cn_avg_inexact_c2, ...
-%         yout_cn_avg_inexact_c2, analyticSolution, rows, columns, 'cn_avg_inexact_c2');
-% end
+if (~failed_cn_avg_inexact_c2)
+    error = norm(yout_cn_avg_inexact_c2(:, end) - benchmarkSolution_coarseMesh(:)) / sqrt(rows * columns);
+    disp(['Error: ' num2str(error)]);
+end
 
 disp('***** End: Crank-Nicolson (averaging/choice2) *****');
 
@@ -1211,10 +1220,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_cn_up_inexact_c2)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_cn_up_inexact_c2)]);
 disp(['Failed: ' num2str(failed_cn_up_inexact_c2)]);
 
-% if (~failed_cn_up_inexact_c2)
-%     PlotSolutionAndAnalytic(nodesX, tout_cn_up_inexact_c2, ...
-%         yout_cn_up_inexact_c2, analyticSolution, rows, columns, 'cn_up_inexact_c2');
-% end
+if (~failed_cn_up_inexact_c2)
+    error = norm(yout_cn_up_inexact_c2(:, end) - benchmarkSolution_coarseMesh(:)) / sqrt(rows * columns);
+    disp(['Error: ' num2str(error)]);
+end
 
 disp('***** End: Crank-Nicolson (upwinding/choice2) *****');
 
@@ -1264,10 +1273,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_be_avg_inexact_asgn_ls)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_be_avg_inexact_asgn_ls)]);
 disp(['Failed: ' num2str(failed_be_avg_inexact_asgn_ls)]);
 
-% if (~failed_be_avg_inexact_asgn_ls)
-%     PlotSolutionAndAnalytic(nodesX, tout_be_avg_inexact_asgn_ls, ...
-%         yout_be_avg_inexact_asgn_ls, analyticSolution, rows, columns, 'be_avg_inexact_asgn_ls');
-% end
+if (~failed_be_avg_inexact_asgn_ls)
+    error = norm(yout_be_avg_inexact_asgn_ls(:, end) - benchmarkSolution_coarseMesh(:)) / sqrt(rows * columns);
+    disp(['Error: ' num2str(error)]);
+end
 
 disp('***** End: Backward-Euler (averaging/backtracking/assignment) *****');
 
@@ -1317,10 +1326,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_be_up_inexact_asgn_ls)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_be_up_inexact_asgn_ls)]);
 disp(['Failed: ' num2str(failed_be_up_inexact_asgn_ls)]);
 
-% if (~failed_be_up_inexact_asgn_ls)
-%     PlotSolutionAndAnalytic(nodesX, tout_be_up_inexact_asgn_ls, ...
-%         yout_be_up_inexact_asgn_ls, analyticSolution, rows, columns, 'be_up_inexact_asgn_ls');
-% end
+if (~failed_be_up_inexact_asgn_ls)
+    error = norm(yout_be_up_inexact_asgn_ls(:, end) - benchmarkSolution_coarseMesh(:)) / sqrt(rows * columns);
+    disp(['Error: ' num2str(error)]);
+end
     
 disp('***** End: Backward-Euler (upwinding/backtracking/assignment) *****');
 
@@ -1370,10 +1379,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_cn_avg_inexact_asgn_ls)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_cn_avg_inexact_asgn_ls)]);
 disp(['Failed: ' num2str(failed_cn_avg_inexact_asgn_ls)]);
 
-% if (~failed_cn_avg_inexact_asgn_ls)
-%     PlotSolutionAndAnalytic(nodesX, tout_cn_avg_inexact_asgn_ls, ...
-%         yout_cn_avg_inexact_asgn_ls, analyticSolution, rows, columns, 'cn_avg_inexact_asgn_ls');
-% end
+if (~failed_cn_avg_inexact_asgn_ls)
+    error = norm(yout_cn_avg_inexact_asgn_ls(:, end) - benchmarkSolution_coarseMesh(:)) / sqrt(rows * columns);
+    disp(['Error: ' num2str(error)]);
+end
 
 disp('***** End: Crank-Nicolson (averaging/backtracking/assignment) *****');
 
@@ -1423,10 +1432,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_cn_up_inexact_asgn_ls)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_cn_up_inexact_asgn_ls)]);
 disp(['Failed: ' num2str(failed_cn_up_inexact_asgn_ls)]);
 
-% if (~failed_cn_up_inexact_asgn_ls)
-%     PlotSolutionAndAnalytic(nodesX, tout_cn_up_inexact_asgn_ls, ...
-%         yout_cn_up_inexact_asgn_ls, analyticSolution, rows, columns, 'cn_up_inexact_asgn_ls');
-% end
+if (~failed_cn_up_inexact_asgn_ls)
+    error = norm(yout_cn_up_inexact_asgn_ls(:, end) - benchmarkSolution_coarseMesh(:)) / sqrt(rows * columns);
+    disp(['Error: ' num2str(error)]);
+end
     
 disp('***** End: Crank-Nicolson (upwinding/backtracking/assignment) *****');
 
@@ -1476,10 +1485,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_be_avg_inexact_c1_ls)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_be_avg_inexact_c1_ls)]);
 disp(['Failed: ' num2str(failed_be_avg_inexact_c1_ls)]);
 
-% if (~failed_be_avg_inexact_c1_ls)
-%     PlotSolutionAndAnalytic(nodesX, tout_be_avg_inexact_c1_ls, ...
-%         yout_be_avg_inexact_c1_ls, analyticSolution, rows, columns, 'be_avg_inexact_c1_ls');
-% end
+if (~failed_be_avg_inexact_c1_ls)
+    error = norm(yout_be_avg_inexact_c1_ls(:, end) - benchmarkSolution_coarseMesh(:)) / sqrt(rows * columns);
+    disp(['Error: ' num2str(error)]);
+end
     
 disp('***** End: Backward-Euler (averaging/backtracking/choice1) *****');
 
@@ -1529,10 +1538,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_be_up_inexact_c1_ls)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_be_up_inexact_c1_ls)]);
 disp(['Failed: ' num2str(failed_be_up_inexact_c1_ls)]);
 
-% if (~failed_be_up_inexact_c1_ls)
-%     PlotSolutionAndAnalytic(nodesX, tout_be_up_inexact_c1_ls, ...
-%         yout_be_up_inexact_c1_ls, analyticSolution, rows, columns, 'be_up_inexact_c1_ls');
-% end
+if (~failed_be_up_inexact_c1_ls)
+    error = norm(yout_be_up_inexact_c1_ls(:, end) - benchmarkSolution_coarseMesh(:)) / sqrt(rows * columns);
+    disp(['Error: ' num2str(error)]);
+end
     
 disp('***** End: Backward-Euler (upwinding/backtracking/choice1) *****');
 
@@ -1582,10 +1591,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_cn_avg_inexact_c1_ls)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_cn_avg_inexact_c1_ls)]);
 disp(['Failed: ' num2str(failed_cn_avg_inexact_c1_ls)]);
 
-% if (~failed_cn_avg_inexact_c1_ls)
-%     PlotSolutionAndAnalytic(nodesX, tout_cn_avg_inexact_c1_ls, ...
-%         yout_cn_avg_inexact_c1_ls, analyticSolution, rows, columns, 'cn_avg_inexact_c1_ls');
-% end
+if (~failed_cn_avg_inexact_c1_ls)
+    error = norm(yout_cn_avg_inexact_c1_ls(:, end) - benchmarkSolution_coarseMesh(:)) / sqrt(rows * columns);
+    disp(['Error: ' num2str(error)]);
+end
     
 disp('***** End: Crank-Nicolson (averaging/backtracking/choice1) *****');
 
@@ -1635,10 +1644,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_cn_up_inexact_c1_ls)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_cn_up_inexact_c1_ls)]);
 disp(['Failed: ' num2str(failed_cn_up_inexact_c1_ls)]);
 
-% if (~failed_cn_up_inexact_c1_ls)
-%     PlotSolutionAndAnalytic(nodesX, tout_cn_up_inexact_c1_ls, ...
-%         yout_cn_up_inexact_c1_ls, analyticSolution, rows, columns, 'cn_up_inexact_c1_ls');
-% end
+if (~failed_cn_up_inexact_c1_ls)
+    error = norm(yout_cn_up_inexact_c1_ls(:, end) - benchmarkSolution_coarseMesh(:)) / sqrt(rows * columns);
+    disp(['Error: ' num2str(error)]);
+end
     
 disp('***** End: Crank-Nicolson (upwinding/backtracking/choice1) *****');
 
@@ -1688,10 +1697,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_be_avg_inexact_c2_ls)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_be_avg_inexact_c2_ls)]);
 disp(['Failed: ' num2str(failed_be_avg_inexact_c2_ls)]);
 
-% if (~failed_be_avg_inexact_c2_ls)
-%     PlotSolutionAndAnalytic(nodesX, tout_be_avg_inexact_c2_ls, ...
-%         yout_be_avg_inexact_c2_ls, analyticSolution, rows, columns, 'be_avg_inexact_c2_ls');
-% end
+if (~failed_be_avg_inexact_c2_ls)
+    error = norm(yout_be_avg_inexact_c2_ls(:, end) - benchmarkSolution_coarseMesh(:)) / sqrt(rows * columns);
+    disp(['Error: ' num2str(error)]);
+end
     
 disp('***** End: Backward-Euler (averaging/backtracking/choice2) *****');
 
@@ -1741,10 +1750,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_be_up_inexact_c2_ls)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_be_up_inexact_c2_ls)]);
 disp(['Failed: ' num2str(failed_be_up_inexact_c2_ls)]);
 
-% if (~failed_be_up_inexact_c2_ls)
-%     PlotSolutionAndAnalytic(nodesX, tout_be_up_inexact_c2_ls, ...
-%         yout_be_up_inexact_c2_ls, analyticSolution, rows, columns, 'be_up_inexact_c2_ls');
-% end
+if (~failed_be_up_inexact_c2_ls)
+    error = norm(yout_be_up_inexact_c2_ls(:, end) - benchmarkSolution_coarseMesh(:)) / sqrt(rows * columns);
+    disp(['Error: ' num2str(error)]);
+end
     
 disp('***** End: Backward-Euler (upwinding/backtracking/choice2) *****');
 
@@ -1794,10 +1803,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_cn_avg_inexact_c2_ls)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_cn_avg_inexact_c2_ls)]);
 disp(['Failed: ' num2str(failed_cn_avg_inexact_c2_ls)]);
 
-% if (~failed_cn_avg_inexact_c2_ls)
-%     PlotSolutionAndAnalytic(nodesX, tout_cn_avg_inexact_c2_ls, ...
-%         yout_cn_avg_inexact_c2_ls, analyticSolution, rows, columns, 'cn_avg_inexact_c2_ls');
-% end
+if (~failed_cn_avg_inexact_c2_ls)
+    error = norm(yout_cn_avg_inexact_c2_ls(:, end) - benchmarkSolution_coarseMesh(:)) / sqrt(rows * columns);
+    disp(['Error: ' num2str(error)]);
+end
     
 disp('***** End: Crank-Nicolson (averaging/backtracking/choice2) *****');
 
@@ -1847,9 +1856,9 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_cn_up_inexact_c2_ls)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_cn_up_inexact_c2_ls)]);
 disp(['Failed: ' num2str(failed_cn_up_inexact_c2_ls)]);
 
-% if (~failed_cn_up_inexact_c2_ls)
-%     PlotSolutionAndAnalytic(nodesX, tout_cn_up_inexact_c2_ls, ...
-%         yout_cn_up_inexact_c2_ls, analyticSolution, rows, columns, 'cn_up_inexact_c2_ls');
-% end
+if (~failed_cn_up_inexact_c2_ls)
+    error = norm(yout_cn_up_inexact_c2_ls(:, end) - benchmarkSolution_coarseMesh(:)) / sqrt(rows * columns);
+    disp(['Error: ' num2str(error)]);
+end
 
 disp('***** End: Crank-Nicolson (upwinding/backtracking/choice2) *****');
