@@ -1,14 +1,14 @@
 function [maxPeakError, samePeakLocation] = ...
     DetermineSecondaryErrorMetricsP1(numericSol, analyticSol)
 
-numericMax = max(max(numericSol));
-analyticMax = max(max(analyticSol));
+numericSol = numericSol(:, end);
+analyticSol = analyticSol(:, end);
 
-maxPeakError = abs(analyticMax - numericMax) / abs(analyticMax);
+numericMax = max(numericSol);
+analyticMax = max(analyticSol);
 
 samePeakLocation = find(numericSol == (numericMax)) ...
-    == find(numericSol == (numericMax));
+    == find(analyticSol == (analyticMax));
 
-disp(['Max peak (rel) error: ' num2str(maxPeakError)]);
 disp(['Is same peak location: ' num2str(samePeakLocation)]);
 end
