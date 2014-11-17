@@ -11,7 +11,6 @@ close all;
 dt = 0.001;
 tFinal = 1.25;
 
-
 DXX = 0.01;
 Dxx = @(phi, x, y, t) x .* 0 + DXX;
 
@@ -174,15 +173,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_be_avg)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_be_avg)]);
 disp(['Failed: ' num2str(failed_be_avg)]);
 
-DetermineSecondaryErrorMetricsP1(yout_be_avg, analyticSolution);
-
 if (~failed_be_avg)
     numericDiag = diag(flipud(reshape(yout_be_avg(:, end), rows, columns)));
     [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
     disp(['Error: ' num2str(error)]);
-    
-    PlotSolutionAndAnalytic(nodesX, tout_be_avg, yout_be_avg, analyticSolution, ...
-        rows, columns, 'be_avg');
 end
 
 disp('***** End: Backward-Euler (averaging) *****');
@@ -232,15 +226,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_be_up)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_be_up)]);
 disp(['Failed: ' num2str(failed_be_up)]);
 
-DetermineSecondaryErrorMetricsP1(yout_be_up, analyticSolution);
-
 if (~failed_be_up)
     numericDiag = diag(flipud(reshape(yout_be_up(:, end), rows, columns)));
     [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
     disp(['Error: ' num2str(error)]);
-    
-    PlotSolutionAndAnalytic(nodesX, tout_be_up, yout_be_up, analyticSolution, ...
-        rows, columns, 'be_up');
 end
 
 disp('***** End: Backward-Euler (upwinding) *****');
@@ -290,15 +279,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_cn_avg)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_cn_avg)]);
 disp(['Failed: ' num2str(failed_cn_avg)]);
 
-DetermineSecondaryErrorMetricsP1(yout_cn_avg, analyticSolution);
-
 if (~failed_cn_avg)
     numericDiag = diag(flipud(reshape(yout_cn_avg(:, end), rows, columns)));
     [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
     disp(['Error: ' num2str(error)]);
-    
-    PlotSolutionAndAnalytic(nodesX, tout_cn_avg, yout_cn_avg, analyticSolution, ...
-        rows, columns, 'cn_avg');
 end
 
 disp('***** End: Crank-Nicolson (averaging) *****');
@@ -348,15 +332,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_cn_up)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_cn_up)]);
 disp(['Failed: ' num2str(failed_cn_up)]);
 
-DetermineSecondaryErrorMetricsP1(yout_cn_up, analyticSolution);
-
 if (~failed_cn_up)
     numericDiag = diag(flipud(reshape(yout_cn_up(:, end), rows, columns)));
     [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
     disp(['Error: ' num2str(error)]);
-    
-    PlotSolutionAndAnalytic(nodesX, tout_cn_up, yout_cn_up, analyticSolution, ...
-        rows, columns, 'cn_up');
 end
 
 disp('***** End: Crank-Nicolson (upwinding) *****');
@@ -407,15 +386,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_be_avg_linesearch)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_be_avg_linesearch)]);
 disp(['Failed: ' num2str(failed_be_avg_linesearch)]);
 
-DetermineSecondaryErrorMetricsP1(yout_be_avg_linesearch, analyticSolution);
-
 if (~failed_be_avg_linesearch)
     numericDiag = diag(flipud(reshape(yout_be_avg_linesearch(:, end), rows, columns)));
     [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
     disp(['Error: ' num2str(error)]);
-    
-    PlotSolutionAndAnalytic(nodesX, tout_be_avg_linesearch, ...
-        yout_be_avg_linesearch, analyticSolution, rows, columns, 'be_avg_linesearch');
 end
 
 disp('***** End: Backward-Euler (averaging/backtracking) *****');
@@ -466,15 +440,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_be_up_linesearch)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_be_up_linesearch)]);
 disp(['Failed: ' num2str(failed_be_up_linesearch)]);
 
-DetermineSecondaryErrorMetricsP1(yout_be_up_linesearch, analyticSolution);
-
 if (~failed_be_up_linesearch)
     numericDiag = diag(flipud(reshape(yout_be_up_linesearch(:, end), rows, columns)));
     [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
     disp(['Error: ' num2str(error)]);
-    
-    PlotSolutionAndAnalytic(nodesX, tout_be_up_linesearch, ...
-        yout_be_up_linesearch, analyticSolution, rows, columns, 'be_up_linesearch');
 end
 
 disp('***** End: Backward-Euler (upwinding/backtracking) *****');
@@ -525,15 +494,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_cn_avg_linesearch)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_cn_avg_linesearch)]);
 disp(['Failed: ' num2str(failed_cn_avg_linesearch)]);
 
-DetermineSecondaryErrorMetricsP1(yout_cn_avg_linesearch, analyticSolution);
-
 if (~failed_cn_avg_linesearch)
     numericDiag = diag(flipud(reshape(yout_cn_avg_linesearch(:, end), rows, columns)));
     [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
     disp(['Error: ' num2str(error)]);
-    
-    PlotSolutionAndAnalytic(nodesX, tout_cn_avg_linesearch, ...
-        yout_cn_avg_linesearch, analyticSolution, rows, columns, 'cn_avg_linesearch');
 end
 
 disp('***** End: Crank-Nicolson (averaging/backtracking) *****');
@@ -584,15 +548,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_cn_up_linesearch)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_cn_up_linesearch)]);
 disp(['Failed: ' num2str(failed_cn_up_linesearch)]);
 
-DetermineSecondaryErrorMetricsP1(yout_cn_up_linesearch, analyticSolution);
-
 if (~failed_cn_up_linesearch)
     numericDiag = diag(flipud(reshape(yout_cn_up_linesearch(:, end), rows, columns)));
     [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
     disp(['Error: ' num2str(error)]);
-    
-    PlotSolutionAndAnalytic(nodesX, tout_cn_up_linesearch, ...
-        yout_cn_up_linesearch, analyticSolution, rows, columns, 'cn_up_linesearch');
 end
 
 disp('***** End: Crank-Nicolson (upwinding/backtracking) *****');
@@ -643,15 +602,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_be_avg_inexact_asgn)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_be_avg_inexact_asgn)]);
 disp(['Failed: ' num2str(failed_be_avg_inexact_asgn)]);
 
-DetermineSecondaryErrorMetricsP1(yout_be_avg_inexact_asgn, analyticSolution);
-
 if (~failed_be_avg_inexact_asgn)
     numericDiag = diag(flipud(reshape(yout_be_avg_inexact_asgn(:, end), rows, columns)));
     [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
     disp(['Error: ' num2str(error)]);
-    
-    PlotSolutionAndAnalytic(nodesX, tout_be_avg_inexact_asgn, ...
-        yout_be_avg_inexact_asgn, analyticSolution, rows, columns, 'be_avg_inexact_asgn');
 end
 
 disp('***** End: Backward-Euler (averaging/assignment) *****');
@@ -702,15 +656,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_be_up_inexact_asgn)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_be_up_inexact_asgn)]);
 disp(['Failed: ' num2str(failed_be_up_inexact_asgn)]);
 
-DetermineSecondaryErrorMetricsP1(yout_be_up_inexact_asgn, analyticSolution);
-
 if (~failed_be_up_inexact_asgn)
     numericDiag = diag(flipud(reshape(yout_be_up_inexact_asgn(:, end), rows, columns)));
     [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
     disp(['Error: ' num2str(error)]);
-    
-    PlotSolutionAndAnalytic(nodesX, tout_be_up_inexact_asgn, ...
-        yout_be_up_inexact_asgn, analyticSolution, rows, columns, 'be_up_inexact_asgn');
 end
 
 disp('***** End: Backward-Euler (upwinding/assignment) *****');
@@ -761,15 +710,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_cn_avg_inexact_asgn)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_cn_avg_inexact_asgn)]);
 disp(['Failed: ' num2str(failed_cn_avg_inexact_asgn)]);
 
-DetermineSecondaryErrorMetricsP1(yout_cn_avg_inexact_asgn, analyticSolution);
-
 if (~failed_cn_avg_inexact_asgn)
     numericDiag = diag(flipud(reshape(yout_cn_avg_inexact_asgn(:, end), rows, columns)));
     [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
     disp(['Error: ' num2str(error)]);
-    
-    PlotSolutionAndAnalytic(nodesX, tout_cn_avg_inexact_asgn, ...
-        yout_cn_avg_inexact_asgn, analyticSolution, rows, columns, 'cn_avg_inexact_asgn');
 end
 
 disp('***** End: Crank-Nicolson (averaging/assignment) *****');
@@ -820,15 +764,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_cn_up_inexact_asgn)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_cn_up_inexact_asgn)]);
 disp(['Failed: ' num2str(failed_cn_up_inexact_asgn)]);
 
-DetermineSecondaryErrorMetricsP1(yout_cn_up_inexact_asgn, analyticSolution);
-
 if (~failed_cn_up_inexact_asgn)
     numericDiag = diag(flipud(reshape(yout_cn_up_inexact_asgn(:, end), rows, columns)));
     [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
     disp(['Error: ' num2str(error)]);
-    
-    PlotSolutionAndAnalytic(nodesX, tout_cn_up_inexact_asgn, ...
-        yout_cn_up_inexact_asgn, analyticSolution, rows, columns, 'cn_up_inexact_asgn');
 end
 
 disp('***** End: Crank-Nicolson (upwinding/assignment) *****');
@@ -879,15 +818,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_be_avg_inexact_c1)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_be_avg_inexact_c1)]);
 disp(['Failed: ' num2str(failed_be_avg_inexact_c1)]);
 
-DetermineSecondaryErrorMetricsP1(yout_be_avg_inexact_c1, analyticSolution);
-
 if (~failed_be_avg_inexact_c1)
     numericDiag = diag(flipud(reshape(yout_be_avg_inexact_c1(:, end), rows, columns)));
     [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
     disp(['Error: ' num2str(error)]);
-    
-    PlotSolutionAndAnalytic(nodesX, tout_be_avg_inexact_c1, ...
-        yout_be_avg_inexact_c1, analyticSolution, rows, columns, 'be_avg_inexact_c1');
 end
 
 disp('***** End: Backward-Euler (averaging/choice1) *****');
@@ -938,15 +872,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_be_up_inexact_c1)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_be_up_inexact_c1)]);
 disp(['Failed: ' num2str(failed_be_up_inexact_c1)]);
 
-DetermineSecondaryErrorMetricsP1(yout_be_up_inexact_c1, analyticSolution);
-
 if (~failed_be_up_inexact_c1)
     numericDiag = diag(flipud(reshape(yout_be_up_inexact_c1(:, end), rows, columns)));
     [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
     disp(['Error: ' num2str(error)]);
-    
-    PlotSolutionAndAnalytic(nodesX, tout_be_up_inexact_c1, ...
-        yout_be_up_inexact_c1, analyticSolution, rows, columns, 'be_up_inexact_c1');
 end
 
 disp('***** End: Backward-Euler (upwinding/choice1) *****');
@@ -997,15 +926,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_cn_avg_inexact_c1)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_cn_avg_inexact_c1)]);
 disp(['Failed: ' num2str(failed_cn_avg_inexact_c1)]);
 
-DetermineSecondaryErrorMetricsP1(yout_cn_avg_inexact_c1, analyticSolution);
-
 if (~failed_cn_avg_inexact_c1)
     numericDiag = diag(flipud(reshape(yout_cn_avg_inexact_c1(:, end), rows, columns)));
     [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
     disp(['Error: ' num2str(error)]);
-    
-    PlotSolutionAndAnalytic(nodesX, tout_cn_avg_inexact_c1, ...
-        yout_cn_avg_inexact_c1, analyticSolution, rows, columns, 'cn_avg_inexact_c1');
 end
 
 disp('***** End: Crank-Nicolson (averaging/choice1) *****');
@@ -1056,15 +980,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_cn_up_inexact_c1)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_cn_up_inexact_c1)]);
 disp(['Failed: ' num2str(failed_cn_up_inexact_c1)]);
 
-DetermineSecondaryErrorMetricsP1(yout_cn_up_inexact_c1, analyticSolution);
-
 if (~failed_cn_up_inexact_c1)
     numericDiag = diag(flipud(reshape(yout_cn_up_inexact_c1(:, end), rows, columns)));
     [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
     disp(['Error: ' num2str(error)]);
-    
-    PlotSolutionAndAnalytic(nodesX, tout_cn_up_inexact_c1, ...
-        yout_cn_up_inexact_c1, analyticSolution, rows, columns, 'cn_up_inexact_c1');
 end
 
 disp('***** End: Crank-Nicolson (upwinding/choice1) *****');
@@ -1115,15 +1034,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_be_avg_inexact_c2)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_be_avg_inexact_c2)]);
 disp(['Failed: ' num2str(failed_be_avg_inexact_c2)]);
 
-DetermineSecondaryErrorMetricsP1(yout_be_avg_inexact_c2, analyticSolution);
-
 if (~failed_be_avg_inexact_c2)
     numericDiag = diag(flipud(reshape(yout_be_avg_inexact_c2(:, end), rows, columns)));
     [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
     disp(['Error: ' num2str(error)]);
-    
-    PlotSolutionAndAnalytic(nodesX, tout_be_avg_inexact_c2, ...
-        yout_be_avg_inexact_c2, analyticSolution, rows, columns, 'be_avg_inexact_c2');
 end
 
 disp('***** End: Backward-Euler (averaging/choice2) *****');
@@ -1174,15 +1088,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_be_up_inexact_c2)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_be_up_inexact_c2)]);
 disp(['Failed: ' num2str(failed_be_up_inexact_c2)]);
 
-DetermineSecondaryErrorMetricsP1(yout_be_up_inexact_c2, analyticSolution);
-
 if (~failed_be_up_inexact_c2)
     numericDiag = diag(flipud(reshape(yout_be_up_inexact_c2(:, end), rows, columns)));
     [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
     disp(['Error: ' num2str(error)]);
-    
-    PlotSolutionAndAnalytic(nodesX, tout_be_up_inexact_c2, ...
-        yout_be_up_inexact_c2, analyticSolution, rows, columns, 'be_up_inexact_c2');
 end
 
 disp('***** End: Backward-Euler (upwinding/choice2) *****');
@@ -1233,15 +1142,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_cn_avg_inexact_c2)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_cn_avg_inexact_c2)]);
 disp(['Failed: ' num2str(failed_cn_avg_inexact_c2)]);
 
-DetermineSecondaryErrorMetricsP1(yout_cn_avg_inexact_c2, analyticSolution);
-
 if (~failed_cn_avg_inexact_c2)
     numericDiag = diag(flipud(reshape(yout_cn_avg_inexact_c2(:, end), rows, columns)));
     [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
     disp(['Error: ' num2str(error)]);
-    
-    PlotSolutionAndAnalytic(nodesX, tout_cn_avg_inexact_c2, ...
-        yout_cn_avg_inexact_c2, analyticSolution, rows, columns, 'cn_avg_inexact_c2');
 end
 
 disp('***** End: Crank-Nicolson (averaging/choice2) *****');
@@ -1292,15 +1196,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_cn_up_inexact_c2)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_cn_up_inexact_c2)]);
 disp(['Failed: ' num2str(failed_cn_up_inexact_c2)]);
 
-DetermineSecondaryErrorMetricsP1(yout_cn_up_inexact_c2, analyticSolution);
-
 if (~failed_cn_up_inexact_c2)
     numericDiag = diag(flipud(reshape(yout_cn_up_inexact_c2(:, end), rows, columns)));
     [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
     disp(['Error: ' num2str(error)]);
-    
-    PlotSolutionAndAnalytic(nodesX, tout_cn_up_inexact_c2, ...
-        yout_cn_up_inexact_c2, analyticSolution, rows, columns, 'cn_up_inexact_c2');
 end
 
 disp('***** End: Crank-Nicolson (upwinding/choice2) *****');
@@ -1351,15 +1250,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_be_avg_inexact_asgn_ls)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_be_avg_inexact_asgn_ls)]);
 disp(['Failed: ' num2str(failed_be_avg_inexact_asgn_ls)]);
 
-DetermineSecondaryErrorMetricsP1(yout_be_avg_inexact_asgn_ls, analyticSolution);
-
 if (~failed_be_avg_inexact_asgn_ls)
     numericDiag = diag(flipud(reshape(yout_be_avg_inexact_asgn_ls(:, end), rows, columns)));
     [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
     disp(['Error: ' num2str(error)]);
-    
-    PlotSolutionAndAnalytic(nodesX, tout_be_avg_inexact_asgn_ls, ...
-        yout_be_avg_inexact_asgn_ls, analyticSolution, rows, columns, 'be_avg_inexact_asgn_ls');
 end
 
 disp('***** End: Backward-Euler (averaging/backtracking/assignment) *****');
@@ -1410,15 +1304,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_be_up_inexact_asgn_ls)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_be_up_inexact_asgn_ls)]);
 disp(['Failed: ' num2str(failed_be_up_inexact_asgn_ls)]);
 
-DetermineSecondaryErrorMetricsP1(yout_be_up_inexact_asgn_ls, analyticSolution);
-
 if (~failed_be_up_inexact_asgn_ls)
     numericDiag = diag(flipud(reshape(yout_be_up_inexact_asgn_ls(:, end), rows, columns)));
     [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
     disp(['Error: ' num2str(error)]);
-    
-    PlotSolutionAndAnalytic(nodesX, tout_be_up_inexact_asgn_ls, ...
-        yout_be_up_inexact_asgn_ls, analyticSolution, rows, columns, 'be_up_inexact_asgn_ls');
 end
     
 disp('***** End: Backward-Euler (upwinding/backtracking/assignment) *****');
@@ -1469,15 +1358,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_cn_avg_inexact_asgn_ls)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_cn_avg_inexact_asgn_ls)]);
 disp(['Failed: ' num2str(failed_cn_avg_inexact_asgn_ls)]);
 
-DetermineSecondaryErrorMetricsP1(yout_cn_avg_inexact_asgn_ls, analyticSolution);
-
 if (~failed_cn_avg_inexact_asgn_ls)
     numericDiag = diag(flipud(reshape(yout_cn_avg_inexact_asgn_ls(:, end), rows, columns)));
     [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
     disp(['Error: ' num2str(error)]);
-    
-    PlotSolutionAndAnalytic(nodesX, tout_cn_avg_inexact_asgn_ls, ...
-        yout_cn_avg_inexact_asgn_ls, analyticSolution, rows, columns, 'cn_avg_inexact_asgn_ls');
 end
 
 disp('***** End: Crank-Nicolson (averaging/backtracking/assignment) *****');
@@ -1528,15 +1412,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_cn_up_inexact_asgn_ls)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_cn_up_inexact_asgn_ls)]);
 disp(['Failed: ' num2str(failed_cn_up_inexact_asgn_ls)]);
 
-DetermineSecondaryErrorMetricsP1(yout_cn_up_inexact_asgn_ls, analyticSolution);
-
 if (~failed_cn_up_inexact_asgn_ls)
     numericDiag = diag(flipud(reshape(yout_cn_up_inexact_asgn_ls(:, end), rows, columns)));
     [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
     disp(['Error: ' num2str(error)]);
-    
-    PlotSolutionAndAnalytic(nodesX, tout_cn_up_inexact_asgn_ls, ...
-        yout_cn_up_inexact_asgn_ls, analyticSolution, rows, columns, 'cn_up_inexact_asgn_ls');
 end
     
 disp('***** End: Crank-Nicolson (upwinding/backtracking/assignment) *****');
@@ -1587,15 +1466,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_be_avg_inexact_c1_ls)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_be_avg_inexact_c1_ls)]);
 disp(['Failed: ' num2str(failed_be_avg_inexact_c1_ls)]);
 
-DetermineSecondaryErrorMetricsP1(yout_be_avg_inexact_c1_ls, analyticSolution);
-
 if (~failed_be_avg_inexact_c1_ls)
     numericDiag = diag(flipud(reshape(yout_be_avg_inexact_c1_ls(:, end), rows, columns)));
     [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
     disp(['Error: ' num2str(error)]);
-    
-    PlotSolutionAndAnalytic(nodesX, tout_be_avg_inexact_c1_ls, ...
-        yout_be_avg_inexact_c1_ls, analyticSolution, rows, columns, 'be_avg_inexact_c1_ls');
 end
     
 disp('***** End: Backward-Euler (averaging/backtracking/choice1) *****');
@@ -1646,15 +1520,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_be_up_inexact_c1_ls)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_be_up_inexact_c1_ls)]);
 disp(['Failed: ' num2str(failed_be_up_inexact_c1_ls)]);
 
-DetermineSecondaryErrorMetricsP1(yout_be_up_inexact_c1_ls, analyticSolution);
-
 if (~failed_be_up_inexact_c1_ls)
     numericDiag = diag(flipud(reshape(yout_be_up_inexact_c1_ls(:, end), rows, columns)));
     [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
     disp(['Error: ' num2str(error)]);
-    
-    PlotSolutionAndAnalytic(nodesX, tout_be_up_inexact_c1_ls, ...
-        yout_be_up_inexact_c1_ls, analyticSolution, rows, columns, 'be_up_inexact_c1_ls');
 end
     
 disp('***** End: Backward-Euler (upwinding/backtracking/choice1) *****');
@@ -1705,15 +1574,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_cn_avg_inexact_c1_ls)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_cn_avg_inexact_c1_ls)]);
 disp(['Failed: ' num2str(failed_cn_avg_inexact_c1_ls)]);
 
-DetermineSecondaryErrorMetricsP1(yout_cn_avg_inexact_c1_ls, analyticSolution);
-
 if (~failed_cn_avg_inexact_c1_ls)
     numericDiag = diag(flipud(reshape(yout_cn_avg_inexact_c1_ls(:, end), rows, columns)));
     [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
     disp(['Error: ' num2str(error)]);
-    
-    PlotSolutionAndAnalytic(nodesX, tout_cn_avg_inexact_c1_ls, ...
-        yout_cn_avg_inexact_c1_ls, analyticSolution, rows, columns, 'cn_avg_inexact_c1_ls');
 end
     
 disp('***** End: Crank-Nicolson (averaging/backtracking/choice1) *****');
@@ -1764,15 +1628,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_cn_up_inexact_c1_ls)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_cn_up_inexact_c1_ls)]);
 disp(['Failed: ' num2str(failed_cn_up_inexact_c1_ls)]);
 
-DetermineSecondaryErrorMetricsP1(yout_cn_up_inexact_c1_ls, analyticSolution);
-
 if (~failed_cn_up_inexact_c1_ls)
     numericDiag = diag(flipud(reshape(yout_cn_up_inexact_c1_ls(:, end), rows, columns)));
     [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
     disp(['Error: ' num2str(error)]);
-    
-    PlotSolutionAndAnalytic(nodesX, tout_cn_up_inexact_c1_ls, ...
-        yout_cn_up_inexact_c1_ls, analyticSolution, rows, columns, 'cn_up_inexact_c1_ls');
 end
     
 disp('***** End: Crank-Nicolson (upwinding/backtracking/choice1) *****');
@@ -1823,15 +1682,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_be_avg_inexact_c2_ls)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_be_avg_inexact_c2_ls)]);
 disp(['Failed: ' num2str(failed_be_avg_inexact_c2_ls)]);
 
-DetermineSecondaryErrorMetricsP1(yout_be_avg_inexact_c2_ls, analyticSolution);
-
 if (~failed_be_avg_inexact_c2_ls)
     numericDiag = diag(flipud(reshape(yout_be_avg_inexact_c2_ls(:, end), rows, columns)));
     [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
     disp(['Error: ' num2str(error)]);
-    
-    PlotSolutionAndAnalytic(nodesX, tout_be_avg_inexact_c2_ls, ...
-        yout_be_avg_inexact_c2_ls, analyticSolution, rows, columns, 'be_avg_inexact_c2_ls');
 end
     
 disp('***** End: Backward-Euler (averaging/backtracking/choice2) *****');
@@ -1882,15 +1736,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_be_up_inexact_c2_ls)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_be_up_inexact_c2_ls)]);
 disp(['Failed: ' num2str(failed_be_up_inexact_c2_ls)]);
 
-DetermineSecondaryErrorMetricsP1(yout_be_up_inexact_c2_ls, analyticSolution);
-
 if (~failed_be_up_inexact_c2_ls)
     numericDiag = diag(flipud(reshape(yout_be_up_inexact_c2_ls(:, end), rows, columns)));
     [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
     disp(['Error: ' num2str(error)]);
-    
-    PlotSolutionAndAnalytic(nodesX, tout_be_up_inexact_c2_ls, ...
-        yout_be_up_inexact_c2_ls, analyticSolution, rows, columns, 'be_up_inexact_c2_ls');
 end
     
 disp('***** End: Backward-Euler (upwinding/backtracking/choice2) *****');
@@ -1941,15 +1790,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_cn_avg_inexact_c2_ls)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_cn_avg_inexact_c2_ls)]);
 disp(['Failed: ' num2str(failed_cn_avg_inexact_c2_ls)]);
 
-DetermineSecondaryErrorMetricsP1(yout_cn_avg_inexact_c2_ls, analyticSolution);
-
 if (~failed_cn_avg_inexact_c2_ls)
     numericDiag = diag(flipud(reshape(yout_cn_avg_inexact_c2_ls(:, end), rows, columns)));
     [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
     disp(['Error: ' num2str(error)]);
-    
-    PlotSolutionAndAnalytic(nodesX, tout_cn_avg_inexact_c2_ls, ...
-        yout_cn_avg_inexact_c2_ls, analyticSolution, rows, columns, 'cn_avg_inexact_c2_ls');
 end
     
 disp('***** End: Crank-Nicolson (averaging/backtracking/choice2) *****');
@@ -2000,15 +1844,10 @@ disp(['GMRES Iterations: ' num2str(gmresIterations_cn_up_inexact_c2_ls)]);
 disp(['Nonlinear function calls: ' num2str(nonlinearFnCalls_cn_up_inexact_c2_ls)]);
 disp(['Failed: ' num2str(failed_cn_up_inexact_c2_ls)]);
 
-DetermineSecondaryErrorMetricsP1(yout_cn_up_inexact_c2_ls, analyticSolution);
-
 if (~failed_cn_up_inexact_c2_ls)
     numericDiag = diag(flipud(reshape(yout_cn_up_inexact_c2_ls(:, end), rows, columns)));
     [error] = CalculateErrorP1(numericDiag, phiAnalyticDiagSol);
     disp(['Error: ' num2str(error)]);
-    
-    PlotSolutionAndAnalytic(nodesX, tout_cn_up_inexact_c2_ls, ...
-        yout_cn_up_inexact_c2_ls, analyticSolution, rows, columns, 'cn_up_inexact_c2_ls');
 end
 
 disp('***** End: Crank-Nicolson (upwinding/backtracking/choice2) *****');
